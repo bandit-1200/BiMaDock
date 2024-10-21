@@ -23,3 +23,5 @@ C:\Users\marco\Documents\code\BiMaDock\obj\Debug\net8.0-windows\BiMaDock.csproj.
 C:\Users\marco\Documents\code\BiMaDock\bin\Debug\net8.0-windows\Newtonsoft.Json.dll
 C:\Users\marco\Documents\code\BiMaDock\obj\Debug\net8.0-windows\EditPropertiesWindow.baml
 C:\Users\marco\Documents\code\BiMaDock\obj\Debug\net8.0-windows\EditPropertiesWindow.g.cs
+C:\Users\marco\Documents\code\BiMaDock\bin\Debug\net8.0-windows\System.Net.Http.Formatting.dll
+C:\Users\marco\Documents\code\BiMaDock\bin\Debug\net8.0-windows\Newtonsoft.Json.Bson.dll
