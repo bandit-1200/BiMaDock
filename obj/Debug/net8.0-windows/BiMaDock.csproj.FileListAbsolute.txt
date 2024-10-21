@@ -21,3 +21,5 @@ C:\Users\marco\Documents\code\BiMaDock\bin\Debug\net8.0-windows\System.Drawing.C
 C:\Users\marco\Documents\code\BiMaDock\obj\Debug\net8.0-windows\BiMaDock.csproj.AssemblyReference.cache
 C:\Users\marco\Documents\code\BiMaDock\obj\Debug\net8.0-windows\BiMaDock.csproj.Up2Date
 C:\Users\marco\Documents\code\BiMaDock\bin\Debug\net8.0-windows\Newtonsoft.Json.dll
+C:\Users\marco\Documents\code\BiMaDock\obj\Debug\net8.0-windows\EditPropertiesWindow.baml
+C:\Users\marco\Documents\code\BiMaDock\obj\Debug\net8.0-windows\EditPropertiesWindow.g.cs

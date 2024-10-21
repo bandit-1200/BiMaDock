@@ -79,9 +79,34 @@ namespace MyDockApp
         }
 
 
-        private void Edit_Click(object sender, RoutedEventArgs e)
+// Event-Handler für das Bearbeiten der Eigenschaften eines Dock-Elements
+private void Edit_Click(object sender, RoutedEventArgs e)
+{
+    if (DockContextMenu.PlacementTarget is Button button && button.Tag is string filePath)
+    {
+        // Fenster zum Bearbeiten der Eigenschaften öffnen
+        EditPropertiesWindow editWindow = new EditPropertiesWindow
         {
-            // Implementierung folgt
+            Owner = this,
+            NameTextBox = { Text = System.IO.Path.GetFileNameWithoutExtension(filePath) },
+            PathTextBox = { Text = filePath }
+        };
+
+        if (editWindow.ShowDialog() == true)
+        {
+            // Änderungen übernehmen und Dock-Element aktualisieren
+            string newName = editWindow.NameTextBox.Text;
+            string newPath = editWindow.PathTextBox.Text;
+
+            if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
+            {
+                button.Content = newName; // Aktuellen Namen des Buttons ändern
+                button.Tag = newPath; // Pfad im Tag des Buttons aktualisieren
+                dockManager.SaveDockItems(); // Änderungen speichern
+            }
         }
+    }
+}
+
     }
 }
