@@ -1,18 +1,18 @@
 ﻿BiMaDock
-1.0.0.0
+
 
 winexe
 C#
 .cs
-c:\Users\marco\Documents\code\BiMaDock\obj\Debug\net8.0-windows\
+C:\Users\marco\Documents\code\BiMaDock\obj\Debug\net8.0-windows\
 BiMaDock
 none
 false
-TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
-c:\Users\marco\Documents\code\BiMaDock\App.xaml
+TRACE;DEBUG;NET;NET8_0;NETCOREAPP
+C:\Users\marco\Documents\code\BiMaDock\App.xaml
 11407045341
 
-10-1858046411
+8-1205852313
 200-947473140
 MainWindow.xaml;
 

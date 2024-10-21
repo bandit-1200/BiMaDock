@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -19,14 +19,10 @@ namespace MyDockApp
             // Kontextmenü anzeigen beim Rechtsklick auf das DockPanel
             DockPanel.MouseRightButtonDown += (s, e) =>
             {
-                if (!e.Handled)
-                {
-                    Console.WriteLine("Rechtsklick auf DockPanel");
-                    OpenMenuItem.Visibility = Visibility.Collapsed;
-                    DeleteMenuItem.Visibility = Visibility.Collapsed;
-                    EditMenuItem.Visibility = Visibility.Collapsed;
-                    DockContextMenu.IsOpen = true;
-                }
+                OpenMenuItem.Visibility = Visibility.Collapsed;
+                DeleteMenuItem.Visibility = Visibility.Collapsed;
+                EditMenuItem.Visibility = Visibility.Collapsed;
+                DockContextMenu.IsOpen = true;
             };
         }
 
@@ -39,9 +35,39 @@ namespace MyDockApp
         // Platzhalter-Event-Handler für elementspezifische Aktionen
         private void Open_Click(object sender, RoutedEventArgs e)
         {
-            // Implementierung folgt
+            if (DockContextMenu.PlacementTarget is Button button)
+            {
+                Console.WriteLine("Open_Click aufgerufen. Button Tag: " + (button.Tag ?? "null")); // Debug-Ausgabe des Tags
+                if (button.Tag is string filePath)
+                {
+                    OpenFile(filePath);
+                }
+                else
+                {
+                    Console.WriteLine("Tag ist kein Dateipfad"); // Debug-Ausgabe bei Fehler
+                }
+            }
+            else
+            {
+                Console.WriteLine("PlacementTarget ist kein Button"); // Debug-Ausgabe bei Fehler
+            }
         }
 
+        // Methode zum Öffnen der Datei
+        public void OpenFile(string filePath)
+        {
+            try
+            {
+                Console.WriteLine("Dateipfad: " + filePath); // Ausgabe des Dateipfads
+                Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Öffnen der Datei: " + ex.Message); // Debug-Ausgabe bei Fehler
+            }
+        }
+
+        // Platzhalter für weitere Methoden
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
             // Implementierung folgt

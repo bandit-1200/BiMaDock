@@ -94,7 +94,8 @@ private void AddDockItem(DockItem item)
         Margin = new Thickness(5),
         Width = 70
     };
-    button.Click += (s, args) => Process.Start(new ProcessStartInfo(item.FilePath) { UseShellExecute = true });
+
+    // button.Click += (s, args) => Process.Start(new ProcessStartInfo(item.FilePath) { UseShellExecute = true });
 
     // Kontextmenü für die Schaltfläche
     button.MouseRightButtonDown += (s, e) =>
@@ -104,8 +105,15 @@ private void AddDockItem(DockItem item)
         mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
         mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
         mainWindow.EditMenuItem.Visibility = Visibility.Visible;
+        mainWindow.DockContextMenu.PlacementTarget = button;
         mainWindow.DockContextMenu.IsOpen = true;
     };
+
+    button.Click += (s, args) =>
+{
+    Console.WriteLine("Element geklickt: " + item.FilePath); // Debug-Ausgabe
+    mainWindow.OpenFile(item.FilePath);
+};
 
     dockPanel.Children.Add(button);
 }
