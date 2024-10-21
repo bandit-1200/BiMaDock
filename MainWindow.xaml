@@ -6,6 +6,14 @@
         VerticalAlignment="Top" AllowsTransparency="True" Background="Transparent"
         AllowDrop="True">
     <StackPanel Orientation="Horizontal" Name="DockPanel" AllowDrop="True" Background="#CCCCCC">
-        <!-- Hier fügen wir später Elemente hinzu -->
+        <StackPanel.ContextMenu>
+            <ContextMenu x:Name="DockContextMenu">
+                <MenuItem Header="Beenden" Click="Exit_Click"/>
+                <Separator/>
+                <MenuItem x:Name="OpenMenuItem" Header="Öffnen" Click="Open_Click"/>
+                <MenuItem x:Name="DeleteMenuItem" Header="Löschen" Click="Delete_Click"/>
+                <MenuItem x:Name="EditMenuItem" Header="Eigenschaften bearbeiten" Click="Edit_Click"/>
+            </ContextMenu>
+        </StackPanel.ContextMenu>
     </StackPanel>
 </Window>

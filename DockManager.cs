@@ -3,14 +3,17 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
+using MyDockApp;
 
 public class DockManager
 {
     private StackPanel dockPanel;
+    private MainWindow mainWindow;
 
-    public DockManager(StackPanel panel)
+    public DockManager(StackPanel panel, MainWindow window)
     {
         dockPanel = panel;
+        mainWindow = window;
         dockPanel.Drop += DockPanel_Drop;
     }
 
@@ -92,6 +95,16 @@ public class DockManager
             Width = 70
         };
         button.Click += (s, args) => Process.Start(new ProcessStartInfo(item.FilePath) { UseShellExecute = true });
+
+        // Kontextmenü für die Schaltfläche
+        button.MouseRightButtonDown += (s, e) =>
+        {
+            mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
+            mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
+            mainWindow.EditMenuItem.Visibility = Visibility.Visible;
+            mainWindow.DockContextMenu.IsOpen = true;
+        };
+
         dockPanel.Children.Add(button);
     }
 }
