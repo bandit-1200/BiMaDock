@@ -68,10 +68,16 @@ namespace MyDockApp
         }
 
         // Platzhalter für weitere Methoden
+        // Event-Handler für das Löschen eines Dock-Elements
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
-            // Implementierung folgt
+            if (DockContextMenu.PlacementTarget is Button button && button.Tag is string filePath)
+            {
+                Console.WriteLine("Löschen des Elements: " + filePath); // Debug-Ausgabe
+                dockManager.RemoveDockItem(button);
+            }
         }
+
 
         private void Edit_Click(object sender, RoutedEventArgs e)
         {

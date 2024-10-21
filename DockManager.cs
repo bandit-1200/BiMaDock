@@ -62,6 +62,16 @@ public class DockManager
         }
     }
 
+public void RemoveDockItem(Button button)
+{
+    if (dockPanel.Children.Contains(button))
+    {
+        dockPanel.Children.Remove(button);
+        SaveDockItems();
+        Console.WriteLine("Element entfernt und Einstellungen gespeichert."); // Debug-Ausgabe
+    }
+}
+
 private void AddDockItem(DockItem item)
 {
     var icon = IconHelper.GetIcon(item.FilePath);
@@ -94,13 +104,16 @@ private void AddDockItem(DockItem item)
         Margin = new Thickness(5),
         Width = 70
     };
-
-    // button.Click += (s, args) => Process.Start(new ProcessStartInfo(item.FilePath) { UseShellExecute = true });
+    button.Click += (s, args) =>
+    {
+        Console.WriteLine("Element geklickt: " + item.FilePath); // Debug-Ausgabe
+        mainWindow.OpenFile(item.FilePath);
+    };
 
     // Kontextmenü für die Schaltfläche
     button.MouseRightButtonDown += (s, e) =>
     {
-        Console.WriteLine("Rechtsklick auf Element: " + item.DisplayName);
+        Console.WriteLine("Rechtsklick auf Element: " + item.DisplayName); // Debug-Ausgabe
         e.Handled = true; // Ereignis als verarbeitet markieren
         mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
         mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
@@ -109,14 +122,9 @@ private void AddDockItem(DockItem item)
         mainWindow.DockContextMenu.IsOpen = true;
     };
 
-    button.Click += (s, args) =>
-{
-    Console.WriteLine("Element geklickt: " + item.FilePath); // Debug-Ausgabe
-    mainWindow.OpenFile(item.FilePath);
-};
-
     dockPanel.Children.Add(button);
 }
+
 
 
 
