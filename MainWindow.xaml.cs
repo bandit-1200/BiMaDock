@@ -80,59 +80,60 @@ namespace MyDockApp
         }
 
 
-// Event-Handler für das Bearbeiten der Eigenschaften eines Dock-Elements
-private void Edit_Click(object sender, RoutedEventArgs e)
-{
-    if (DockContextMenu.PlacementTarget is Button button && button.Tag is string filePath)
-    {
-        // Fenster zum Bearbeiten der Eigenschaften öffnen
-        EditPropertiesWindow editWindow = new EditPropertiesWindow
+        // Event-Handler für das Bearbeiten der Eigenschaften eines Dock-Elements
+        private void Edit_Click(object sender, RoutedEventArgs e)
         {
-            Owner = this,
-            NameTextBox = { Text = System.IO.Path.GetFileNameWithoutExtension(filePath) },
-            PathTextBox = { Text = filePath }
-        };
-
-        if (editWindow.ShowDialog() == true)
-        {
-            // Änderungen übernehmen und Dock-Element aktualisieren
-            string newName = editWindow.NameTextBox.Text;
-            string newPath = editWindow.PathTextBox.Text;
-
-            if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
+            if (DockContextMenu.PlacementTarget is Button button && button.Tag is string filePath)
             {
-                // Symbol beibehalten
-                var icon = IconHelper.GetIcon(newPath);
-                var image = new Image
+                // Fenster zum Bearbeiten der Eigenschaften öffnen
+                EditPropertiesWindow editWindow = new EditPropertiesWindow
                 {
-                    Source = icon,
-                    Width = 32,
-                    Height = 32,
-                    Margin = new Thickness(5)
+                    Owner = this,
+                    NameTextBox = { Text = System.IO.Path.GetFileNameWithoutExtension(filePath) },
+                    PathTextBox = { Text = filePath }
                 };
-                var textBlock = new TextBlock
-                {
-                    Text = newName,
-                    TextAlignment = TextAlignment.Center,
-                    TextWrapping = TextWrapping.Wrap,
-                    Width = 60,
-                    Margin = new Thickness(5)
-                };
-                var stackPanel = new StackPanel
-                {
-                    Orientation = Orientation.Vertical,
-                    Width = 70
-                };
-                stackPanel.Children.Add(image);
-                stackPanel.Children.Add(textBlock);
 
-                button.Content = stackPanel; // Aktualisieren des Inhalts des Buttons
-                button.Tag = newPath; // Pfad im Tag des Buttons aktualisieren
-                dockManager.SaveDockItems(); // Änderungen speichern
+                if (editWindow.ShowDialog() == true)
+                {
+                    // Änderungen übernehmen und Dock-Element aktualisieren
+                    string newName = editWindow.NameTextBox.Text;
+                    string newPath = editWindow.PathTextBox.Text;
+
+                    if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
+                    {
+                        // Symbol beibehalten
+                        var icon = IconHelper.GetIcon(newPath);
+                        var image = new Image
+                        {
+                            Source = icon,
+                            Width = 32,
+                            Height = 32,
+                            Margin = new Thickness(5)
+                        };
+                        var textBlock = new TextBlock
+                        {
+                            Text = newName,
+                            TextAlignment = TextAlignment.Center,
+                            TextWrapping = TextWrapping.Wrap,
+                            Width = 60,
+                            Margin = new Thickness(5)
+                        };
+                        var stackPanel = new StackPanel
+                        {
+                            Orientation = Orientation.Vertical,
+                            Width = 70
+                        };
+                        stackPanel.Children.Add(image);
+                        stackPanel.Children.Add(textBlock);
+
+                        button.Content = stackPanel; // Aktualisieren des Inhalts des Buttons
+                        button.Tag = newPath; // Pfad im Tag des Buttons aktualisieren
+                        dockManager.SaveDockItems(); // Änderungen speichern
+                    }
+                }
             }
         }
-    }
-}
+
 
 
     }

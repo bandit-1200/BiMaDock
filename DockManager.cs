@@ -26,23 +26,28 @@ public class DockManager
         }
     }
 
-    public void SaveDockItems()
+public void SaveDockItems()
+{
+    var items = new List<DockItem>();
+    foreach (Button button in dockPanel.Children)
     {
-        var items = new List<DockItem>();
-        foreach (Button button in dockPanel.Children)
+        if (button.Tag is string filePath && button.Content is StackPanel stackPanel)
         {
-            if (button.Tag is string filePath)
+            var textBlock = stackPanel.Children[1] as TextBlock; // Der zweite Eintrag sollte das TextBlock sein
+            if (textBlock != null)
             {
                 items.Add(new DockItem
                 {
                     FilePath = filePath,
-                    DisplayName = System.IO.Path.GetFileNameWithoutExtension(filePath) ?? string.Empty,
+                    DisplayName = textBlock.Text ?? string.Empty,
                     // Kategorie später hinzufügen
                 });
             }
         }
-        SettingsManager.SaveSettings(items);
     }
+    SettingsManager.SaveSettings(items);
+}
+
 
     private void DockPanel_Drop(object sender, DragEventArgs e)
     {
