@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 
 namespace MyDockApp
 {
@@ -100,13 +101,39 @@ private void Edit_Click(object sender, RoutedEventArgs e)
 
             if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
             {
-                button.Content = newName; // Aktuellen Namen des Buttons ändern
+                // Symbol beibehalten
+                var icon = IconHelper.GetIcon(newPath);
+                var image = new Image
+                {
+                    Source = icon,
+                    Width = 32,
+                    Height = 32,
+                    Margin = new Thickness(5)
+                };
+                var textBlock = new TextBlock
+                {
+                    Text = newName,
+                    TextAlignment = TextAlignment.Center,
+                    TextWrapping = TextWrapping.Wrap,
+                    Width = 60,
+                    Margin = new Thickness(5)
+                };
+                var stackPanel = new StackPanel
+                {
+                    Orientation = Orientation.Vertical,
+                    Width = 70
+                };
+                stackPanel.Children.Add(image);
+                stackPanel.Children.Add(textBlock);
+
+                button.Content = stackPanel; // Aktualisieren des Inhalts des Buttons
                 button.Tag = newPath; // Pfad im Tag des Buttons aktualisieren
                 dockManager.SaveDockItems(); // Änderungen speichern
             }
         }
     }
 }
+
 
     }
 }
