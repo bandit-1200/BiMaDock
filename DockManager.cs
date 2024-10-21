@@ -62,49 +62,56 @@ public class DockManager
         }
     }
 
-    private void AddDockItem(DockItem item)
+private void AddDockItem(DockItem item)
+{
+    var icon = IconHelper.GetIcon(item.FilePath);
+    var image = new Image
     {
-        var icon = IconHelper.GetIcon(item.FilePath);
-        var image = new Image
-        {
-            Source = icon,
-            Width = 32,
-            Height = 32,
-            Margin = new Thickness(5)
-        };
-        var textBlock = new TextBlock
-        {
-            Text = item.DisplayName,
-            TextAlignment = TextAlignment.Center,
-            TextWrapping = TextWrapping.Wrap,
-            Width = 60,
-            Margin = new Thickness(5)
-        };
-        var stackPanel = new StackPanel
-        {
-            Orientation = Orientation.Vertical,
-            Width = 70
-        };
-        stackPanel.Children.Add(image);
-        stackPanel.Children.Add(textBlock);
-        var button = new Button
-        {
-            Content = stackPanel,
-            Tag = item.FilePath,
-            Margin = new Thickness(5),
-            Width = 70
-        };
-        button.Click += (s, args) => Process.Start(new ProcessStartInfo(item.FilePath) { UseShellExecute = true });
+        Source = icon,
+        Width = 32,
+        Height = 32,
+        Margin = new Thickness(5)
+    };
+    var textBlock = new TextBlock
+    {
+        Text = item.DisplayName,
+        TextAlignment = TextAlignment.Center,
+        TextWrapping = TextWrapping.Wrap,
+        Width = 60,
+        Margin = new Thickness(5)
+    };
+    var stackPanel = new StackPanel
+    {
+        Orientation = Orientation.Vertical,
+        Width = 70
+    };
+    stackPanel.Children.Add(image);
+    stackPanel.Children.Add(textBlock);
+    var button = new Button
+    {
+        Content = stackPanel,
+        Tag = item.FilePath,
+        Margin = new Thickness(5),
+        Width = 70
+    };
+    button.Click += (s, args) => Process.Start(new ProcessStartInfo(item.FilePath) { UseShellExecute = true });
 
-        // Kontextmenü für die Schaltfläche
-        button.MouseRightButtonDown += (s, e) =>
-        {
-            mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
-            mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
-            mainWindow.EditMenuItem.Visibility = Visibility.Visible;
-            mainWindow.DockContextMenu.IsOpen = true;
-        };
+    // Kontextmenü für die Schaltfläche
+    button.MouseRightButtonDown += (s, e) =>
+    {
+        Console.WriteLine("Rechtsklick auf Element: " + item.DisplayName);
+        e.Handled = true; // Ereignis als verarbeitet markieren
+        mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
+        mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
+        mainWindow.EditMenuItem.Visibility = Visibility.Visible;
+        mainWindow.DockContextMenu.IsOpen = true;
+    };
 
-        dockPanel.Children.Add(button);
-    }
+    dockPanel.Children.Add(button);
+}
+
+
+
+
+
 }

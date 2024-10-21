@@ -19,10 +19,14 @@ namespace MyDockApp
             // Kontextmenü anzeigen beim Rechtsklick auf das DockPanel
             DockPanel.MouseRightButtonDown += (s, e) =>
             {
-                OpenMenuItem.Visibility = Visibility.Collapsed;
-                DeleteMenuItem.Visibility = Visibility.Collapsed;
-                EditMenuItem.Visibility = Visibility.Collapsed;
-                DockContextMenu.IsOpen = true;
+                if (!e.Handled)
+                {
+                    Console.WriteLine("Rechtsklick auf DockPanel");
+                    OpenMenuItem.Visibility = Visibility.Collapsed;
+                    DeleteMenuItem.Visibility = Visibility.Collapsed;
+                    EditMenuItem.Visibility = Visibility.Collapsed;
+                    DockContextMenu.IsOpen = true;
+                }
             };
         }
 
