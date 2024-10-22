@@ -165,6 +165,7 @@ private void DockPanel_Drop(object sender, DragEventArgs e)
 
 
 
+
         // Event-Handler für das Beenden des Docks
         private void Exit_Click(object sender, RoutedEventArgs e)
         {

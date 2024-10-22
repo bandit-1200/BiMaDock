@@ -5,8 +5,8 @@
         WindowStyle="None" ResizeMode="NoResize" Topmost="True"
         VerticalAlignment="Top" AllowsTransparency="True" Background="Transparent"
         AllowDrop="True">
-    <Grid>
-        <StackPanel Orientation="Horizontal" Name="DockPanel" AllowDrop="True" Background="#CCCCCC" Drop="DockPanel_Drop">
+    <Grid HorizontalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Name="DockPanel" AllowDrop="True" Background="#CCCCCC" HorizontalAlignment="Center">
             <StackPanel.ContextMenu>
                 <ContextMenu x:Name="DockContextMenu">
                     <MenuItem Header="Beenden" Click="Exit_Click"/>
