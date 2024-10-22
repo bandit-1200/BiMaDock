@@ -9,6 +9,11 @@ public class DockManager
 {
     private StackPanel dockPanel;
     private MainWindow mainWindow;
+    private Point? dragStartPoint = null;  // Definition hinzugefügt
+    private Button? draggedButton = null;  // Definition hinzugefügt
+
+
+
 
     public DockManager(StackPanel panel, MainWindow window)
     {
@@ -109,16 +114,28 @@ private void AddDockItem(DockItem item)
         Margin = new Thickness(5),
         Width = 70
     };
+
+    button.PreviewMouseLeftButtonDown += (s, e) =>
+    {
+        Console.WriteLine("Button Mouse Down Event ausgelöst"); // Debugging
+        dragStartPoint = e.GetPosition(dockPanel);
+        draggedButton = button;
+        if (draggedButton != null)
+        {
+            Console.WriteLine("Drag Start: " + draggedButton.Tag); // Debugging
+        }
+    };
+
     button.Click += (s, args) =>
     {
-        Console.WriteLine("Element geklickt: " + item.FilePath); // Debug-Ausgabe
+        Console.WriteLine("Element geklickt: " + item.FilePath); // Debugging
         mainWindow.OpenFile(item.FilePath);
     };
 
     // Kontextmenü für die Schaltfläche
     button.MouseRightButtonDown += (s, e) =>
     {
-        Console.WriteLine("Rechtsklick auf Element: " + item.DisplayName); // Debug-Ausgabe
+        Console.WriteLine("Rechtsklick auf Element: " + item.DisplayName); // Debugging
         e.Handled = true; // Ereignis als verarbeitet markieren
         mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
         mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
@@ -129,6 +146,8 @@ private void AddDockItem(DockItem item)
 
     dockPanel.Children.Add(button);
 }
+
+
 
 
 

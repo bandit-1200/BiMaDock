@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
@@ -8,6 +9,11 @@ namespace MyDockApp
     public partial class MainWindow : Window
     {
         private DockManager dockManager;
+        // private Point? dragStartPoint = null;
+        // private Button? draggedButton = null;
+        private Point? dragStartPoint = null;
+        private Button? draggedButton = null;
+
 
         public MainWindow()
         {
@@ -16,6 +22,14 @@ namespace MyDockApp
             dockManager = new DockManager(DockPanel, this); // Aktualisieren, um das Hauptfenster zu übergeben
             dockManager.LoadDockItems();
             this.Closing += (s, e) => dockManager.SaveDockItems(); // Einstellungen beim Schließen speichern
+
+            DockPanel.Drop += DockPanel_Drop;
+
+            DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
+            DockPanel.PreviewMouseMove += DockPanel_MouseMove;
+            DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
+
+
 
             // Kontextmenü anzeigen beim Rechtsklick auf das DockPanel
             DockPanel.MouseRightButtonDown += (s, e) =>
@@ -26,6 +40,130 @@ namespace MyDockApp
                 DockContextMenu.IsOpen = true;
             };
         }
+
+private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+{
+    Console.WriteLine("Mouse Down Event ausgelöst"); // Debugging
+    var originalSource = e.OriginalSource as FrameworkElement;
+    while (originalSource != null && !(originalSource is Button))
+    {
+        originalSource = originalSource.Parent as FrameworkElement;
+    }
+
+    if (originalSource is Button button)
+    {
+        dragStartPoint = e.GetPosition(DockPanel);
+        draggedButton = button;
+        Console.WriteLine("Drag Start: " + draggedButton.Tag); // Debugging
+    }
+    else
+    {
+        Console.WriteLine("Kein Button als Quelle gefunden"); // Debugging
+    }
+}
+
+
+
+
+
+
+
+
+
+private void DockPanel_MouseMove(object sender, MouseEventArgs e)
+{
+    Console.WriteLine("Mouse Move Event ausgelöst"); // Debugging
+    if (dragStartPoint.HasValue)
+    {
+        Console.WriteLine("dragStartPoint: " + dragStartPoint.Value); // Debugging
+    }
+    if (draggedButton != null)
+    {
+        Console.WriteLine("draggedButton: " + draggedButton.Tag); // Debugging
+    }
+    if (e.LeftButton == MouseButtonState.Pressed && draggedButton != null && dragStartPoint.HasValue)
+    {
+        Point position = e.GetPosition(DockPanel);
+        Vector diff = dragStartPoint.Value - position;
+
+        Console.WriteLine("Diff X: " + diff.X + ", Diff Y: " + diff.Y); // Debugging
+        if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+            Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+        {
+            Console.WriteLine("Dragging: " + draggedButton.Tag); // Debugging
+            DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
+            dragStartPoint = null;
+            draggedButton = null;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+        private void DockPanel_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            dragStartPoint = null;
+            draggedButton = null;
+            Console.WriteLine("Drag End"); // Debugging
+        }
+
+
+
+private void DockPanel_Drop(object sender, DragEventArgs e)
+{
+    if (e.Data.GetDataPresent(DataFormats.Serializable))
+    {
+        Button? droppedButton = e.Data.GetData(DataFormats.Serializable) as Button;
+        if (droppedButton != null)
+        {
+            Console.WriteLine("Drop: " + droppedButton.Tag); // Debugging
+
+            // Entferne das Element aus seiner aktuellen Position
+            DockPanel.Children.Remove(droppedButton);
+
+            // Bestimme die neue Position
+            Point dropPosition = e.GetPosition(DockPanel);
+            int index = 0;
+
+            foreach (UIElement element in DockPanel.Children)
+            {
+                if (element is Button button && dropPosition.X < button.TranslatePoint(new Point(0, 0), DockPanel).X)
+                {
+                    break;
+                }
+                index++;
+            }
+
+            // Füge das Element an der neuen Position ein
+            DockPanel.Children.Insert(index, droppedButton);
+            dockManager.SaveDockItems();
+            Console.WriteLine("Drop an Position: " + index); // Debugging
+        }
+        else
+        {
+            Console.WriteLine("Kein gültiger Button gedroppt"); // Debugging
+        }
+    }
+    else
+    {
+        Console.WriteLine("Kein gültiges Drop-Format erkannt"); // Debugging
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
         // Event-Handler für das Beenden des Docks
         private void Exit_Click(object sender, RoutedEventArgs e)
