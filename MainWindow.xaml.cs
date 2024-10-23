@@ -23,7 +23,7 @@ namespace MyDockApp
             dockManager.LoadDockItems();
             this.Closing += (s, e) => dockManager.SaveDockItems(); // Einstellungen beim Schließen speichern
 
-            DockPanel.Drop += DockPanel_Drop;
+            // DockPanel.Drop += DockPanel_Drop;
 
             DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
             DockPanel.PreviewMouseMove += DockPanel_MouseMove;
@@ -41,66 +41,55 @@ namespace MyDockApp
             };
         }
 
-private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-{
-    Console.WriteLine("Mouse Down Event ausgelöst"); // Debugging
-    var originalSource = e.OriginalSource as FrameworkElement;
-    while (originalSource != null && !(originalSource is Button))
-    {
-        originalSource = originalSource.Parent as FrameworkElement;
-    }
-
-    if (originalSource is Button button)
-    {
-        dragStartPoint = e.GetPosition(DockPanel);
-        draggedButton = button;
-        Console.WriteLine("Drag Start: " + draggedButton.Tag); // Debugging
-    }
-    else
-    {
-        Console.WriteLine("Kein Button als Quelle gefunden"); // Debugging
-    }
-}
-
-
-
-
-
-
-
-
-
-private void DockPanel_MouseMove(object sender, MouseEventArgs e)
-{
-    Console.WriteLine("Mouse Move Event ausgelöst"); // Debugging
-    if (dragStartPoint.HasValue)
-    {
-        Console.WriteLine("dragStartPoint: " + dragStartPoint.Value); // Debugging
-    }
-    if (draggedButton != null)
-    {
-        Console.WriteLine("draggedButton: " + draggedButton.Tag); // Debugging
-    }
-    if (e.LeftButton == MouseButtonState.Pressed && draggedButton != null && dragStartPoint.HasValue)
-    {
-        Point position = e.GetPosition(DockPanel);
-        Vector diff = dragStartPoint.Value - position;
-
-        Console.WriteLine("Diff X: " + diff.X + ", Diff Y: " + diff.Y); // Debugging
-        if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
-            Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+        private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            Console.WriteLine("Dragging: " + draggedButton.Tag); // Debugging
-            DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
-            dragStartPoint = null;
-            draggedButton = null;
+            Console.WriteLine("Mouse Down Event ausgelöst"); // Debugging
+            var originalSource = e.OriginalSource as FrameworkElement;
+            while (originalSource != null && !(originalSource is Button))
+            {
+                originalSource = originalSource.Parent as FrameworkElement;
+            }
+
+            if (originalSource is Button button)
+            {
+                dragStartPoint = e.GetPosition(DockPanel);
+                draggedButton = button;
+                Console.WriteLine("Drag Start: " + draggedButton.Tag); // Debugging
+            }
+            else
+            {
+                Console.WriteLine("Kein Button als Quelle gefunden"); // Debugging
+            }
         }
-    }
-}
 
 
+        private void DockPanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            Console.WriteLine("Mouse Move Event ausgelöst"); // Debugging
+            if (dragStartPoint.HasValue)
+            {
+                Console.WriteLine("dragStartPoint: " + dragStartPoint.Value); // Debugging
+            }
+            if (draggedButton != null)
+            {
+                Console.WriteLine("draggedButton: " + draggedButton.Tag); // Debugging
+            }
+            if (e.LeftButton == MouseButtonState.Pressed && draggedButton != null && dragStartPoint.HasValue)
+            {
+                Point position = e.GetPosition(DockPanel);
+                Vector diff = dragStartPoint.Value - position;
 
-
+                Console.WriteLine("Diff X: " + diff.X + ", Diff Y: " + diff.Y); // Debugging
+                if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                    Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    Console.WriteLine("Dragging: " + draggedButton.Tag); // Debugging
+                    DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
+                    dragStartPoint = null;
+                    draggedButton = null;
+                }
+            }
+        }
 
 
 
@@ -114,46 +103,61 @@ private void DockPanel_MouseMove(object sender, MouseEventArgs e)
 
 
 
-private void DockPanel_Drop(object sender, DragEventArgs e)
-{
-    if (e.Data.GetDataPresent(DataFormats.Serializable))
-    {
-        Button? droppedButton = e.Data.GetData(DataFormats.Serializable) as Button;
-        if (droppedButton != null)
-        {
-            Console.WriteLine("Drop: " + droppedButton.Tag); // Debugging
+// private void DockPanel_Drop(object sender, DragEventArgs e)
+// {
+//     if (e.Data.GetDataPresent(DataFormats.Serializable))
+//     {
+//         Button? droppedButton = e.Data.GetData(DataFormats.Serializable) as Button;
+//         if (droppedButton != null)
+//         {
+//             Console.WriteLine("Drop: " + droppedButton.Tag); // Debugging
+//             // Entferne das Element aus seiner aktuellen Position
+//             this.DockPanel.Children.Remove(droppedButton);
+//             // Bestimme die neue Position
+//             Point dropPosition = e.GetPosition(this.DockPanel);
+//             double dropCenterX = dropPosition.X;
+//             int newIndex = 0;
+//             bool inserted = false;
+//             foreach (UIElement element in this.DockPanel.Children)
+//             {
+//                 if (element is Button button)
+//                 {
+//                     Point elementPosition = button.TranslatePoint(new Point(0, 0), this.DockPanel);
+//                     double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
+//                     Console.WriteLine($"Element Center: {elementCenterX}, Drop Center: {dropCenterX}"); // Debugging
+//                     if (dropCenterX < elementPosition.X + button.ActualWidth / 2)
+//                     {
+//                         this.DockPanel.Children.Insert(newIndex, droppedButton);
+//                         inserted = true;
+//                         Console.WriteLine("Insert at index: " + newIndex); // Debugging
+//                         break;
+//                     }
+//                 }
+//                 newIndex++;
+//             }
+//             // Wenn das Element noch nicht eingefügt wurde, füge es am Ende hinzu
+//             if (!inserted)
+//             {
+//                 this.DockPanel.Children.Add(droppedButton);
+//                 Console.WriteLine("Added at the end"); // Debugging
+//             }
+//             dockManager.SaveDockItems();
+//             Console.WriteLine("Drop an Position: " + newIndex); // Debugging
+//         }
+//         else
+//         {
+//             Console.WriteLine("Kein gültiger Button gedroppt"); // Debugging
+//         }
+//     }
+//     else
+//     {
+//         Console.WriteLine("Kein gültiges Drop-Format erkannt"); // Debugging
+//     }
+// }
 
-            // Entferne das Element aus seiner aktuellen Position
-            DockPanel.Children.Remove(droppedButton);
 
-            // Bestimme die neue Position
-            Point dropPosition = e.GetPosition(DockPanel);
-            int index = 0;
 
-            foreach (UIElement element in DockPanel.Children)
-            {
-                if (element is Button button && dropPosition.X < button.TranslatePoint(new Point(0, 0), DockPanel).X)
-                {
-                    break;
-                }
-                index++;
-            }
 
-            // Füge das Element an der neuen Position ein
-            DockPanel.Children.Insert(index, droppedButton);
-            dockManager.SaveDockItems();
-            Console.WriteLine("Drop an Position: " + index); // Debugging
-        }
-        else
-        {
-            Console.WriteLine("Kein gültiger Button gedroppt"); // Debugging
-        }
-    }
-    else
-    {
-        Console.WriteLine("Kein gültiges Drop-Format erkannt"); // Debugging
-    }
-}
 
 
 
