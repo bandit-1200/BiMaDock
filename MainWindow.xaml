@@ -6,7 +6,10 @@
         VerticalAlignment="Top" AllowsTransparency="True" Background="Transparent"
         AllowDrop="True">
     <Grid HorizontalAlignment="Center">
-        <StackPanel Orientation="Horizontal" Name="DockPanel" AllowDrop="True" Background="#CCCCCC" HorizontalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Name="DockPanel"
+                    AllowDrop="True" Background="#CCCCCC"
+                    HorizontalAlignment="Center"
+                    MinWidth="60" MinHeight="50">
             <StackPanel.ContextMenu>
                 <ContextMenu x:Name="DockContextMenu">
                     <MenuItem Header="Beenden" Click="Exit_Click"/>

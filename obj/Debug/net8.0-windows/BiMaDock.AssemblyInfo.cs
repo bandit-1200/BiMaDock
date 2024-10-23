@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BiMaDock")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bf8b94540e5f98164a6d89153f294d71cb1ff36e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cd8489c49df9534f351ccca826ad702215fa6bc2")]
 [assembly: System.Reflection.AssemblyProductAttribute("BiMaDock")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BiMaDock")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
