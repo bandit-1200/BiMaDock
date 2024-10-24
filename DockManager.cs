@@ -302,12 +302,20 @@ private void AddDockItemAt(DockItem item, int index)
     };
 
     // Click-Event-Handler hinzufügen
-    button.Click += (s, e) =>
+button.Click += (s, e) =>
+{
+    string? filePath = button.Tag as string;
+    if (filePath != null)
     {
-        string filePath = button.Tag as string;
         Console.WriteLine("Button Click: " + filePath); // Debugging
         mainWindow.OpenFile(filePath); // Aufruf von OpenFile im MainWindow
-    };
+    }
+    else
+    {
+        Console.WriteLine("filePath ist null"); // Debugging
+    }
+};
+
 
     dockPanel.Children.Insert(index, button);
     Console.WriteLine($"Element eingefügt an Position: {index}"); // Debugging
