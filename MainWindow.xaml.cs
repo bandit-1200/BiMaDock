@@ -29,6 +29,15 @@ namespace MyDockApp
             DockPanel.PreviewMouseMove += DockPanel_MouseMove;
             DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
 
+            // Fenster in der Mitte des Bildschirms positionieren
+            this.Loaded += (s, e) =>
+            {
+                var screenWidth = SystemParameters.PrimaryScreenWidth;
+                var screenHeight = SystemParameters.PrimaryScreenHeight;
+                this.Left = (screenWidth / 2) - (this.Width / 2);
+                this.Top = 0; // Fenster oben auf dem Bildschirm
+            };
+
 
 
             // Kontextmenü anzeigen beim Rechtsklick auf das DockPanel
@@ -103,57 +112,57 @@ namespace MyDockApp
 
 
 
-// private void DockPanel_Drop(object sender, DragEventArgs e)
-// {
-//     if (e.Data.GetDataPresent(DataFormats.Serializable))
-//     {
-//         Button? droppedButton = e.Data.GetData(DataFormats.Serializable) as Button;
-//         if (droppedButton != null)
-//         {
-//             Console.WriteLine("Drop: " + droppedButton.Tag); // Debugging
-//             // Entferne das Element aus seiner aktuellen Position
-//             this.DockPanel.Children.Remove(droppedButton);
-//             // Bestimme die neue Position
-//             Point dropPosition = e.GetPosition(this.DockPanel);
-//             double dropCenterX = dropPosition.X;
-//             int newIndex = 0;
-//             bool inserted = false;
-//             foreach (UIElement element in this.DockPanel.Children)
-//             {
-//                 if (element is Button button)
-//                 {
-//                     Point elementPosition = button.TranslatePoint(new Point(0, 0), this.DockPanel);
-//                     double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
-//                     Console.WriteLine($"Element Center: {elementCenterX}, Drop Center: {dropCenterX}"); // Debugging
-//                     if (dropCenterX < elementPosition.X + button.ActualWidth / 2)
-//                     {
-//                         this.DockPanel.Children.Insert(newIndex, droppedButton);
-//                         inserted = true;
-//                         Console.WriteLine("Insert at index: " + newIndex); // Debugging
-//                         break;
-//                     }
-//                 }
-//                 newIndex++;
-//             }
-//             // Wenn das Element noch nicht eingefügt wurde, füge es am Ende hinzu
-//             if (!inserted)
-//             {
-//                 this.DockPanel.Children.Add(droppedButton);
-//                 Console.WriteLine("Added at the end"); // Debugging
-//             }
-//             dockManager.SaveDockItems();
-//             Console.WriteLine("Drop an Position: " + newIndex); // Debugging
-//         }
-//         else
-//         {
-//             Console.WriteLine("Kein gültiger Button gedroppt"); // Debugging
-//         }
-//     }
-//     else
-//     {
-//         Console.WriteLine("Kein gültiges Drop-Format erkannt"); // Debugging
-//     }
-// }
+        // private void DockPanel_Drop(object sender, DragEventArgs e)
+        // {
+        //     if (e.Data.GetDataPresent(DataFormats.Serializable))
+        //     {
+        //         Button? droppedButton = e.Data.GetData(DataFormats.Serializable) as Button;
+        //         if (droppedButton != null)
+        //         {
+        //             Console.WriteLine("Drop: " + droppedButton.Tag); // Debugging
+        //             // Entferne das Element aus seiner aktuellen Position
+        //             this.DockPanel.Children.Remove(droppedButton);
+        //             // Bestimme die neue Position
+        //             Point dropPosition = e.GetPosition(this.DockPanel);
+        //             double dropCenterX = dropPosition.X;
+        //             int newIndex = 0;
+        //             bool inserted = false;
+        //             foreach (UIElement element in this.DockPanel.Children)
+        //             {
+        //                 if (element is Button button)
+        //                 {
+        //                     Point elementPosition = button.TranslatePoint(new Point(0, 0), this.DockPanel);
+        //                     double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
+        //                     Console.WriteLine($"Element Center: {elementCenterX}, Drop Center: {dropCenterX}"); // Debugging
+        //                     if (dropCenterX < elementPosition.X + button.ActualWidth / 2)
+        //                     {
+        //                         this.DockPanel.Children.Insert(newIndex, droppedButton);
+        //                         inserted = true;
+        //                         Console.WriteLine("Insert at index: " + newIndex); // Debugging
+        //                         break;
+        //                     }
+        //                 }
+        //                 newIndex++;
+        //             }
+        //             // Wenn das Element noch nicht eingefügt wurde, füge es am Ende hinzu
+        //             if (!inserted)
+        //             {
+        //                 this.DockPanel.Children.Add(droppedButton);
+        //                 Console.WriteLine("Added at the end"); // Debugging
+        //             }
+        //             dockManager.SaveDockItems();
+        //             Console.WriteLine("Drop an Position: " + newIndex); // Debugging
+        //         }
+        //         else
+        //         {
+        //             Console.WriteLine("Kein gültiger Button gedroppt"); // Debugging
+        //         }
+        //     }
+        //     else
+        //     {
+        //         Console.WriteLine("Kein gültiges Drop-Format erkannt"); // Debugging
+        //     }
+        // }
 
 
 
