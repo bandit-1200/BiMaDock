@@ -3,52 +3,100 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace MyDockApp
 {
     public partial class MainWindow : Window
     {
         private DockManager dockManager;
-        // private Point? dragStartPoint = null;
-        // private Button? draggedButton = null;
+        private bool dockVisible = false;
         private Point? dragStartPoint = null;
         private Button? draggedButton = null;
 
+public MainWindow()
+{
+    InitializeComponent();
+    AllowDrop = true;
+    dockManager = new DockManager(DockPanel, this);
+    dockManager.LoadDockItems();
+    this.Closing += (s, e) => dockManager.SaveDockItems();
+    DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
+    DockPanel.PreviewMouseMove += DockPanel_MouseMove;
+    DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
 
-        public MainWindow()
-        {
-            InitializeComponent();
-            AllowDrop = true;
-            dockManager = new DockManager(DockPanel, this); // Aktualisieren, um das Hauptfenster zu übergeben
-            dockManager.LoadDockItems();
-            this.Closing += (s, e) => dockManager.SaveDockItems(); // Einstellungen beim Schließen speichern
+    this.Loaded += (s, e) =>
+    {
+        var screenWidth = SystemParameters.PrimaryScreenWidth;
+        var screenHeight = SystemParameters.PrimaryScreenHeight;
+        this.Left = (screenWidth / 2) - (this.Width / 2);
+        this.Top = -this.Height + 20;
 
-            // DockPanel.Drop += DockPanel_Drop;
+        // Mausbewegungs-Event hinzufügen
+        this.MouseMove += CheckMousePosition;
+        DockPanel.MouseEnter += DockPanel_MouseEnter;  // Hinzufügen von MouseEnter- und MouseLeave-Events
+        DockPanel.MouseLeave += DockPanel_MouseLeave;
+    };
 
-            DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
-            DockPanel.PreviewMouseMove += DockPanel_MouseMove;
-            DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
+    DockPanel.MouseRightButtonDown += (s, e) =>
+    {
+        OpenMenuItem.Visibility = Visibility.Collapsed;
+        DeleteMenuItem.Visibility = Visibility.Collapsed;
+        EditMenuItem.Visibility = Visibility.Collapsed;
+        DockContextMenu.IsOpen = true;
+    };
+}
 
-            // Fenster in der Mitte des Bildschirms positionieren
-            this.Loaded += (s, e) =>
-            {
-                var screenWidth = SystemParameters.PrimaryScreenWidth;
-                var screenHeight = SystemParameters.PrimaryScreenHeight;
-                this.Left = (screenWidth / 2) - (this.Width / 2);
-                this.Top = 0; // Fenster oben auf dem Bildschirm
-            };
+private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
+{
+    ShowDock();
+}
+
+private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
+{
+    HideDock();
+}
+
+private void CheckMousePosition(object sender, MouseEventArgs e)
+{
+    var mousePos = Mouse.GetPosition(this);
+    var screenPos = PointToScreen(mousePos);
+    Console.WriteLine($"Mouse Pos: X={screenPos.X}, Y={screenPos.Y}"); // Debug-Ausgabe der Mausposition
+    if (screenPos.Y <= 5 && !dockVisible)
+    {
+        Console.WriteLine("Condition met: ShowDock"); // Debug-Ausgabe
+        ShowDock();
+    }
+}
+
+private void ShowDock()
+{
+    Console.WriteLine("ShowDock aufgerufen"); // Debug-Ausgabe
+    dockVisible = true;
+    var slideAnimation = new DoubleAnimation
+    {
+        From = -this.Height + 20,
+        To = 0,
+        Duration = new Duration(TimeSpan.FromMilliseconds(500))
+    };
+    this.BeginAnimation(Window.TopProperty, slideAnimation);
+}
+
+private void HideDock()
+{
+    Console.WriteLine("HideDock aufgerufen"); // Debug-Ausgabe
+    dockVisible = false;
+    var slideAnimation = new DoubleAnimation
+    {
+        From = 0,
+        To = -this.Height + 20,
+        Duration = new Duration(TimeSpan.FromMilliseconds(500))
+    };
+    this.BeginAnimation(Window.TopProperty, slideAnimation);
+}
 
 
-
-            // Kontextmenü anzeigen beim Rechtsklick auf das DockPanel
-            DockPanel.MouseRightButtonDown += (s, e) =>
-            {
-                OpenMenuItem.Visibility = Visibility.Collapsed;
-                DeleteMenuItem.Visibility = Visibility.Collapsed;
-                EditMenuItem.Visibility = Visibility.Collapsed;
-                DockContextMenu.IsOpen = true;
-            };
-        }
 
         private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -58,7 +106,6 @@ namespace MyDockApp
             {
                 originalSource = originalSource.Parent as FrameworkElement;
             }
-
             if (originalSource is Button button)
             {
                 dragStartPoint = e.GetPosition(DockPanel);
@@ -70,7 +117,6 @@ namespace MyDockApp
                 Console.WriteLine("Kein Button als Quelle gefunden"); // Debugging
             }
         }
-
 
         private void DockPanel_MouseMove(object sender, MouseEventArgs e)
         {
@@ -87,7 +133,6 @@ namespace MyDockApp
             {
                 Point position = e.GetPosition(DockPanel);
                 Vector diff = dragStartPoint.Value - position;
-
                 Console.WriteLine("Diff X: " + diff.X + ", Diff Y: " + diff.Y); // Debugging
                 if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                     Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
@@ -100,9 +145,6 @@ namespace MyDockApp
             }
         }
 
-
-
-
         private void DockPanel_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             dragStartPoint = null;
@@ -110,82 +152,11 @@ namespace MyDockApp
             Console.WriteLine("Drag End"); // Debugging
         }
 
-
-
-        // private void DockPanel_Drop(object sender, DragEventArgs e)
-        // {
-        //     if (e.Data.GetDataPresent(DataFormats.Serializable))
-        //     {
-        //         Button? droppedButton = e.Data.GetData(DataFormats.Serializable) as Button;
-        //         if (droppedButton != null)
-        //         {
-        //             Console.WriteLine("Drop: " + droppedButton.Tag); // Debugging
-        //             // Entferne das Element aus seiner aktuellen Position
-        //             this.DockPanel.Children.Remove(droppedButton);
-        //             // Bestimme die neue Position
-        //             Point dropPosition = e.GetPosition(this.DockPanel);
-        //             double dropCenterX = dropPosition.X;
-        //             int newIndex = 0;
-        //             bool inserted = false;
-        //             foreach (UIElement element in this.DockPanel.Children)
-        //             {
-        //                 if (element is Button button)
-        //                 {
-        //                     Point elementPosition = button.TranslatePoint(new Point(0, 0), this.DockPanel);
-        //                     double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
-        //                     Console.WriteLine($"Element Center: {elementCenterX}, Drop Center: {dropCenterX}"); // Debugging
-        //                     if (dropCenterX < elementPosition.X + button.ActualWidth / 2)
-        //                     {
-        //                         this.DockPanel.Children.Insert(newIndex, droppedButton);
-        //                         inserted = true;
-        //                         Console.WriteLine("Insert at index: " + newIndex); // Debugging
-        //                         break;
-        //                     }
-        //                 }
-        //                 newIndex++;
-        //             }
-        //             // Wenn das Element noch nicht eingefügt wurde, füge es am Ende hinzu
-        //             if (!inserted)
-        //             {
-        //                 this.DockPanel.Children.Add(droppedButton);
-        //                 Console.WriteLine("Added at the end"); // Debugging
-        //             }
-        //             dockManager.SaveDockItems();
-        //             Console.WriteLine("Drop an Position: " + newIndex); // Debugging
-        //         }
-        //         else
-        //         {
-        //             Console.WriteLine("Kein gültiger Button gedroppt"); // Debugging
-        //         }
-        //     }
-        //     else
-        //     {
-        //         Console.WriteLine("Kein gültiges Drop-Format erkannt"); // Debugging
-        //     }
-        // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // Event-Handler für das Beenden des Docks
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
 
-        // Platzhalter-Event-Handler für elementspezifische Aktionen
         private void Open_Click(object sender, RoutedEventArgs e)
         {
             if (DockContextMenu.PlacementTarget is Button button)
@@ -206,7 +177,6 @@ namespace MyDockApp
             }
         }
 
-        // Methode zum Öffnen der Datei
         public void OpenFile(string filePath)
         {
             try
@@ -220,8 +190,6 @@ namespace MyDockApp
             }
         }
 
-        // Platzhalter für weitere Methoden
-        // Event-Handler für das Löschen eines Dock-Elements
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
             if (DockContextMenu.PlacementTarget is Button button && button.Tag is string filePath)
@@ -231,29 +199,22 @@ namespace MyDockApp
             }
         }
 
-
-        // Event-Handler für das Bearbeiten der Eigenschaften eines Dock-Elements
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
             if (DockContextMenu.PlacementTarget is Button button && button.Tag is string filePath)
             {
-                // Fenster zum Bearbeiten der Eigenschaften öffnen
                 EditPropertiesWindow editWindow = new EditPropertiesWindow
                 {
                     Owner = this,
                     NameTextBox = { Text = System.IO.Path.GetFileNameWithoutExtension(filePath) },
                     PathTextBox = { Text = filePath }
                 };
-
                 if (editWindow.ShowDialog() == true)
                 {
-                    // Änderungen übernehmen und Dock-Element aktualisieren
                     string newName = editWindow.NameTextBox.Text;
                     string newPath = editWindow.PathTextBox.Text;
-
                     if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
                     {
-                        // Symbol beibehalten
                         var icon = IconHelper.GetIcon(newPath);
                         var image = new Image
                         {
@@ -277,16 +238,12 @@ namespace MyDockApp
                         };
                         stackPanel.Children.Add(image);
                         stackPanel.Children.Add(textBlock);
-
-                        button.Content = stackPanel; // Aktualisieren des Inhalts des Buttons
-                        button.Tag = newPath; // Pfad im Tag des Buttons aktualisieren
-                        dockManager.SaveDockItems(); // Änderungen speichern
+                        button.Content = stackPanel;
+                        button.Tag = newPath;
+                        dockManager.SaveDockItems();
                     }
                 }
             }
         }
-
-
-
     }
 }
