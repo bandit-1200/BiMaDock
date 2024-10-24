@@ -32,7 +32,7 @@ public MainWindow()
     DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
     DockPanel.PreviewMouseMove += DockPanel_MouseMove;
     DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
-    DockPanel.Drop += dockManager.DockPanel_Drop; // Drop-Ereignis für das Dock-Panel hinzufügen
+    // DockPanel.Drop += dockManager.DockPanel_Drop; // Drop-Ereignis für das Dock-Panel hinzufügen
 
     this.Loaded += (s, e) =>
     {
