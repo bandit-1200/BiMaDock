@@ -58,6 +58,11 @@ public MainWindow()
         DeleteMenuItem.Visibility = Visibility.Collapsed;
         EditMenuItem.Visibility = Visibility.Collapsed;
         DockContextMenu.IsOpen = true;
+            if (!DockContextMenu.IsOpen)
+    {
+        ShowDock(); // Dock sichtbar halten
+    }
+        
     };
 }
 
@@ -77,7 +82,7 @@ private void CheckMousePosition(object sender, MouseEventArgs e)
     else if (screenPos.Y > this.Height + 150 && dockVisible && !isDragging) // Großzügigerer Abstand für das Ausblenden
     {
         Console.WriteLine("Condition met: HideDock"); // Debug-Ausgabe
-        HideDock();
+        // HideDock();
     }
     else
     {
@@ -102,7 +107,13 @@ public void ShowDock()
         };
         this.BeginAnimation(Window.TopProperty, slideAnimation);
     }
+    else
+    {
+        Console.WriteLine("Dock ist bereits sichtbar, keine Animation"); // Debugging
+    }
 }
+
+
 
 public void HideDock()
 {
@@ -225,7 +236,7 @@ private void DockPanel_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     var screenPos = PointToScreen(mousePos);
     if (screenPos.Y > this.Height + 10)
     {
-        HideDock();
+        // HideDock();
     }
 }
 
@@ -242,9 +253,9 @@ private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
 
 private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
 {
-    if (!isDragging)
+   if (!isDragging && !DockContextMenu.IsOpen)
     {
-        HideDock();
+        // HideDock();
     }
 }
 

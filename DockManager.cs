@@ -287,6 +287,10 @@ private void AddDockItemAt(DockItem item, int index)
         mainWindow.EditMenuItem.Visibility = Visibility.Visible;
         mainWindow.DockContextMenu.PlacementTarget = button;
         mainWindow.DockContextMenu.IsOpen = true;
+           if (!mainWindow.DockContextMenu.IsOpen)
+    {
+        mainWindow.ShowDock(); // Dock sichtbar halten
+    }
     };
 
     // Event-Handler für Drag-and-Drop
