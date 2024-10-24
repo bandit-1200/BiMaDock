@@ -31,7 +31,7 @@ public MainWindow()
         var screenWidth = SystemParameters.PrimaryScreenWidth;
         var screenHeight = SystemParameters.PrimaryScreenHeight;
         this.Left = (screenWidth / 2) - (this.Width / 2);
-        this.Top = -this.Height + 20;
+        this.Top = -this.Height + 5; // Fenster fast unsichtbar positionieren
 
         // Mausbewegungs-Event hinzufügen
         this.MouseMove += CheckMousePosition;
@@ -70,13 +70,14 @@ private void CheckMousePosition(object sender, MouseEventArgs e)
     }
 }
 
+
 private void ShowDock()
 {
     Console.WriteLine("ShowDock aufgerufen"); // Debug-Ausgabe
     dockVisible = true;
     var slideAnimation = new DoubleAnimation
     {
-        From = -this.Height + 20,
+        From = -this.Height + 5,
         To = 0,
         Duration = new Duration(TimeSpan.FromMilliseconds(500))
     };
@@ -90,7 +91,7 @@ private void HideDock()
     var slideAnimation = new DoubleAnimation
     {
         From = 0,
-        To = -this.Height + 20,
+        To = -this.Height + 5,
         Duration = new Duration(TimeSpan.FromMilliseconds(500))
     };
     this.BeginAnimation(Window.TopProperty, slideAnimation);
