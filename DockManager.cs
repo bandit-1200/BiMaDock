@@ -36,7 +36,6 @@ public class DockManager
         }
     }
 
-
 private void DockPanel_MouseMove(object sender, MouseEventArgs e)
 {
     if (dragStartPoint.HasValue && draggedButton != null)
@@ -49,6 +48,8 @@ private void DockPanel_MouseMove(object sender, MouseEventArgs e)
              Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
         {
             DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
+            dragStartPoint = null;
+            draggedButton = null;
         }
     }
     else
@@ -100,7 +101,7 @@ private void DockPanel_MouseMove(object sender, MouseEventArgs e)
     }
 }
 
-  
+
     public void LoadDockItems()
     {
         var items = SettingsManager.LoadSettings();
@@ -133,9 +134,49 @@ private void DockPanel_MouseMove(object sender, MouseEventArgs e)
     }
 
 
- public void DockPanel_Drop(object sender, DragEventArgs e)
+public void DockPanel_Drop(object sender, DragEventArgs e)
 {
-    if (e.Data.GetDataPresent(DataFormats.FileDrop))
+    if (e.Data.GetDataPresent(DataFormats.Serializable))
+    {
+        Button? droppedButton = e.Data.GetData(DataFormats.Serializable) as Button;
+        if (droppedButton != null)
+        {
+            Console.WriteLine("Drop: " + droppedButton.Tag); // Debugging
+            dockPanel.Children.Remove(droppedButton);
+            Point dropPosition = e.GetPosition(dockPanel);
+            double dropCenterX = dropPosition.X;
+            int newIndex = 0;
+            bool inserted = false;
+            for (int i = 0; i < dockPanel.Children.Count; i++)
+            {
+                if (dockPanel.Children[i] is Button button)
+                {
+                    Point elementPosition = button.TranslatePoint(new Point(0, 0), dockPanel);
+                    double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
+                    if (dropCenterX < elementCenterX)
+                    {
+                        dockPanel.Children.Insert(i, droppedButton);
+                        inserted = true;
+                        Console.WriteLine("Insert at index: " + i); // Debugging
+                        break;
+                    }
+                }
+                newIndex++;
+            }
+            if (!inserted)
+            {
+                dockPanel.Children.Add(droppedButton);
+                Console.WriteLine("Added at the end"); // Debugging
+            }
+            SaveDockItems();
+            Console.WriteLine("Drop an Position: " + newIndex); // Debugging
+        }
+        else
+        {
+            Console.WriteLine("Kein gültiger Button gedroppt"); // Debugging
+        }
+    }
+    else if (e.Data.GetDataPresent(DataFormats.FileDrop))
     {
         var files = (string[])e.Data.GetData(DataFormats.FileDrop);
         foreach (var file in files)
@@ -145,38 +186,30 @@ private void DockPanel_MouseMove(object sender, MouseEventArgs e)
                 FilePath = file ?? string.Empty,
                 DisplayName = System.IO.Path.GetFileNameWithoutExtension(file) ?? string.Empty,
             };
-
-            if (!dockPanel.Children.OfType<Button>().Any(b => b.Tag as string == file))
+            Point dropPosition = e.GetPosition(dockPanel);
+            double dropCenterX = dropPosition.X;
+            int newIndex = 0;
+            bool inserted = false;
+            for (int i = 0; i < dockPanel.Children.Count; i++)
             {
-                Point dropPosition = e.GetPosition(dockPanel);
-                double dropCenterX = dropPosition.X;
-                int newIndex = 0;
-                bool inserted = false;
-                for (int i = 0; i < dockPanel.Children.Count; i++)
+                if (dockPanel.Children[i] is Button button)
                 {
-                    if (dockPanel.Children[i] is Button button)
+                    Point elementPosition = button.TranslatePoint(new Point(0, 0), dockPanel);
+                    double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
+                    if (dropCenterX < elementCenterX)
                     {
-                        Point elementPosition = button.TranslatePoint(new Point(0, 0), dockPanel);
-                        double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
-                        if (dropCenterX < elementCenterX)
-                        {
-                            AddDockItemAt(dockItem, i);
-                            inserted = true;
-                            break;
-                        }
+                        AddDockItemAt(dockItem, i);
+                        inserted = true;
+                        break;
                     }
-                    newIndex++;
                 }
-                if (!inserted)
-                {
-                    AddDockItemAt(dockItem, newIndex);
-                }
-                Console.WriteLine("Externe Dateien abgelegt"); // Debugging
+                newIndex++;
             }
-            else
+            if (!inserted)
             {
-                Console.WriteLine("Element bereits vorhanden: " + file); // Debugging
+                AddDockItemAt(dockItem, newIndex);
             }
+            Console.WriteLine("Externe Dateien abgelegt"); // Debugging
         }
     }
     else
@@ -186,6 +219,7 @@ private void DockPanel_MouseMove(object sender, MouseEventArgs e)
 
     mainWindow.SetDragging(false); // Dragging-Flag zurücksetzen
 }
+
 
     public void RemoveDockItem(Button button)
     {

@@ -118,11 +118,6 @@ public void HideDock()
     }
 }
 
-
-
-
-
-
 private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 {
     Console.WriteLine("Mouse Down Event ausgelöst"); // Debugging
@@ -148,30 +143,71 @@ private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e
 
 private void DockPanel_MouseMove(object sender, MouseEventArgs e)
 {
-    Console.WriteLine("Mouse Move Event ausgelöst"); // Debugging
-    if (dragStartPoint.HasValue)
-    {
-        Console.WriteLine("dragStartPoint: " + dragStartPoint.Value); // Debugging
-    }
-    if (draggedButton != null)
-    {
-        Console.WriteLine("draggedButton: " + draggedButton.Tag); // Debugging
-    }
-    if (e.LeftButton == MouseButtonState.Pressed && draggedButton != null && dragStartPoint.HasValue)
+    if (dragStartPoint.HasValue && draggedButton != null)
     {
         Point position = e.GetPosition(DockPanel);
         Vector diff = dragStartPoint.Value - position;
-        Console.WriteLine("Diff X: " + diff.X + ", Diff Y: " + diff.Y); // Debugging
-        if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
-            Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+
+        if (e.LeftButton == MouseButtonState.Pressed &&
+            (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+             Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
         {
-            Console.WriteLine("Dragging: " + draggedButton.Tag); // Debugging
+            Console.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
             DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
             dragStartPoint = null;
             draggedButton = null;
         }
     }
+    else
+    {
+        Point mousePosition = e.GetPosition(DockPanel);
+        bool isOverElement = false;
+        UIElement? previousElement = null;
+        UIElement? nextElement = null;
+
+        for (int i = 0; i < DockPanel.Children.Count; i++)
+        {
+            if (DockPanel.Children[i] is Button button)
+            {
+                Rect elementRect = new Rect(button.TranslatePoint(new Point(0, 0), DockPanel), button.RenderSize);
+                if (elementRect.Contains(mousePosition))
+                {
+                    Console.WriteLine($"Maus über Element: {button.Tag}, Position: {mousePosition}"); // Debugging
+                    isOverElement = true;
+                    break;
+                }
+                else if (mousePosition.X < elementRect.Left)
+                {
+                    previousElement = (i > 0) ? DockPanel.Children[i - 1] : null;
+                    nextElement = DockPanel.Children[i];
+                    break;
+                }
+            }
+        }
+
+        if (!isOverElement)
+        {
+            if (previousElement is Button prevButton && nextElement is Button nextButton)
+            {
+                Console.WriteLine($"Maus zwischen Elementen: {prevButton.Tag} und {nextButton.Tag}, Position: {mousePosition}"); // Debugging
+            }
+            else if (nextElement is Button onlyNextButton)
+            {
+                Console.WriteLine($"Maus vor dem ersten Element: {onlyNextButton.Tag}, Position: {mousePosition}"); // Debugging
+            }
+            else if (previousElement is Button onlyPrevButton)
+            {
+                Console.WriteLine($"Maus nach dem letzten Element: {onlyPrevButton.Tag}, Position: {mousePosition}"); // Debugging
+            }
+            else
+            {
+                Console.WriteLine($"Maus über Dock ohne Element, Position: {mousePosition}"); // Debugging
+            }
+        }
+    }
 }
+
+
 
 
 
@@ -189,31 +225,7 @@ private void DockPanel_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         HideDock();
     }
-
-    // Überprüfen, ob ein Element geöffnet werden soll
-    if (e.OriginalSource is FrameworkElement originalSource)
-    {
-        while (originalSource != null && !(originalSource is Button))
-        {
-            originalSource = originalSource.Parent as FrameworkElement;
-        }
-        if (originalSource is Button button && button.Tag is string filePath)
-        {
-            Console.WriteLine("Element ausgewählt: " + filePath); // Debugging
-            OpenFile(filePath);
-        }
-        else
-        {
-            Console.WriteLine("Kein gültiger Button oder Dateipfad"); // Debugging
-        }
-    }
-    else
-    {
-        Console.WriteLine("Kein gültiges FrameworkElement"); // Debugging
-    }
 }
-
-
 
 
 
