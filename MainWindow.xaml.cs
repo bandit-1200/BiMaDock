@@ -61,6 +61,8 @@ public MainWindow()
     };
 }
 
+
+
 private void CheckMousePosition(object sender, MouseEventArgs e)
 {
     var mousePos = Mouse.GetPosition(this);
@@ -272,7 +274,6 @@ private void Open_Click(object sender, RoutedEventArgs e)
         Console.WriteLine("PlacementTarget ist kein Button"); // Debug-Ausgabe bei Fehler
     }
 }
-
 
 
 

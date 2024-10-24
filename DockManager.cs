@@ -244,68 +244,77 @@ public void DockPanel_Drop(object sender, DragEventArgs e)
             Console.WriteLine("Element entfernt und Einstellungen gespeichert."); // Debug-Ausgabe
         }
     }
-
-    private void AddDockItemAt(DockItem item, int index)
+private void AddDockItemAt(DockItem item, int index)
+{
+    var icon = IconHelper.GetIcon(item.FilePath);
+    var image = new Image
     {
-        var icon = IconHelper.GetIcon(item.FilePath);
-        var image = new Image
-        {
-            Source = icon,
-            Width = 32,
-            Height = 32,
-            Margin = new Thickness(5)
-        };
-        var textBlock = new TextBlock
-        {
-            Text = item.DisplayName,
-            TextAlignment = TextAlignment.Center,
-            TextWrapping = TextWrapping.Wrap,
-            Width = 60,
-            Margin = new Thickness(5)
-        };
-        var stackPanel = new StackPanel
-        {
-            Orientation = Orientation.Vertical,
-            Width = 70
-        };
-        stackPanel.Children.Add(image);
-        stackPanel.Children.Add(textBlock);
-        var button = new Button
-        {
-            Content = stackPanel,
-            Tag = item.FilePath,
-            Margin = new Thickness(5),
-            Width = 70
-        };
+        Source = icon,
+        Width = 32,
+        Height = 32,
+        Margin = new Thickness(5)
+    };
+    var textBlock = new TextBlock
+    {
+        Text = item.DisplayName,
+        TextAlignment = TextAlignment.Center,
+        TextWrapping = TextWrapping.Wrap,
+        Width = 60,
+        Margin = new Thickness(5)
+    };
+    var stackPanel = new StackPanel
+    {
+        Orientation = Orientation.Vertical,
+        Width = 70
+    };
+    stackPanel.Children.Add(image);
+    stackPanel.Children.Add(textBlock);
+    var button = new Button
+    {
+        Content = stackPanel,
+        Tag = item.FilePath,
+        Margin = new Thickness(5),
+        Width = 70
+    };
 
-        // Kontextmenü-Event-Handler hinzufügen
-        button.MouseRightButtonDown += (s, e) =>
-        {
-            Console.WriteLine("Rechtsklick auf Element: " + item.DisplayName); // Debugging
-            e.Handled = true; // Ereignis als verarbeitet markieren
-            mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
-            mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
-            mainWindow.EditMenuItem.Visibility = Visibility.Visible;
-            mainWindow.DockContextMenu.PlacementTarget = button;
-            mainWindow.DockContextMenu.IsOpen = true;
-        };
+    // Kontextmenü-Event-Handler hinzufügen
+    button.MouseRightButtonDown += (s, e) =>
+    {
+        Console.WriteLine("Rechtsklick auf Element: " + item.DisplayName); // Debugging
+        e.Handled = true; // Ereignis als verarbeitet markieren
+        mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
+        mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
+        mainWindow.EditMenuItem.Visibility = Visibility.Visible;
+        mainWindow.DockContextMenu.PlacementTarget = button;
+        mainWindow.DockContextMenu.IsOpen = true;
+    };
 
-        // Event-Handler für Drag-and-Drop
-        button.PreviewMouseLeftButtonDown += (s, e) =>
+    // Event-Handler für Drag-and-Drop
+    button.PreviewMouseLeftButtonDown += (s, e) =>
+    {
+        Console.WriteLine("Button Mouse Down Event ausgelöst"); // Debugging
+        dragStartPoint = e.GetPosition(dockPanel);
+        draggedButton = button;
+        if (draggedButton != null)
         {
-            Console.WriteLine("Button Mouse Down Event ausgelöst"); // Debugging
-            dragStartPoint = e.GetPosition(dockPanel);
-            draggedButton = button;
-            if (draggedButton != null)
-            {
-                Console.WriteLine("Drag Start: " + draggedButton.Tag); // Debugging
-            }
-        };
+            Console.WriteLine("Drag Start: " + draggedButton.Tag); // Debugging
+        }
+    };
 
-        dockPanel.Children.Insert(index, button);
-        Console.WriteLine($"Element eingefügt an Position: {index}"); // Debugging
-        SaveDockItems();
-    }
+    // Click-Event-Handler hinzufügen
+    button.Click += (s, e) =>
+    {
+        string filePath = button.Tag as string;
+        Console.WriteLine("Button Click: " + filePath); // Debugging
+        mainWindow.OpenFile(filePath); // Aufruf von OpenFile im MainWindow
+    };
+
+    dockPanel.Children.Insert(index, button);
+    Console.WriteLine($"Element eingefügt an Position: {index}"); // Debugging
+    SaveDockItems();
+}
+
+
 
     public void AddDockItem(DockItem item)
     {
