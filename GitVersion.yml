@@ -5,4 +5,3 @@ tag-prefix: '[vV]'
 branches:
   main:
     increment: Patch  # Nur die letzte Stelle der Version erhöhen
-    tag: ''
