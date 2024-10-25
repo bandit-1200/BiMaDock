@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Stellt sicher, dass die vollständige Historie geklont wird
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
@@ -30,12 +30,15 @@ jobs:
 
       - name: Read Version
         id: read_version
+        shell: bash
         run: |
-          $version = (ConvertFrom-Json (Get-Content -Raw gitversion.json)).SemVer
-          echo "VERSION=$version" >> $GITHUB_ENV
+          VERSION=$(jq -r .SemVer gitversion.json)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Display Version
-        run: echo "Generated version: ${{ env.VERSION }}"
+        shell: bash
+        run: |
+          echo "Generated version: $VERSION"
 
       - name: Build project
         run: dotnet build --configuration Release
