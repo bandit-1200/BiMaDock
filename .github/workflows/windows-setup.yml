@@ -26,12 +26,16 @@ jobs:
       - name: Generate Version
         id: gitversion
         run: |
-          dotnet-gitversion /output buildserver /nofetch
-          echo "VERSION=$(gitversion.SemVer)" >> $GITHUB_ENV
+          dotnet-gitversion /output json /outputfile gitversion.json
+
+      - name: Read Version
+        id: read_version
+        run: |
+          $version = (ConvertFrom-Json (Get-Content -Raw gitversion.json)).SemVer
+          echo "VERSION=$version" >> $GITHUB_ENV
 
       - name: Display Version
-        run: |
-          echo "Generated version: ${{ env.VERSION }}"
+        run: echo "Generated version: ${{ env.VERSION }}"
 
       - name: Build project
         run: dotnet build --configuration Release
