@@ -2,8 +2,8 @@ name: Windows Setup
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
@@ -51,10 +49,25 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: Create Setup
-        run: dotnet publish -c Release -o ./publish
+        run: |
+          dotnet publish -c Release -o ./publish
+          Compress-Archive -Path ./publish/* -DestinationPath ./windows-setup.zip
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: "Automated release of version ${{ env.VERSION }}"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Setup
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-release-asset@v1
         with:
-          name: windows-setup
-          path: ./publish
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./windows-setup.zip
+          asset_name: windows-setup.zip
+          asset_content_type: application/zip
