@@ -27,7 +27,7 @@ jobs:
         id: gitversion
         run: |
           dotnet-gitversion /output json /outputfile gitversion.json
-          jq . gitversion.json
+          cat gitversion.json
 
       - name: Read and Display Version
         id: read_version
