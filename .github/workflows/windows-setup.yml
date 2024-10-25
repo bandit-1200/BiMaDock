@@ -19,7 +19,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Install Inno Setup
-        run: choco install innosetup
+        run: choco install innosetup --yes
 
       - name: Install GitVersion
         run: dotnet tool install --global GitVersion.Tool
@@ -32,7 +32,7 @@ jobs:
         id: read_version
         run: |
           $version = (ConvertFrom-Json (Get-Content -Raw gitversion.json)).SemVer
-          Write-Host "VERSION=$version"
+          echo "VERSION=$version" >> $GITHUB_ENV
 
       - name: Build project
         run: dotnet build --configuration Release
@@ -59,9 +59,9 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          body: Automated release of version ${{ github.ref_name }}
+          tag_name: ${{ steps.gitversion.outputs.version }}
+          release_name: Release ${{ steps.gitversion.outputs.version }}
+          body: Automated release of version ${{ steps.gitversion.outputs.version }}
           draft: false
           prerelease: false
         env:
