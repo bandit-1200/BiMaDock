@@ -1,0 +1,95 @@
+# Build Folders
+bin/
+obj/
+
+
+# Rider Project Files
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# Mac
+*.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+# Uncomment if you have this directory on Windows
+# packages/
+# Uncomment if you have this directory on Windows
+# Packages/
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# TeamCity
+_TeamCity*
+
+# DotCover is a .NET code coverage tool
+*.dotCover
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# VS Code directories
+.vscode/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# EntityFramework
+*.edmx.sql
+*.edmx.diagram
+
+# NUnit
+*.VisualState.xml
+TestResult.xml
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
