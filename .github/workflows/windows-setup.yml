@@ -25,10 +25,13 @@ jobs:
 
       - name: Generate Version
         id: gitversion
-        run: dotnet-gitversion /output buildserver /nofetch
+        run: |
+          dotnet-gitversion /output buildserver /nofetch
+          echo "VERSION=$(gitversion.SemVer)" >> $GITHUB_ENV
 
       - name: Display Version
-        run: echo "##[set-output name=VERSION]::$(gitversion.SemVer)"
+        run: |
+          echo "Generated version: ${{ env.VERSION }}"
 
       - name: Build project
         run: dotnet build --configuration Release
