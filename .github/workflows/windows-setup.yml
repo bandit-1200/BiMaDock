@@ -20,18 +20,27 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
-      - name: Install GitVersion
-        run: dotnet tool install --global GitVersion.Tool
-
-      - name: Generate and Display Version
+      - name: Create Version File
         run: |
-          dotnet-gitversion /output json /outputfile gitversion.json
-          if (Test-Path "gitversion.json") {
-            Get-Content gitversion.json
+          echo '{ "SemVer": "1.0.0" }' > version.json
+          if (Test-Path "version.json") {
+            Get-Content version.json
           } else {
-            Write-Host "gitversion.json not found"
+            Write-Host "version.json not found"
             exit 1
           }
+
+      - name: Read and Display Version
+        shell: bash
+        run: |
+          if [ -f "version.json" ]; then
+            VERSION=$(jq -r .SemVer version.json)
+            echo "VERSION=$VERSION" >> $GITHUB_ENV
+            echo "Generated version: $VERSION"
+          else
+            echo "version.json not found"
+            exit 1
+          fi
 
       - name: Build project
         run: dotnet build --configuration Release
