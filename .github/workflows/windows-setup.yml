@@ -25,15 +25,22 @@ jobs:
 
       - name: Generate Version
         id: gitversion
-        run: dotnet-gitversion /output json /outputfile gitversion.json
+        run: |
+          dotnet-gitversion /output json /outputfile gitversion.json
+          jq . gitversion.json
 
-      - name: Read Version
+      - name: Read and Display Version
         id: read_version
         shell: bash
         run: |
-          VERSION=$(jq -r .SemVer gitversion.json)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Generated version: $VERSION"
+          if [ -f "gitversion.json" ]; then
+            VERSION=$(jq -r .SemVer gitversion.json)
+            echo "VERSION=$VERSION" >> $GITHUB_ENV
+            echo "Generated version: $VERSION"
+          else
+            echo "gitversion.json not found"
+            exit 1
+          fi
 
       - name: Build project
         run: dotnet build --configuration Release
