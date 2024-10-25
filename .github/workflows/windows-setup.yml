@@ -26,12 +26,12 @@ jobs:
       - name: Generate and Display Version
         run: |
           dotnet-gitversion /output json /outputfile gitversion.json
-          if [ -f "gitversion.json" ]; then
-            cat gitversion.json
-          else
-            echo "gitversion.json not found"
+          if (Test-Path "gitversion.json") {
+            Get-Content gitversion.json
+          } else {
+            Write-Host "gitversion.json not found"
             exit 1
-          fi
+          }
 
       - name: Build project
         run: dotnet build --configuration Release
