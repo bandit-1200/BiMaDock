@@ -18,32 +18,43 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '8.0.x'  # Stelle sicher, dass die neueste .NET Version verwendet wird
+          dotnet-version: '8.0.x'
 
       - name: Install GitVersion
         run: dotnet tool install --global GitVersion.Tool
 
-      - name: Create Version File
+      - name: Generate and Display Version
+        id: gitversion
         run: |
-          echo '{ "SemVer": "1.0.0" }' > version.json
-          if (Test-Path "version.json") {
-            Get-Content version.json
+          dotnet-gitversion /output json /outputfile gitversion.json
+          if (Test-Path "gitversion.json") {
+            Get-Content gitversion.json
           } else {
-            Write-Host "version.json not found"
+            Write-Host "gitversion.json not found"
             exit 1
           }
 
       - name: Read and Display Version
+        id: read_version
         shell: bash
         run: |
-          if [ -f "version.json" ]; then
-            VERSION=$(jq -r .SemVer version.json)
+          if [ -f "gitversion.json" ]; then
+            VERSION=$(jq -r .SemVer gitversion.json)
             echo "VERSION=$VERSION" >> $GITHUB_ENV
             echo "Generated version: $VERSION"
           else
-            echo "version.json not found"
+            echo "gitversion.json not found"
             exit 1
           fi
 
       - name: Build project
         run: dotnet build --configuration Release
+
+      - name: Create Setup
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Upload Setup
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-setup
+          path: ./publish
