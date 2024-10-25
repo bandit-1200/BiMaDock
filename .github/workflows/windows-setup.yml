@@ -25,9 +25,10 @@ jobs:
 
       - name: Generate Version
         id: gitversion
-        run: |
-          dotnet-gitversion /output json /outputfile gitversion.json
-          cat gitversion.json
+        run: dotnet-gitversion /output json /outputfile gitversion.json
+
+      - name: Display GitVersion Output
+        run: cat gitversion.json
 
       - name: Read and Display Version
         id: read_version
