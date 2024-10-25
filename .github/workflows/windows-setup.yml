@@ -1,0 +1,41 @@
+name: Windows Setup
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Install GitVersion
+        run: dotnet tool install --global GitVersion.Tool
+
+      - name: Generate Version
+        id: gitversion
+        run: dotnet-gitversion /output buildserver /nofetch
+
+      - name: Display Version
+        run: echo "##[set-output name=VERSION]::$(gitversion.SemVer)"
+
+      - name: Build project
+        run: dotnet build --configuration Release
+
+      - name: Create Setup
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Upload Setup
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-setup
+          path: ./publish
