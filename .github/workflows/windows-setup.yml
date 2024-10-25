@@ -18,7 +18,10 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.0.x'  # Stelle sicher, dass die neueste .NET Version verwendet wird
+
+      - name: Install GitVersion
+        run: dotnet tool install --global GitVersion.Tool
 
       - name: Create Version File
         run: |
