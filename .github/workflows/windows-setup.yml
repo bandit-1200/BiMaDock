@@ -18,40 +18,30 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install GitVersion
-        run: dotnet tool install --global GitVersion.Tool
-
-      - name: Generate and Display Version
-        id: gitversion
+      - name: Install Inno Setup
         run: |
-          dotnet-gitversion /output json /outputfile gitversion.json
-          if (Test-Path "gitversion.json") {
-            Get-Content gitversion.json
-          } else {
-            Write-Host "gitversion.json not found"
-            exit 1
-          }
-
-      - name: Read and Display Version
-        id: read_version
-        shell: bash
-        run: |
-          if [ -f "gitversion.json" ]; then
-            VERSION=$(jq -r .SemVer gitversion.json)
-            echo "VERSION=$VERSION" >> $GITHUB_ENV
-            echo "Generated version: $VERSION"
-          else
-            echo "gitversion.json not found"
-            exit 1
-          fi
+          choco install innosetup
 
       - name: Build project
         run: dotnet build --configuration Release
 
-      - name: Create Setup
+      - name: Publish project
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Create Inno Setup Script
         run: |
-          dotnet publish -c Release -o ./publish
-          Compress-Archive -Path ./publish/* -DestinationPath ./windows-setup.zip
+          echo '[Setup]' > setup.iss
+          echo 'AppName=My App' >> setup.iss
+          echo 'AppVersion=$VERSION' >> setup.iss
+          echo 'DefaultDirName={pf}\MyApp' >> setup.iss
+          echo 'OutputDir=.' >> setup.iss
+          echo 'OutputBaseFilename=setup' >> setup.iss
+          echo '[Files]' >> setup.iss
+          echo 'Source: "publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs' >> setup.iss
+
+      - name: Run Inno Setup Compiler
+        run: |
+          iscc setup.iss
 
       - name: Create Release
         uses: actions/create-release@v1
@@ -68,6 +58,6 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./windows-setup.zip
-          asset_name: windows-setup.zip
-          asset_content_type: application/zip
+          asset_path: ./setup.exe
+          asset_name: setup.exe
+          asset_content_type: application/octet-stream
