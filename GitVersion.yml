@@ -1,7 +1,8 @@
-# GitVersion.yml
-next-version: 1.0.0
 mode: ContinuousDeployment
-tag-prefix: '[vV]'
 branches:
   main:
-    increment: Patch  # Nur die letzte Stelle der Version erhöhen
+    increment: Patch
+    track-merge-target: false
+  develop:
+    increment: Minor
+    track-merge-target: true

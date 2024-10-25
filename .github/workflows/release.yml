@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build project
+      run: dotnet build --configuration Release
+
+    - name: Publish project
+      run: dotnet publish --configuration Release --output ./publish
+
+    - name: Create Windows installer
+      run: |
+        "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "./BiMaDock.iss"  # Angenommen, das Skript heißt BiMaDock.iss
+    
+    - name: Upload Release
+      uses: actions/upload-artifact@v4
+      with:
+        name: setup
+        path: ./publish/YourAppSetup.exe  # Pfad zur erstellten setup.exe anpassen
