@@ -5,7 +5,6 @@ on:
     tags:
       - 'v*.*.*'
 
-      
 jobs:
   build:
     runs-on: windows-latest
@@ -19,37 +18,34 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install Inno Setup
+      - name: Install GitVersion
+        run: dotnet tool install --global GitVersion.Tool
+
+      - name: Generate Version
+        id: gitversion
+        run: dotnet-gitversion /output json /outputfile gitversion.json
+
+      - name: Read Version
+        id: read_version
         run: |
-          choco install innosetup
+          $version = (ConvertFrom-Json (Get-Content -Raw gitversion.json)).SemVer
+          echo "VERSION=$version" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build project
         run: dotnet build --configuration Release
 
-      - name: Publish project
-        run: dotnet publish -c Release -o ./publish
-
-      - name: Create Inno Setup Script
+      - name: Create Setup
         run: |
-          echo '[Setup]' > setup.iss
-          echo 'AppName=My App' >> setup.iss
-          echo 'AppVersion=$VERSION' >> setup.iss
-          echo 'DefaultDirName={pf}\MyApp' >> setup.iss
-          echo 'OutputDir=.' >> setup.iss
-          echo 'OutputBaseFilename=setup' >> setup.iss
-          echo '[Files]' >> setup.iss
-          echo 'Source: "publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs' >> setup.iss
-
-      - name: Run Inno Setup Compiler
-        run: |
-          iscc setup.iss
+          dotnet publish -c Release -o ./publish
+          Compress-Archive -Path ./publish/* -DestinationPath ./windows-setup.zip
 
       - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: "Automated release of version ${{ env.VERSION }}"
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: Automated release of version ${{ steps.read_version.outputs.VERSION }}
           draft: false
           prerelease: false
         env:
@@ -59,6 +55,6 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./setup.exe
-          asset_name: setup.exe
-          asset_content_type: application/octet-stream
+          asset_path: ./windows-setup.zip
+          asset_name: windows-setup.zip
+          asset_content_type: application/zip
