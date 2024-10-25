@@ -35,7 +35,7 @@ jobs:
         run: dotnet publish -c Release -o ./publish
 
       - name: Upload Setup
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: windows-setup
           path: ./publish
