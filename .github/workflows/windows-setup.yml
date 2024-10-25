@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Holt den gesamten Git-Verlauf, um GitVersion nutzen zu können
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
