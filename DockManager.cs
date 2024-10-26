@@ -136,6 +136,18 @@ private void DockPanel_MouseMove(object sender, MouseEventArgs e)
     }
 
 
+public void AddCategoryItem(string categoryName)
+{
+    var dockItem = new DockItem
+    {
+        FilePath = "",
+        DisplayName = categoryName,
+        Category = categoryName // Setzen der Kategorie
+    };
+    AddDockItemAt(dockItem, dockPanel.Children.Count);
+}
+
+
 
 
 public void DockPanel_Drop(object sender, DragEventArgs e)

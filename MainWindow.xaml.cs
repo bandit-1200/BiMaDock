@@ -312,6 +312,16 @@ public void OpenFile(string filePath)
             }
         }
 
+private void AddCategory_Click(object sender, RoutedEventArgs e)
+{
+    var inputDialog = new InputDialog("Kategorie erstellen", "Bitte geben Sie den Namen der Kategorie ein:");
+    if (inputDialog.ShowDialog() == true)
+    {
+        string categoryName = inputDialog.Answer;
+        dockManager.AddCategoryItem(categoryName);
+    }
+}
+
 
 
         private void Edit_Click(object sender, RoutedEventArgs e)
