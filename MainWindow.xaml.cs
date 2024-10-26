@@ -115,6 +115,7 @@ public void ShowDock()
 
 
 
+
 public void HideDock()
 {
     if (dockVisible && !isDragging)
@@ -130,6 +131,9 @@ public void HideDock()
         this.BeginAnimation(Window.TopProperty, slideAnimation);
     }
 }
+
+
+
 
 private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 {
@@ -321,6 +325,17 @@ private void AddCategory_Click(object sender, RoutedEventArgs e)
         dockManager.AddCategoryItem(categoryName);
     }
 }
+public void ShowCategoryDockPanel(StackPanel categoryDock)
+{
+    Console.WriteLine("ShowCategoryDockPanel aufgerufen"); // Debugging
+
+    CategoryDockContainer.Children.Clear(); // Existierende Dockbar leeren
+    CategoryDockContainer.Children.Add(categoryDock); // Neue Dockbar hinzufügen
+    CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der zweiten Dockbar setzen
+}
+
+
+
 
 
 

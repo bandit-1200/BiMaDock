@@ -7,23 +7,28 @@
         AllowDrop="True"
         ShowInTaskbar="False">
     <Grid HorizontalAlignment="Center">
-        <StackPanel Orientation="Horizontal" Name="DockPanel"
-                    AllowDrop="True" Background="#CCCCCC"
-                    HorizontalAlignment="Center"
-                    MinWidth="60" MinHeight="50">
-            <StackPanel.ContextMenu>
-            <ContextMenu x:Name="DockContextMenu">
-                <MenuItem Header="Beenden" Click="Exit_Click"/>
-                <Separator/>
-                <MenuItem x:Name="OpenMenuItem" Header="Öffnen" Click="Open_Click"/>
-                <MenuItem x:Name="DeleteMenuItem" Header="Löschen" Click="Delete_Click"/>
-                <MenuItem x:Name="EditMenuItem" Header="Eigenschaften bearbeiten" Click="Edit_Click"/>
-                <Separator/>
-                <MenuItem Header="Kategorie erstellen" Click="AddCategory_Click"/>
-            </ContextMenu>
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal" Name="DockPanel"
+                        AllowDrop="True" Background="#CCCCCC"
+                        HorizontalAlignment="Center"
+                        MinWidth="60" MinHeight="50">
+                <StackPanel.ContextMenu>
+                    <ContextMenu x:Name="DockContextMenu">
+                        <MenuItem Header="Beenden" Click="Exit_Click"/>
+                        <Separator/>
+                        <MenuItem x:Name="OpenMenuItem" Header="Öffnen" Click="Open_Click"/>
+                        <MenuItem x:Name="DeleteMenuItem" Header="Löschen" Click="Delete_Click"/>
+                        <MenuItem x:Name="EditMenuItem" Header="Eigenschaften bearbeiten" Click="Edit_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Kategorie erstellen" Click="AddCategory_Click"/>
+                    </ContextMenu>
+                </StackPanel.ContextMenu>
+            </StackPanel>
 
 
-            </StackPanel.ContextMenu>
+            <StackPanel Name="CategoryDockContainer" Orientation="Horizontal"
+                        Background="#EEEEEE" Visibility="Collapsed"
+                        HorizontalAlignment="Center" MinWidth="60" MinHeight="50"/>
         </StackPanel>
     </Grid>
 </Window>
