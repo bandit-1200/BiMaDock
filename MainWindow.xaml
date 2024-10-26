@@ -5,7 +5,7 @@
         WindowStyle="None" ResizeMode="NoResize" Topmost="True"
         VerticalAlignment="Top" AllowsTransparency="True" Background="Transparent"
         AllowDrop="True"
-        ShowInTaskbar="True">
+        ShowInTaskbar="False"> <!-- Symbol in der Taskleiste deaktivieren -->
     <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
         <StackPanel x:Name="MainStackPanel" Orientation="Vertical" HorizontalAlignment="Center">
             <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0">

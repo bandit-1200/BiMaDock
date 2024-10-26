@@ -93,40 +93,41 @@ public MainWindow()
  
 private void CheckMousePosition(object sender, MouseEventArgs e)
 {
-    if (DockPanel != null && e != null)  // Sicherstellen, dass DockPanel und e nicht null sind
+    if (DockPanel != null && e != null) // Sicherstellen, dass DockPanel und e nicht null sind
     {
         var mousePos = Mouse.GetPosition(DockPanel);
         var screenPos = PointToScreen(mousePos);
         Console.WriteLine($"Mouse Pos: X={screenPos.X}, Y={screenPos.Y}, Dragging: {isDragging}, ContextMenu Open: {DockContextMenu?.IsOpen}"); // Debug-Ausgabe der Mausposition und Kontextmenüstatus
 
-        if (screenPos.Y <= DockPanel.ActualHeight && !dockVisible)  // Überprüfen, ob die Maus innerhalb der Dockhöhe ist
+        if (screenPos.Y <= DockPanel.ActualHeight && !dockVisible) // Überprüfen, ob die Maus innerhalb der Dockhöhe ist
         {
-            Console.WriteLine("Condition met: ShowDock");  // Debug-Ausgabe
+            Console.WriteLine("Condition met: ShowDock"); // Debug-Ausgabe
             ShowDock();
-            dockHideTimer.Stop();  // Timer stoppen, wenn das Dock eingeblendet wird
+            dockHideTimer.Stop(); // Timer stoppen, wenn das Dock eingeblendet wird
         }
-        else if (screenPos.Y > DockPanel.ActualHeight && dockVisible && !isDragging && !(DockContextMenu?.IsOpen ?? false))  // Kontextmenü-Bedingung hinzufügen
+        else if (screenPos.Y > DockPanel.ActualHeight + 10 && dockVisible && !isDragging && !(DockContextMenu?.IsOpen ?? false)) // Überprüfen, ob die Maus über dem Dock hinaus ist
         {
-            Console.WriteLine("Condition met: HideDock");  // Debug-Ausgabe
+            Console.WriteLine("Condition met: HideDock"); // Debug-Ausgabe
             HideDock();
         }
         else
         {
-            Console.WriteLine("No condition met");  // Debug-Ausgabe
-            Console.WriteLine($"Dock Height: {this.Height}, MousePos.Y: {mousePos.Y}, Dragging: {isDragging}, ContextMenu Open: {DockContextMenu?.IsOpen}");  // Debug-Ausgabe
+            Console.WriteLine("No condition met"); // Debug-Ausgabe
+            Console.WriteLine($"Dock Height: {this.Height}, MousePos.Y: {mousePos.Y}, Dragging: {isDragging}, ContextMenu Open: {DockContextMenu?.IsOpen}"); // Debug-Ausgabe
 
             if (!(DockContextMenu?.IsOpen ?? false))
             {
-                dockHideTimer.Stop();  // Timer stoppen, wenn die Maus über dem Dock ist und Kontextmenü nicht geöffnet ist
-                dockHideTimer.Start();  // Timer neu starten
+                dockHideTimer.Stop(); // Timer stoppen, wenn die Maus über dem Dock ist und Kontextmenü nicht geöffnet ist
+                dockHideTimer.Start(); // Timer neu starten
             }
         }
     }
     else
     {
-        Console.WriteLine("Fehler: DockPanel oder EventArgs sind null.");  // Debug-Ausgabe
+        Console.WriteLine("Fehler: DockPanel oder EventArgs sind null."); // Debug-Ausgabe
     }
 }
+
 
 
 public void ShowDock()
