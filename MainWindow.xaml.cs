@@ -327,14 +327,37 @@ private void DockPanel_MouseMove(object sender, MouseEventArgs e)
         }
 
 
-        private void Delete_Click(object sender, RoutedEventArgs e)
+private void Delete_Click(object sender, RoutedEventArgs e)
+{
+    if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+    {
+        if (button != null && dockItem != null && dockManager != null)
         {
-            if (DockContextMenu.PlacementTarget is Button button && button.Tag is string filePath)
-            {
-                Console.WriteLine("Löschen des Elements: " + filePath); // Debug-Ausgabe
-                dockManager.RemoveDockItem(button);
-            }
+            Console.WriteLine("Löschen des Elements: " + dockItem.FilePath); // Debug-Ausgabe
+            Console.WriteLine("Button gefunden: " + button.Name);
+            Console.WriteLine("Dock-Manager Status: " + (dockManager != null ? "Existiert" : "Fehlt"));
+        
+            dockManager.RemoveDockItem(button);
         }
+        else
+        {
+            if (button == null)
+                Console.WriteLine("Fehler: button ist null.");
+            if (dockItem == null)
+                Console.WriteLine("Fehler: dockItem ist null.");
+            if (dockManager == null)
+                Console.WriteLine("Fehler: dockManager ist null.");
+        }
+    }
+    else
+    {
+        // Debug-Ausgabe, wenn die Bedingung nicht erfüllt ist
+        Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem.");
+    }
+}
+
+
+
 
         private void AddCategory_Click(object sender, RoutedEventArgs e)
         {
