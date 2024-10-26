@@ -27,70 +27,69 @@ namespace MyDockApp
             isDragging = value;
         }
 
-public MainWindow()
-{
-    InitializeComponent();
-    AllowDrop = true;
-    Console.WriteLine("Hauptfenster initialisiert."); // Debugging
-
-    dockManager = new DockManager(DockPanel, this);
-    dockManager.LoadDockItems();
-    Console.WriteLine("Dock-Elemente geladen."); // Debugging
-
-    // Timer initialisieren
-    dockHideTimer = new DispatcherTimer();
-    dockHideTimer.Interval = TimeSpan.FromSeconds(1); // Zeitintervall auf eine Sekunde setzen
-    dockHideTimer.Tick += (s, e) =>
-    {
-        if (dockVisible)
+        public MainWindow()
         {
-            HideDock();
+            InitializeComponent();
+            AllowDrop = true;
+            Console.WriteLine("Hauptfenster initialisiert."); // Debugging
+
+            dockManager = new DockManager(DockPanel, this);
+            dockManager.LoadDockItems();
+            Console.WriteLine("Dock-Elemente geladen."); // Debugging
+
+            // Timer initialisieren
+            dockHideTimer = new DispatcherTimer();
+            dockHideTimer.Interval = TimeSpan.FromSeconds(5); // Zeitintervall auf eine Sekunde setzen
+            dockHideTimer.Tick += (s, e) =>
+            {
+                if (dockVisible)
+                {
+                    HideDock();
+                }
+            };
+
+            // Timer initialisieren
+            categoryHideTimer = new DispatcherTimer();
+            categoryHideTimer.Interval = TimeSpan.FromSeconds(5); // Zeitintervall auf eine Sekunde setzen
+            categoryHideTimer.Tick += (s, e) =>
+            {
+                HideCategoryDockPanel();
+            };
+
+            this.Closing += (s, e) => dockManager.SaveDockItems();
+            DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
+            DockPanel.PreviewMouseMove += DockPanel_MouseMove;
+            DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
+            this.Loaded += (s, e) =>
+            {
+                var screenWidth = SystemParameters.PrimaryScreenWidth;
+                var screenHeight = SystemParameters.PrimaryScreenHeight;
+                this.Left = (screenWidth / 2) - (this.Width / 2);
+                this.Top = 0; // Fenster am oberen Bildschirmrand positionieren
+
+                this.MouseMove += CheckMousePosition;
+                DockPanel.MouseEnter += DockPanel_MouseEnter;
+                DockPanel.MouseLeave += DockPanel_MouseLeave;
+                DockPanel.DragEnter += (s, e) =>
+                {
+                    e.Effects = DragDropEffects.All;
+                    if (!dockVisible) ShowDock();
+                };
+            };
+            DockPanel.MouseRightButtonDown += (s, e) =>
+            {
+                OpenMenuItem.Visibility = Visibility.Collapsed;
+                DeleteMenuItem.Visibility = Visibility.Collapsed;
+                EditMenuItem.Visibility = Visibility.Collapsed;
+                DockContextMenu.IsOpen = true;
+                if (!DockContextMenu.IsOpen)
+                {
+                    ShowDock(); // Dock sichtbar halten
+                }
+            };
+            Console.WriteLine("Event-Handler zugewiesen."); // Debugging
         }
-    };
 
-    // Timer initialisieren
-    categoryHideTimer = new DispatcherTimer();
-    categoryHideTimer.Interval = TimeSpan.FromSeconds(1); // Zeitintervall auf eine Sekunde setzen
-    categoryHideTimer.Tick += (s, e) =>
-    {
-        HideCategoryDockPanel();
-    };
-
-    this.Closing += (s, e) => dockManager.SaveDockItems();
-    DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
-    DockPanel.PreviewMouseMove += DockPanel_MouseMove;
-    DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
-    this.Loaded += (s, e) =>
-    {
-        var screenWidth = SystemParameters.PrimaryScreenWidth;
-        var screenHeight = SystemParameters.PrimaryScreenHeight;
-        this.Left = (screenWidth / 2) - (this.Width / 2);
-        this.Top = 0; // Fenster am oberen Bildschirmrand positionieren
-
-        this.MouseMove += CheckMousePosition;
-        DockPanel.MouseEnter += DockPanel_MouseEnter;
-        DockPanel.MouseLeave += DockPanel_MouseLeave;
-        DockPanel.DragEnter += (s, e) =>
-        {
-            e.Effects = DragDropEffects.All;
-            if (!dockVisible) ShowDock();
-        };
-    };
-    DockPanel.MouseRightButtonDown += (s, e) =>
-    {
-        OpenMenuItem.Visibility = Visibility.Collapsed;
-        DeleteMenuItem.Visibility = Visibility.Collapsed;
-        EditMenuItem.Visibility = Visibility.Collapsed;
-        DockContextMenu.IsOpen = true;
-        if (!DockContextMenu.IsOpen)
-        {
-            ShowDock(); // Dock sichtbar halten
-        }
-    };
-    Console.WriteLine("Event-Handler zugewiesen."); // Debugging
-}
-
- 
 private void CheckMousePosition(object sender, MouseEventArgs e)
 {
     if (DockPanel != null && e != null) // Sicherstellen, dass DockPanel und e nicht null sind
@@ -119,6 +118,10 @@ private void CheckMousePosition(object sender, MouseEventArgs e)
             {
                 dockHideTimer.Stop(); // Timer stoppen, wenn die Maus über dem Dock ist und Kontextmenü nicht geöffnet ist
                 dockHideTimer.Start(); // Timer neu starten
+                
+                // Neustarten des categoryHideTimer bei jeder Mausbewegung
+                categoryHideTimer.Stop();
+                categoryHideTimer.Start();
             }
         }
     }
@@ -130,70 +133,70 @@ private void CheckMousePosition(object sender, MouseEventArgs e)
 
 
 
-public void ShowDock()
-{
-    if (!dockVisible)
-    {
-        Console.WriteLine("ShowDock aufgerufen");
-        dockVisible = true;
-        var slideAnimation = new DoubleAnimation
+        public void ShowDock()
         {
-            From = -DockPanel.ActualHeight + 5,  // Startposition der Animation (teilweise sichtbar)
-            To = 0,  // Endposition der Animation (sichtbare Position)
-            Duration = new Duration(TimeSpan.FromMilliseconds(500)),
-            FillBehavior = FillBehavior.Stop
-        };
-        slideAnimation.Completed += (s, e) => 
+            if (!dockVisible)
+            {
+                Console.WriteLine("ShowDock aufgerufen");
+                dockVisible = true;
+                var slideAnimation = new DoubleAnimation
+                {
+                    From = -DockPanel.ActualHeight + 5,  // Startposition der Animation (teilweise sichtbar)
+                    To = 0,  // Endposition der Animation (sichtbare Position)
+                    Duration = new Duration(TimeSpan.FromMilliseconds(500)),
+                    FillBehavior = FillBehavior.Stop
+                };
+                slideAnimation.Completed += (s, e) =>
+                {
+                    DockPanel.Margin = new Thickness(0, 0, 0, 0);
+                    Console.WriteLine("Dock vollständig sichtbar"); // Debugging
+                };
+                DockPanel.BeginAnimation(Canvas.TopProperty, slideAnimation);
+            }
+            else
+            {
+                Console.WriteLine("Dock ist bereits sichtbar, keine Animation"); // Debugging
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public void HideDock()
         {
-            DockPanel.Margin = new Thickness(0, 0, 0, 0);
-            Console.WriteLine("Dock vollständig sichtbar"); // Debugging
-        };
-        DockPanel.BeginAnimation(Canvas.TopProperty, slideAnimation);
-    }
-    else
-    {
-        Console.WriteLine("Dock ist bereits sichtbar, keine Animation"); // Debugging
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-public void HideDock()
-{
-    if (dockVisible)
-    {
-        Console.WriteLine("HideDock aufgerufen");
-        dockVisible = false;
-        var slideAnimation = new DoubleAnimation
-        {
-            From = 0,  // Startposition der Animation (sichtbar)
-            To = -DockPanel.ActualHeight + 5,  // Endposition der Animation (5 Pixel sichtbar lassen)
-            Duration = new Duration(TimeSpan.FromMilliseconds(500)),
-            FillBehavior = FillBehavior.Stop
-        };
-        slideAnimation.Completed += (s, e) => 
-        {
-            DockPanel.Margin = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0);
-            Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
-        };
-        DockPanel.BeginAnimation(Canvas.TopProperty, slideAnimation);
-    }
-    else
-    {
-        Console.WriteLine("Dock ist bereits unsichtbar, keine Animation"); // Debugging
-    }
-}
+            if (dockVisible)
+            {
+                Console.WriteLine("HideDock aufgerufen");
+                dockVisible = false;
+                var slideAnimation = new DoubleAnimation
+                {
+                    From = 0,  // Startposition der Animation (sichtbar)
+                    To = -DockPanel.ActualHeight + 5,  // Endposition der Animation (5 Pixel sichtbar lassen)
+                    Duration = new Duration(TimeSpan.FromMilliseconds(500)),
+                    FillBehavior = FillBehavior.Stop
+                };
+                slideAnimation.Completed += (s, e) =>
+                {
+                    DockPanel.Margin = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0);
+                    Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
+                };
+                DockPanel.BeginAnimation(Canvas.TopProperty, slideAnimation);
+            }
+            else
+            {
+                Console.WriteLine("Dock ist bereits unsichtbar, keine Animation"); // Debugging
+            }
+        }
 
 
 
@@ -470,55 +473,71 @@ public void HideDock()
 
 
 
+private void Edit_Click(object sender, RoutedEventArgs e)
+{
+    if (DockContextMenu.PlacementTarget is Button button && button.Tag is string filePath)
+    {
+        Console.WriteLine("Edit_Click aufgerufen, filePath: " + filePath); // Debug-Ausgabe
 
-
-
-        private void Edit_Click(object sender, RoutedEventArgs e)
+        EditPropertiesWindow editWindow = new EditPropertiesWindow
         {
-            if (DockContextMenu.PlacementTarget is Button button && button.Tag is string filePath)
+            Owner = this,
+            NameTextBox = { Text = System.IO.Path.GetFileNameWithoutExtension(filePath) },
+            PathTextBox = { Text = filePath }
+        };
+        
+        if (editWindow.ShowDialog() == true)
+        {
+            Console.WriteLine("EditPropertiesWindow Dialog result: true"); // Debug-Ausgabe
+            string newName = editWindow.NameTextBox.Text;
+            string newPath = editWindow.PathTextBox.Text;
+            if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
             {
-                EditPropertiesWindow editWindow = new EditPropertiesWindow
+                Console.WriteLine("Neuer Name: " + newName + ", Neuer Pfad: " + newPath); // Debug-Ausgabe
+                var icon = IconHelper.GetIcon(newPath);
+                var image = new Image
                 {
-                    Owner = this,
-                    NameTextBox = { Text = System.IO.Path.GetFileNameWithoutExtension(filePath) },
-                    PathTextBox = { Text = filePath }
+                    Source = icon,
+                    Width = 32,
+                    Height = 32,
+                    Margin = new Thickness(5)
                 };
-                if (editWindow.ShowDialog() == true)
+                var textBlock = new TextBlock
                 {
-                    string newName = editWindow.NameTextBox.Text;
-                    string newPath = editWindow.PathTextBox.Text;
-                    if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
-                    {
-                        var icon = IconHelper.GetIcon(newPath);
-                        var image = new Image
-                        {
-                            Source = icon,
-                            Width = 32,
-                            Height = 32,
-                            Margin = new Thickness(5)
-                        };
-                        var textBlock = new TextBlock
-                        {
-                            Text = newName,
-                            TextAlignment = TextAlignment.Center,
-                            TextWrapping = TextWrapping.Wrap,
-                            Width = 60,
-                            Margin = new Thickness(5)
-                        };
-                        var stackPanel = new StackPanel
-                        {
-                            Orientation = Orientation.Vertical,
-                            Width = 70
-                        };
-                        stackPanel.Children.Add(image);
-                        stackPanel.Children.Add(textBlock);
-                        button.Content = stackPanel;
-                        button.Tag = newPath;
-                        dockManager.SaveDockItems();
-                    }
-                }
+                    Text = newName,
+                    TextAlignment = TextAlignment.Center,
+                    TextWrapping = TextWrapping.Wrap,
+                    Width = 60,
+                    Margin = new Thickness(5)
+                };
+                var stackPanel = new StackPanel
+                {
+                    Orientation = Orientation.Vertical,
+                    Width = 70
+                };
+                stackPanel.Children.Add(image);
+                stackPanel.Children.Add(textBlock);
+                button.Content = stackPanel;
+                button.Tag = newPath;
+                dockManager.SaveDockItems();
+                Console.WriteLine("Dock-Elemente gespeichert"); // Debug-Ausgabe
+            }
+            else
+            {
+                Console.WriteLine("Ungültiger Name oder Pfad"); // Debug-Ausgabe
             }
         }
+        else
+        {
+            Console.WriteLine("EditPropertiesWindow Dialog result: false"); // Debug-Ausgabe
+        }
+    }
+    else
+    {
+        Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein string"); // Debug-Ausgabe
+    }
+}
+
 
     }
 
