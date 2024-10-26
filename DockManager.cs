@@ -25,7 +25,7 @@ public class DockManager
         dockPanel.Drop += DockPanel_Drop;
         dockPanel.MouseMove += DockPanel_MouseMove;  // Event-Handler für MouseMove hinzufügen
         dockPanel.MouseEnter += DockPanel_MouseEnter;  // Event-Handler für MouseEnter hinzufügen
-        dockPanel.MouseLeave += DockPanel_MouseLeave;  // Event-Handler für MouseLeave hinzufügen
+        // dockPanel.MouseLeave += DockPanel_MouseLeave;  // Event-Handler für MouseLeave hinzufügen
         categories = new List<string>(); // Initialisierung der Kategorienliste
         dockItems = new List<DockItem>(); // Initialisierung der Dock-Items-Liste
     }
@@ -35,13 +35,15 @@ public class DockManager
         mainWindow.ShowDock();
     }
 
-    private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
+private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
+{
+    if (!mainWindow.isDragging && mainWindow.dockVisible) // Prüfen, ob das Dock sichtbar ist, bevor es ausgeblendet wird
     {
-        if (!mainWindow.IsDragging)
-        {
-            mainWindow.HideDock();
-        }
+        Console.WriteLine("DockPanel verlassen, HideDock wird aufgerufen"); // Debugging
+        mainWindow.HideDock();
     }
+}
+
 
     private void DockPanel_MouseMove(object sender, MouseEventArgs e)
     {
