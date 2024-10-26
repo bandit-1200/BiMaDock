@@ -40,7 +40,7 @@ private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
     if (!mainWindow.isDragging && mainWindow.dockVisible) // Prüfen, ob das Dock sichtbar ist, bevor es ausgeblendet wird
     {
         Console.WriteLine("DockPanel verlassen, HideDock wird aufgerufen"); // Debugging
-        mainWindow.HideDock();
+        // mainWindow.HideDock();
     }
 }
 
