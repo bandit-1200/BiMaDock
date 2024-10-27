@@ -317,7 +317,6 @@ public void LoadDockItems()
         }
     }
 
-
 private void AddDockItemAt(DockItem item, int index)
 {
     var icon = IconHelper.GetIcon(item.FilePath);
@@ -346,7 +345,7 @@ private void AddDockItemAt(DockItem item, int index)
     var button = new Button
     {
         Content = stackPanel,
-        Tag = item,
+        Tag = item,  // Das gesamte DockItem als Tag verwenden
         Margin = new Thickness(5),
         Width = 70
     };
@@ -373,24 +372,21 @@ private void AddDockItemAt(DockItem item, int index)
         draggedButton = button;
         if (draggedButton != null)
         {
-            Console.WriteLine("Drag Start: " + draggedButton.Tag); // Debugging
+            Console.WriteLine("Drag Start: " + ((DockItem)draggedButton.Tag).FilePath); // Debugging
         }
     };
 
+    // Click-Event-Handler hinzufügen
     button.Click += (s, e) =>
     {
         var dockItem = button.Tag as DockItem;
         if (dockItem != null)
         {
-            if (string.IsNullOrEmpty(dockItem.FilePath))
-            {
-                ShowCategoryDock(dockItem); // Aufruf der Methode zum Anzeigen des Kategorie-Docks
-            }
-            else
-            {
-                Console.WriteLine("Button Click: " + dockItem.FilePath); // Debugging
-                mainWindow.OpenFile(dockItem.FilePath); // Aufruf von OpenFile im MainWindow
-            }
+            mainWindow.OpenFile(dockItem.FilePath); // Aufruf von OpenFile im MainWindow
+        }
+        else
+        {
+            Console.WriteLine("DockItem ist null"); // Debugging
         }
     };
 
@@ -398,7 +394,6 @@ private void AddDockItemAt(DockItem item, int index)
     Console.WriteLine($"Element eingefügt an Position: {index}"); // Debugging
     SaveDockItems();
 }
-
 
 
 
