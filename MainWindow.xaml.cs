@@ -446,41 +446,46 @@ namespace MyDockApp
         }
 
 
-        private void CategoryDockContainer_Drop(object sender, DragEventArgs e)
+
+private void CategoryDockContainer_Drop(object sender, DragEventArgs e)
+{
+    Console.WriteLine("CategoryDockContainer_Drop aufgerufen"); // Debug-Ausgabe
+    if (e.Data.GetDataPresent(DataFormats.Serializable))
+    {
+        var button = e.Data.GetData(DataFormats.Serializable) as Button;
+        if (button != null)
         {
-            Console.WriteLine("CategoryDockContainer_Drop aufgerufen"); // Debug-Ausgabe
-            if (e.Data.GetDataPresent(DataFormats.Serializable))
+            // Überprüfen, ob das übergeordnete Element des Buttons nicht null ist und entfernen
+            var parent = VisualTreeHelper.GetParent(button) as Panel;
+            if (parent != null)
             {
-                var button = e.Data.GetData(DataFormats.Serializable) as Button;
-                if (button != null)
-                {
-                    // Überprüfen, ob das übergeordnete Element des Buttons nicht null ist und entfernen
-                    var parent = VisualTreeHelper.GetParent(button) as Panel;
-                    if (parent != null)
-                    {
-                        parent.Children.Remove(button);
-                    }
-
-                    CategoryDockContainer.Children.Add(button); // Füge das Element dem Kategoriedock hinzu
-                    CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
-                    Console.WriteLine($"Element {button.Content} ins Kategoriedock verschoben"); // Debug-Ausgabe
-
-                    // Aktualisiere die interne Struktur oder Daten, falls nötig
-                    UpdateDockItemLocation(button);
-                }
-                else
-                {
-                    Console.WriteLine("Button ist null"); // Debug-Ausgabe
-                }
+                parent.Children.Remove(button);
             }
-            else
+
+            // Stelle sicher, dass das Kategorie-Dock sichtbar ist
+            if (CategoryDockContainer.Visibility != Visibility.Visible)
             {
-                Console.WriteLine("Kein Button erkannt im Drop-Event"); // Debug-Ausgabe
+                CategoryDockContainer.Visibility = Visibility.Visible;
             }
+
+            // Füge das Element dem Kategorie-Dock hinzu
+            CategoryDockContainer.Children.Add(button);
+            CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
+            Console.WriteLine($"Element {button.Content} ins Kategoriedock verschoben"); // Debug-Ausgabe
+
+            // Aktualisiere die interne Struktur oder Daten, falls nötig
+            UpdateDockItemLocation(button);
         }
-
-
-
+        else
+        {
+            Console.WriteLine("Button ist null"); // Debug-Ausgabe
+        }
+    }
+    else
+    {
+        Console.WriteLine("Kein Button erkannt im Drop-Event"); // Debug-Ausgabe
+    }
+}
 
 
 
