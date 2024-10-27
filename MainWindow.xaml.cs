@@ -22,80 +22,91 @@ namespace MyDockApp
         private DispatcherTimer dockHideTimer;
         private DispatcherTimer categoryHideTimer;
 
+
         public void SetDragging(bool value)
         {
             isDragging = value;
         }
 
 
-        public MainWindow()
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        AllowDrop = true;
+        Console.WriteLine("Hauptfenster initialisiert."); // Debugging
+        dockManager = new DockManager(DockPanel, this);
+        dockManager.LoadDockItems();
+        Console.WriteLine("Dock-Elemente geladen."); // Debugging
+
+        // Timer initialisieren
+        dockHideTimer = new DispatcherTimer();
+        dockHideTimer.Interval = TimeSpan.FromSeconds(5); // Zeitintervall auf 5 Sekunden setzen
+        dockHideTimer.Tick += (s, e) =>
         {
-            InitializeComponent();
-            AllowDrop = true;
-            Console.WriteLine("Hauptfenster initialisiert."); // Debugging
+            // Console.WriteLine($"dockHideTimer Tick: {DateTime.Now}"); // Debug-Ausgabe
+            HideDock();
+        };
 
-            dockManager = new DockManager(DockPanel, this);
-            dockManager.LoadDockItems();
-            Console.WriteLine("Dock-Elemente geladen."); // Debugging
+        // Timer initialisieren
+        categoryHideTimer = new DispatcherTimer();
+        categoryHideTimer.Interval = TimeSpan.FromSeconds(5); // Zeitintervall auf 5 Sekunden setzen
+        categoryHideTimer.Tick += (s, e) =>
+        {
+            // Console.WriteLine($"categoryHideTimer Tick: {DateTime.Now}"); // Debug-Ausgabe
+            HideCategoryDockPanel();
+        };
 
-            // Timer initialisieren
-            dockHideTimer = new DispatcherTimer();
-            dockHideTimer.Interval = TimeSpan.FromSeconds(5); // Zeitintervall auf 5 Sekunden setzen
-            dockHideTimer.Tick += (s, e) =>
+        this.Closing += (s, e) => dockManager.SaveDockItems();
+        DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
+        DockPanel.PreviewMouseMove += DockPanel_MouseMove;
+        DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
+        this.Loaded += (s, e) =>
+        {
+            var screenWidth = SystemParameters.PrimaryScreenWidth;
+            var screenHeight = SystemParameters.PrimaryScreenHeight;
+            this.Left = (screenWidth / 2) - (this.Width / 2);
+            this.Top = 0; // Fenster am oberen Bildschirmrand positionieren
+
+            this.MouseMove += CheckMousePosition; // Bestätigen, dass die Maus sich bewegt
+            DockPanel.MouseEnter += DockPanel_MouseEnter;
+            DockPanel.MouseLeave += DockPanel_MouseLeave;
+            DockPanel.DragEnter += (s, e) =>
             {
-                // Console.WriteLine($"dockHideTimer Tick: {DateTime.Now}"); // Debug-Ausgabe
-                HideDock();
+                e.Effects = DragDropEffects.All;
+                if (!dockVisible) ShowDock();
             };
 
-            // Timer initialisieren
-            categoryHideTimer = new DispatcherTimer();
-            categoryHideTimer.Interval = TimeSpan.FromSeconds(5); // Zeitintervall auf 5 Sekunden setzen
-            categoryHideTimer.Tick += (s, e) =>
+            // Periodische Überprüfung, ob die Maus über einem der Docks ist
+            var hoverCheckTimer = new DispatcherTimer
             {
-                // Console.WriteLine($"categoryHideTimer Tick: {DateTime.Now}"); // Debug-Ausgabe
-                HideCategoryDockPanel();
+                Interval = TimeSpan.FromSeconds(1)
             };
-
-            this.Closing += (s, e) => dockManager.SaveDockItems();
-            DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
-            DockPanel.PreviewMouseMove += DockPanel_MouseMove;
-            DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
-            this.Loaded += (s, e) =>
+            hoverCheckTimer.Tick += (s, e) => CheckMouseHover();
+            hoverCheckTimer.Start();
+        };
+        DockPanel.MouseRightButtonDown += (s, e) =>
+        {
+            OpenMenuItem.Visibility = Visibility.Collapsed;
+            DeleteMenuItem.Visibility = Visibility.Collapsed;
+            EditMenuItem.Visibility = Visibility.Collapsed;
+            DockContextMenu.IsOpen = true;
+            if (!DockContextMenu.IsOpen)
             {
-                var screenWidth = SystemParameters.PrimaryScreenWidth;
-                var screenHeight = SystemParameters.PrimaryScreenHeight;
-                this.Left = (screenWidth / 2) - (this.Width / 2);
-                this.Top = 0; // Fenster am oberen Bildschirmrand positionieren
+                ShowDock(); // Dock sichtbar halten
+            }
+        };
+        Console.WriteLine("Event-Handler zugewiesen."); // Debugging
+    }
 
-                this.MouseMove += CheckMousePosition; // Bestätigen, dass die Maus sich bewegt
-                DockPanel.MouseEnter += DockPanel_MouseEnter;
-                DockPanel.MouseLeave += DockPanel_MouseLeave;
-                DockPanel.DragEnter += (s, e) =>
-                {
-                    e.Effects = DragDropEffects.All;
-                    if (!dockVisible) ShowDock();
-                };
 
-                // Periodische Überprüfung, ob die Maus über einem der Docks ist
-                var hoverCheckTimer = new DispatcherTimer
-                {
-                    Interval = TimeSpan.FromSeconds(1)
-                };
-                hoverCheckTimer.Tick += (s, e) => CheckMouseHover();
-                hoverCheckTimer.Start();
-            };
-            DockPanel.MouseRightButtonDown += (s, e) =>
-            {
-                OpenMenuItem.Visibility = Visibility.Collapsed;
-                DeleteMenuItem.Visibility = Visibility.Collapsed;
-                EditMenuItem.Visibility = Visibility.Collapsed;
-                DockContextMenu.IsOpen = true;
-                if (!DockContextMenu.IsOpen)
-                {
-                    ShowDock(); // Dock sichtbar halten
-                }
-            };
-            Console.WriteLine("Event-Handler zugewiesen."); // Debugging
+
+
+
+
+        private void Open_Click(object sender, RoutedEventArgs e)
+        {
+            dockManager.Open_Click(sender, e);
         }
         private void CheckMouseHover()
         {
@@ -392,19 +403,6 @@ namespace MyDockApp
             Application.Current.Shutdown();
         }
 
-private void Open_Click(object sender, RoutedEventArgs e)
-{
-    if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
-    {
-        Console.WriteLine($"Open_Click aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
-        OpenFile(dockItem.FilePath);
-    }
-    else
-    {
-        Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem"); // Debug-Ausgabe
-    }
-}
-
 
 
 
@@ -419,37 +417,64 @@ private void Open_Click(object sender, RoutedEventArgs e)
             CategoryDockContainer.Visibility = Visibility.Visible;
             Console.WriteLine("CategoryDockContainer sichtbar gemacht"); // Debug-Ausgabe
         }
-
+        public void OpenDockItem(DockItem dockItem)
+        {
+            if (!string.IsNullOrEmpty(dockItem.FilePath))
+            {
+                Console.WriteLine($"OpenDockItem aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
+                OpenFile(dockItem.FilePath);
+            }
+            else
+            {
+                Console.WriteLine("OpenDockItem aufgerufen, Kategorie"); // Debug-Ausgabe
+                ShowCategoryDockPanel(new StackPanel
+                {
+                    Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
+                });
+            }
+        }
 
 
 
         public void OpenFile(string filePath)
         {
-            try
+            if (!string.IsNullOrEmpty(filePath))
             {
-                Console.WriteLine("Dateipfad: " + filePath); // Ausgabe des Dateipfads
-                Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = filePath,
+                        UseShellExecute = true
+                    });
+                    Console.WriteLine($"Dateipfad: {filePath}"); // Debug-Ausgabe
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Fehler beim Öffnen der Datei: {ex.Message}"); // Debug-Ausgabe
+                }
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine("Fehler beim Öffnen der Datei: " + ex.Message); // Debug-Ausgabe bei Fehler
+                Console.WriteLine("Fehler: Kein Dateipfad bereitgestellt"); // Debug-Ausgabe
             }
         }
 
 
-private void Delete_Click(object sender, RoutedEventArgs e)
-{
-    if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
-    {
-        Console.WriteLine($"Delete_Click aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
-        dockManager.RemoveDockItem(button);
-        Console.WriteLine("Element gelöscht und Dock aktualisiert"); // Debug-Ausgabe
-    }
-    else
-    {
-        Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem"); // Debug-Ausgabe
-    }
-}
+
+        private void Delete_Click(object sender, RoutedEventArgs e)
+        {
+            if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+            {
+                Console.WriteLine($"Delete_Click aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
+                dockManager.RemoveDockItem(button);
+                Console.WriteLine("Element gelöscht und Dock aktualisiert"); // Debug-Ausgabe
+            }
+            else
+            {
+                Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem"); // Debug-Ausgabe
+            }
+        }
 
 
 
@@ -478,7 +503,6 @@ private void Delete_Click(object sender, RoutedEventArgs e)
         public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
             Console.WriteLine("ShowCategoryDockPanel aufgerufen"); // Debugging
-
             CategoryDockContainer.Children.Clear(); // Existierende Dockbar leeren
             CategoryDockContainer.Children.Add(categoryDock); // Neue Dockbar hinzufügen
             CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der zweiten Dockbar setzen
@@ -491,6 +515,7 @@ private void Delete_Click(object sender, RoutedEventArgs e)
 
             Console.WriteLine("CategoryDockContainer ist jetzt sichtbar, MainStackPanel neu positioniert."); // Debugging
         }
+
 
 
 
@@ -514,72 +539,72 @@ private void Delete_Click(object sender, RoutedEventArgs e)
 
 
 
-private void Edit_Click(object sender, RoutedEventArgs e)
-{
-    if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
-    {
-        Console.WriteLine("Edit_Click aufgerufen, filePath: " + dockItem.FilePath); // Debug-Ausgabe
-
-        EditPropertiesWindow editWindow = new EditPropertiesWindow
+        private void Edit_Click(object sender, RoutedEventArgs e)
         {
-            Owner = this,
-            NameTextBox = { Text = System.IO.Path.GetFileNameWithoutExtension(dockItem.FilePath) },
-            PathTextBox = { Text = dockItem.FilePath }
-        };
-        
-        if (editWindow.ShowDialog() == true)
-        {
-            Console.WriteLine("EditPropertiesWindow Dialog result: true"); // Debug-Ausgabe
-            string newName = editWindow.NameTextBox.Text;
-            string newPath = editWindow.PathTextBox.Text;
-            if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
+            if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
             {
-                Console.WriteLine("Neuer Name: " + newName + ", Neuer Pfad: " + newPath); // Debug-Ausgabe
-                var icon = IconHelper.GetIcon(newPath);
-                var image = new Image
+                Console.WriteLine("Edit_Click aufgerufen, filePath: " + dockItem.FilePath); // Debug-Ausgabe
+
+                EditPropertiesWindow editWindow = new EditPropertiesWindow
                 {
-                    Source = icon,
-                    Width = 32,
-                    Height = 32,
-                    Margin = new Thickness(5)
+                    Owner = this,
+                    NameTextBox = { Text = System.IO.Path.GetFileNameWithoutExtension(dockItem.FilePath) },
+                    PathTextBox = { Text = dockItem.FilePath }
                 };
-                var textBlock = new TextBlock
+
+                if (editWindow.ShowDialog() == true)
                 {
-                    Text = newName,
-                    TextAlignment = TextAlignment.Center,
-                    TextWrapping = TextWrapping.Wrap,
-                    Width = 60,
-                    Margin = new Thickness(5)
-                };
-                var stackPanel = new StackPanel
+                    Console.WriteLine("EditPropertiesWindow Dialog result: true"); // Debug-Ausgabe
+                    string newName = editWindow.NameTextBox.Text;
+                    string newPath = editWindow.PathTextBox.Text;
+                    if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
+                    {
+                        Console.WriteLine("Neuer Name: " + newName + ", Neuer Pfad: " + newPath); // Debug-Ausgabe
+                        var icon = IconHelper.GetIcon(newPath);
+                        var image = new Image
+                        {
+                            Source = icon,
+                            Width = 32,
+                            Height = 32,
+                            Margin = new Thickness(5)
+                        };
+                        var textBlock = new TextBlock
+                        {
+                            Text = newName,
+                            TextAlignment = TextAlignment.Center,
+                            TextWrapping = TextWrapping.Wrap,
+                            Width = 60,
+                            Margin = new Thickness(5)
+                        };
+                        var stackPanel = new StackPanel
+                        {
+                            Orientation = Orientation.Vertical,
+                            Width = 70
+                        };
+                        stackPanel.Children.Add(image);
+                        stackPanel.Children.Add(textBlock);
+                        button.Content = stackPanel;
+                        dockItem.DisplayName = newName;
+                        dockItem.FilePath = newPath;
+                        button.Tag = dockItem;
+                        dockManager.SaveDockItems();
+                        Console.WriteLine("Dock-Elemente gespeichert"); // Debug-Ausgabe
+                    }
+                    else
+                    {
+                        Console.WriteLine("Ungültiger Name oder Pfad"); // Debug-Ausgabe
+                    }
+                }
+                else
                 {
-                    Orientation = Orientation.Vertical,
-                    Width = 70
-                };
-                stackPanel.Children.Add(image);
-                stackPanel.Children.Add(textBlock);
-                button.Content = stackPanel;
-                dockItem.DisplayName = newName;
-                dockItem.FilePath = newPath;
-                button.Tag = dockItem;
-                dockManager.SaveDockItems();
-                Console.WriteLine("Dock-Elemente gespeichert"); // Debug-Ausgabe
+                    Console.WriteLine("EditPropertiesWindow Dialog result: false"); // Debug-Ausgabe
+                }
             }
             else
             {
-                Console.WriteLine("Ungültiger Name oder Pfad"); // Debug-Ausgabe
+                Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem"); // Debug-Ausgabe
             }
         }
-        else
-        {
-            Console.WriteLine("EditPropertiesWindow Dialog result: false"); // Debug-Ausgabe
-        }
-    }
-    else
-    {
-        Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem"); // Debug-Ausgabe
-    }
-}
 
 
     }

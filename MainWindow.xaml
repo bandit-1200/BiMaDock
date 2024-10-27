@@ -5,7 +5,7 @@
         WindowStyle="None" ResizeMode="NoResize" Topmost="True"
         VerticalAlignment="Top" AllowsTransparency="True" Background="Transparent"
         AllowDrop="True"
-        ShowInTaskbar="False"> <!-- Symbol in der Taskleiste deaktivieren -->
+        ShowInTaskbar="False">
     <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
         <StackPanel x:Name="MainStackPanel" Orientation="Vertical" HorizontalAlignment="Center">
             <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0">
@@ -15,7 +15,7 @@
                             HorizontalAlignment="Center"
                             MinWidth="60" MinHeight="50"
                             Visibility="Visible"
-                            Canvas.Top="0"> <!-- Die Top-Property auf 0 setzen -->
+                            Canvas.Top="0">
                     <StackPanel.ContextMenu>
                         <ContextMenu x:Name="DockContextMenu">
                             <MenuItem Header="Beenden" Click="Exit_Click"/>
