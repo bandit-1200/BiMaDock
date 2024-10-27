@@ -10,7 +10,7 @@ using System.Windows.Media; // Für SolidColorBrush und Colors
 
 public class DockManager
 {
-    
+
 
     private StackPanel dockPanel;
     private MainWindow mainWindow;
@@ -18,9 +18,12 @@ public class DockManager
     private Button? draggedButton = null;  // Definition hinzugefügt
     private bool isDropInProgress = false;
     private List<string> categories; // Liste zur Verwaltung der Kategorien
-    private List<DockItem> dockItems; // Liste zur Verwaltung der Dock-Items
-
+    // private List<DockItem> dockItems; // Liste zur Verwaltung der Dock-Items
+    private List<DockItem> dockItems = new List<DockItem>();
     public DockManager(StackPanel panel, MainWindow window)
+
+
+
     {
         dockPanel = panel;
         mainWindow = window;
@@ -170,6 +173,7 @@ public class DockManager
 
 
 
+
     public void AddCategoryItem(string categoryName)
     {
         var categoryItem = new DockItem
@@ -300,6 +304,23 @@ public class DockManager
             isDropInProgress = false; // Flag zurücksetzen
         }
         mainWindow.SetDragging(false); // Dragging-Flag zurücksetzen
+    }
+
+    public void UpdateDockItemLocation(Button button)
+    {
+        var dockItem = button.Tag as DockItem;
+        if (dockItem != null)
+        {
+            // Aktualisiere die Position des Dock-Items
+            dockItems.Remove(dockItem);
+            dockItems.Add(dockItem);
+            SaveDockItems();
+            Console.WriteLine($"DockItem {dockItem.DisplayName} aktualisiert"); // Debug-Ausgabe
+        }
+        else
+        {
+            Console.WriteLine("DockItem ist null"); // Debug-Ausgabe
+        }
     }
 
 
