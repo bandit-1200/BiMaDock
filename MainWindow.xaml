@@ -32,7 +32,7 @@
 
             <!-- Kategorie-Dock Panel -->
             <StackPanel Orientation="Horizontal" Name="CategoryDockContainer"
-                        Background="#EEEEEE" Visibility="Collapsed"
+                        AllowDrop="True" Background="#EEEEEE" Visibility="Collapsed"
                         HorizontalAlignment="Center"
                         MinWidth="60" MinHeight="50"/>
         </StackPanel>

@@ -401,6 +401,7 @@ private void AddDockItemAt(DockItem item, int index)
         var dockItem = button.Tag as DockItem;
         if (dockItem != null)
         {
+            Console.WriteLine("Button Click Event ausgelöst: " + dockItem.DisplayName); // Debugging
             mainWindow.OpenDockItem(dockItem); // Aufruf von OpenDockItem im MainWindow
         }
         else
@@ -410,11 +411,9 @@ private void AddDockItemAt(DockItem item, int index)
     };
 
     dockPanel.Children.Insert(index, button);
-    Console.WriteLine($"Element eingefügt an Position: {index}"); // Debugging
+    Console.WriteLine($"Element eingefügt an Position: {index}, IsCategory: {item.IsCategory}"); // Debugging
     SaveDockItems();
 }
-
-
 
 
 
