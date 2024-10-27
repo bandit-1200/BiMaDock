@@ -28,13 +28,12 @@ namespace MyDockApp
             isDragging = value;
         }
 
-
         public MainWindow()
         {
             InitializeComponent();
             AllowDrop = true;
             Console.WriteLine("Hauptfenster initialisiert."); // Debugging
-            dockManager = new DockManager(DockPanel, this);
+            dockManager = new DockManager(DockPanel, CategoryDockContainer, this); // Übergeben von CategoryDockContainer
             dockManager.LoadDockItems();
             Console.WriteLine("Dock-Elemente geladen."); // Debugging
 
@@ -58,7 +57,7 @@ namespace MyDockApp
             DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
             DockPanel.PreviewMouseMove += DockPanel_MouseMove;
             DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
-            DockPanel.PreviewGiveFeedback += DockPanel_PreviewGiveFeedback;
+            DockPanel.PreviewGiveFeedback += DockPanel_PreviewGiveFeedback; // Ereignis hinzufügen
             this.Loaded += (s, e) =>
             {
                 var screenWidth = SystemParameters.PrimaryScreenWidth;
@@ -96,22 +95,13 @@ namespace MyDockApp
             };
 
             // Registriere die Event-Handler für das Kategoriedock
+            CategoryDockContainer.AllowDrop = true;
             CategoryDockContainer.Drop += CategoryDockContainer_Drop;
             CategoryDockContainer.DragEnter += CategoryDockContainer_DragEnter;
             CategoryDockContainer.DragLeave += CategoryDockContainer_DragLeave;
 
-
-
-            var categoryElement = new Button { Content = "Kategorie-Element", Width = 100, Height = 50, Tag = new DockItem { DisplayName = "Kategorie", IsCategory = true } };
-            categoryElement.DragEnter += CategoryElement_DragEnter;
-            CategoryDockContainer.Children.Add(categoryElement);
-
-
-
             Console.WriteLine("Event-Handler zugewiesen."); // Debugging
         }
-
-
 
 
         private void Open_Click(object sender, RoutedEventArgs e)
@@ -259,112 +249,112 @@ namespace MyDockApp
 
 
 
-private void DockPanel_PreviewGiveFeedback(object sender, GiveFeedbackEventArgs e)
-{
-    if (draggedButton != null)
-    {
-        var mousePosition = Mouse.GetPosition(DockPanel);
-
-        if (mousePosition.X >= 0 && mousePosition.X <= DockPanel.ActualWidth &&
-            mousePosition.Y >= 0 && mousePosition.Y <= DockPanel.ActualHeight)
+        private void DockPanel_PreviewGiveFeedback(object sender, GiveFeedbackEventArgs e)
         {
-            Console.WriteLine($"Dragging: {draggedButton.Tag}, Effects: {e.Effects}, Mouse Position: {mousePosition}"); // Debugging
-
-            var hitTestResult = VisualTreeHelper.HitTest(DockPanel, mousePosition);
-            if (hitTestResult != null)
+            if (draggedButton != null)
             {
-                var overElement = hitTestResult.VisualHit as UIElement;
-                if (overElement != null)
+                var mousePosition = Mouse.GetPosition(DockPanel);
+
+                if (mousePosition.X >= 0 && mousePosition.X <= DockPanel.ActualWidth &&
+                    mousePosition.Y >= 0 && mousePosition.Y <= DockPanel.ActualHeight)
                 {
-                    if (overElement is Button button && button.Tag is DockItem dockItem)
+                    Console.WriteLine($"Dragging: {draggedButton.Tag}, Effects: {e.Effects}, Mouse Position: {mousePosition}"); // Debugging
+
+                    var hitTestResult = VisualTreeHelper.HitTest(DockPanel, mousePosition);
+                    if (hitTestResult != null)
                     {
-                        Console.WriteLine($"Über Element: {dockItem.DisplayName}, IsCategory: {dockItem.IsCategory}, Mouse Position: {mousePosition}"); // Debugging
+                        var overElement = hitTestResult.VisualHit as UIElement;
+                        if (overElement != null)
+                        {
+                            if (overElement is Button button && button.Tag is DockItem dockItem)
+                            {
+                                Console.WriteLine($"Über Element: {dockItem.DisplayName}, IsCategory: {dockItem.IsCategory}, Mouse Position: {mousePosition}"); // Debugging
+                            }
+                            else
+                            {
+                                Console.WriteLine("Über einem unbekannten Element oder kein DockItem"); // Debugging
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Keine Übereinstimmung mit einem Element im DockPanel"); // Debugging
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("Über einem unbekannten Element oder kein DockItem"); // Debugging
+                        Console.WriteLine("HitTestResult ist null"); // Debugging
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Keine Übereinstimmung mit einem Element im DockPanel"); // Debugging
+                    Console.WriteLine("Mausposition außerhalb der Grenzen des DockPanels"); // Debugging
+                }
+            }
+            e.UseDefaultCursors = false;
+        }
+
+
+
+
+
+
+
+
+
+        private void DockPanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (dragStartPoint.HasValue && draggedButton != null)
+            {
+                Point position = e.GetPosition(DockPanel);
+                Vector diff = dragStartPoint.Value - position;
+
+                if (e.LeftButton == MouseButtonState.Pressed &&
+                    (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                     Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
+                {
+                    Console.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
+                    DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
+                    dragStartPoint = null;
+                    draggedButton = null;
+                    isDragging = false; // Setze Dragging-Flag zurück
                 }
             }
             else
             {
-                Console.WriteLine("HitTestResult ist null"); // Debugging
-            }
-        }
-        else
-        {
-            Console.WriteLine("Mausposition außerhalb der Grenzen des DockPanels"); // Debugging
-        }
-    }
-    e.UseDefaultCursors = false;
-}
+                Point mousePosition = e.GetPosition(DockPanel);
+                bool isOverElement = false;
 
-
-
-
-
-
-
-
-
-private void DockPanel_MouseMove(object sender, MouseEventArgs e)
-{
-    if (dragStartPoint.HasValue && draggedButton != null)
-    {
-        Point position = e.GetPosition(DockPanel);
-        Vector diff = dragStartPoint.Value - position;
-
-        if (e.LeftButton == MouseButtonState.Pressed &&
-            (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
-             Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
-        {
-            Console.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
-            DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
-            dragStartPoint = null;
-            draggedButton = null;
-            isDragging = false; // Setze Dragging-Flag zurück
-        }
-    }
-    else
-    {
-        Point mousePosition = e.GetPosition(DockPanel);
-        bool isOverElement = false;
-
-        for (int i = 0; i < DockPanel.Children.Count; i++)
-        {
-            if (DockPanel.Children[i] is Button button)
-            {
-                Rect elementRect = new Rect(button.TranslatePoint(new Point(0, 0), DockPanel), button.RenderSize);
-
-                if (elementRect.Contains(mousePosition))
+                for (int i = 0; i < DockPanel.Children.Count; i++)
                 {
-                    Console.WriteLine($"Maus über Element: {button.Tag}, Position: {mousePosition}"); // Debugging
-                    isOverElement = true;
-
-                    if (button.Tag is DockItem dockItem && dockItem.IsCategory)
+                    if (DockPanel.Children[i] is Button button)
                     {
-                        Console.WriteLine("Kategorie-Element erkannt: " + dockItem.DisplayName); // Debugging
-                        ShowCategoryDockPanel(new StackPanel
-                        {
-                            Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
-                        });
-                    }
+                        Rect elementRect = new Rect(button.TranslatePoint(new Point(0, 0), DockPanel), button.RenderSize);
 
-                    break;
+                        if (elementRect.Contains(mousePosition))
+                        {
+                            Console.WriteLine($"Maus über Element: {button.Tag}, Position: {mousePosition}"); // Debugging
+                            isOverElement = true;
+
+                            if (button.Tag is DockItem dockItem && dockItem.IsCategory)
+                            {
+                                Console.WriteLine("Kategorie-Element erkannt: " + dockItem.DisplayName); // Debugging
+                                ShowCategoryDockPanel(new StackPanel
+                                {
+                                    Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
+                                });
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+                if (!isOverElement)
+                {
+                    Console.WriteLine($"Maus über Dock ohne Element, Position: {mousePosition}"); // Debugging
                 }
             }
         }
-
-        if (!isOverElement)
-        {
-            Console.WriteLine($"Maus über Dock ohne Element, Position: {mousePosition}"); // Debugging
-        }
-    }
-}
 
 
 
@@ -440,66 +430,107 @@ private void DockPanel_MouseMove(object sender, MouseEventArgs e)
         }
 
 
+        public void UpdateDockItemLocation(Button button)
+        {
+            var dockItem = button.Tag as DockItem;
+            if (dockItem != null)
+            {
+                // Aktualisiere die Position des Dock-Items
+                dockManager.UpdateDockItemLocation(button);
+                Console.WriteLine($"DockItem {dockItem.DisplayName} aktualisiert und gespeichert"); // Debug-Ausgabe
+            }
+            else
+            {
+                Console.WriteLine("DockItem ist null"); // Debug-Ausgabe
+            }
+        }
+
+
         private void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(typeof(Button)))
+            Console.WriteLine("CategoryDockContainer_Drop aufgerufen"); // Debug-Ausgabe
+            if (e.Data.GetDataPresent(DataFormats.Serializable))
             {
-                var button = e.Data.GetData(typeof(Button)) as Button;
+                var button = e.Data.GetData(DataFormats.Serializable) as Button;
                 if (button != null)
                 {
-                    DockPanel.Children.Remove(button); // Entferne das Element aus dem Hauptdock
+                    // Überprüfen, ob das übergeordnete Element des Buttons nicht null ist und entfernen
+                    var parent = VisualTreeHelper.GetParent(button) as Panel;
+                    if (parent != null)
+                    {
+                        parent.Children.Remove(button);
+                    }
+
                     CategoryDockContainer.Children.Add(button); // Füge das Element dem Kategoriedock hinzu
                     CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
                     Console.WriteLine($"Element {button.Content} ins Kategoriedock verschoben"); // Debug-Ausgabe
 
                     // Aktualisiere die interne Struktur oder Daten, falls nötig
-                    dockManager.UpdateDockItemLocation(button);
+                    UpdateDockItemLocation(button);
                 }
+                else
+                {
+                    Console.WriteLine("Button ist null"); // Debug-Ausgabe
+                }
+            }
+            else
+            {
+                Console.WriteLine("Kein Button erkannt im Drop-Event"); // Debug-Ausgabe
             }
         }
 
 
 
-private void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
-{
-    if (e.Data.GetDataPresent(typeof(Button)))
-    {
-        e.Effects = DragDropEffects.Move;
-        CategoryDockContainer.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
-        Console.WriteLine("Element über dem Kategoriedock erkannt"); // Debug-Ausgabe
-    }
-    else
-    {
-        e.Effects = DragDropEffects.None;
-    }
-}
 
 
 
 
 
 
-
-private void CategoryElement_DragEnter(object sender, DragEventArgs e)
-{
-    if (e.Data.GetDataPresent(typeof(Button)))
-    {
-        e.Effects = DragDropEffects.Move;
-        var categoryElement = sender as Button;
-        if (categoryElement != null && categoryElement.Tag is DockItem dockItem && dockItem.IsCategory)
+        private void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
         {
-            ShowCategoryDockPanel(new StackPanel
+            Console.WriteLine("CategoryDockContainer_DragEnter aufgerufen"); // Debug-Ausgabe
+            if (e.Data.GetDataPresent(DataFormats.Serializable))
             {
-                Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
-            });
-            Console.WriteLine("Kategorie-Dock geöffnet: " + dockItem.DisplayName); // Debug-Ausgabe
+                e.Effects = DragDropEffects.Move;
+                CategoryDockContainer.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
+                Console.WriteLine("Element über dem Kategoriedock erkannt"); // Debug-Ausgabe
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+                Console.WriteLine("Kein Button erkannt"); // Debug-Ausgabe
+            }
         }
-    }
-    else
-    {
-        e.Effects = DragDropEffects.None;
-    }
-}
+
+
+
+
+
+
+
+
+
+        private void CategoryElement_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(Button)))
+            {
+                e.Effects = DragDropEffects.Move;
+                var categoryElement = sender as Button;
+                if (categoryElement != null && categoryElement.Tag is DockItem dockItem && dockItem.IsCategory)
+                {
+                    ShowCategoryDockPanel(new StackPanel
+                    {
+                        Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
+                    });
+                    Console.WriteLine("Kategorie-Dock geöffnet: " + dockItem.DisplayName); // Debug-Ausgabe
+                }
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+        }
 
 
 
@@ -507,40 +538,30 @@ private void CategoryElement_DragEnter(object sender, DragEventArgs e)
 
         private void CategoryDockContainer_DragLeave(object sender, DragEventArgs e)
         {
+            Console.WriteLine("CategoryDockContainer_DragLeave aufgerufen"); // Debug-Ausgabe 4
             CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
-            Console.WriteLine("Element hat das Kategoriedock verlassen"); // Debug-Ausgabe
+            Console.WriteLine("Element hat das Kategoriedock verlassen"); // Debug-Ausgabe 5
         }
 
 
-        // public void UpdateDockItemLocation(Button button)
-        // {
-        //     var dockItem = button.Tag as DockItem;
-        //     if (dockItem != null)
-        //     {
-        //         // Aktualisiere die Position des Dock-Items
-        //         dockItems.Remove(dockItem);
-        //         dockItems.Add(dockItem);
-        //         SaveDockItems();
-        //         Console.WriteLine($"DockItem {dockItem.DisplayName} aktualisiert"); // Debug-Ausgabe
+
+
+
+
+
+        //     public void OpenCategory(DockItem item)
+        //    {
+        //         Console.WriteLine("OpenCategory aufgerufen für: " + item.DisplayName); // Debug-Ausgabe
+
+        //         // Hier die Logik zum Öffnen der Kategorie implementieren
+        //         // Beispiel: Öffnen eines neuen Fensters oder Anzeigen eines Panels
+        //         CategoryDockContainer.Visibility = Visibility.Visible;
+        //         Console.WriteLine("CategoryDockContainer sichtbar gemacht"); // Debug-Ausgabe
         //     }
-        //     else
-        //     {
-        //         Console.WriteLine("DockItem ist null"); // Debug-Ausgabe
-        //     }
-        // }
 
 
 
 
-        public void OpenCategory(DockItem item)
-        {
-            Console.WriteLine("OpenCategory aufgerufen für: " + item.DisplayName); // Debug-Ausgabe
-
-            // Hier die Logik zum Öffnen der Kategorie implementieren
-            // Beispiel: Öffnen eines neuen Fensters oder Anzeigen eines Panels
-            CategoryDockContainer.Visibility = Visibility.Visible;
-            Console.WriteLine("CategoryDockContainer sichtbar gemacht"); // Debug-Ausgabe
-        }
         public void OpenDockItem(DockItem dockItem)
         {
             if (!string.IsNullOrEmpty(dockItem.FilePath))
@@ -605,25 +626,25 @@ private void CategoryElement_DragEnter(object sender, DragEventArgs e)
 
 
 
-private void AddCategory_Click(object sender, RoutedEventArgs e)
-{
-    var inputDialog = new InputDialog("Kategorie erstellen", "Bitte geben Sie den Namen der Kategorie ein:");
-    if (inputDialog.ShowDialog() == true)
-    {
-        string categoryName = inputDialog.Answer;
-        dockManager.AddCategoryItem(categoryName);
-    }
-}
-
-
-
-        private void Kategorie_Click(object sender, RoutedEventArgs e)
+        private void AddCategory_Click(object sender, RoutedEventArgs e)
         {
-            ShowCategoryDockPanel(new StackPanel
+            var inputDialog = new InputDialog("Kategorie erstellen", "Bitte geben Sie den Namen der Kategorie ein:");
+            if (inputDialog.ShowDialog() == true)
             {
-                Children = { new Button { Content = "Kategorie-Element", Width = 100, Height = 50 } }
-            });
+                string categoryName = inputDialog.Answer;
+                dockManager.AddCategoryItem(categoryName);
+            }
         }
+
+
+
+        // private void Kategorie_Click(object sender, RoutedEventArgs e)
+        // {
+        //     ShowCategoryDockPanel(new StackPanel
+        //     {
+        //         Children = { new Button { Content = "Kategorie-Element", Width = 100, Height = 50 } }
+        //     });
+        // }
 
         public void ShowCategoryDockPanel(StackPanel categoryDock)
         {

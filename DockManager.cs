@@ -11,29 +11,29 @@ using System.Windows.Media; // Für SolidColorBrush und Colors
 public class DockManager
 {
 
-
     private StackPanel dockPanel;
+    private StackPanel categoryDockContainer; // Referenz zu CategoryDockContainer
     private MainWindow mainWindow;
     private Point? dragStartPoint = null;  // Definition hinzugefügt
     private Button? draggedButton = null;  // Definition hinzugefügt
+    private bool isDragging = false;       // Definition hinzugefügt
     private bool isDropInProgress = false;
     private List<string> categories; // Liste zur Verwaltung der Kategorien
-    // private List<DockItem> dockItems; // Liste zur Verwaltung der Dock-Items
     private List<DockItem> dockItems = new List<DockItem>();
-    public DockManager(StackPanel panel, MainWindow window)
 
-
-
+    public DockManager(StackPanel panel, StackPanel categoryPanel, MainWindow window)
     {
         dockPanel = panel;
+        categoryDockContainer = categoryPanel; // Zuweisung des Kategorie-Docks
         mainWindow = window;
         dockPanel.Drop += DockPanel_Drop;
         dockPanel.MouseMove += DockPanel_MouseMove;  // Event-Handler für MouseMove hinzufügen
         dockPanel.MouseEnter += DockPanel_MouseEnter;  // Event-Handler für MouseEnter hinzufügen
-        // dockPanel.MouseLeave += DockPanel_MouseLeave;  // Event-Handler für MouseLeave hinzufügen
         categories = new List<string>(); // Initialisierung der Kategorienliste
         dockItems = new List<DockItem>(); // Initialisierung der Dock-Items-Liste
     }
+
+
 
     private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
     {
@@ -119,24 +119,23 @@ public class DockManager
     public void LoadDockItems()
     {
         Console.WriteLine("Lade Dock-Elemente..."); // Debugging
-
         var items = SettingsManager.LoadSettings();
-
         if (items == null || items.Count == 0)
         {
             var explorerItem = new DockItem
             {
                 FilePath = @"C:\Windows\explorer.exe",
                 DisplayName = "File Explorer",
-                Category = ""
+                Category = "",
+                IsCategory = false
             };
             AddDockItemAt(explorerItem, 0);
-
             var cmdItem = new DockItem
             {
                 FilePath = @"C:\Windows\System32\cmd.exe",
                 DisplayName = "Command Prompt",
-                Category = ""
+                Category = "",
+                IsCategory = false
             };
             AddDockItemAt(cmdItem, 1);
         }
@@ -144,7 +143,14 @@ public class DockManager
         {
             foreach (var item in items)
             {
-                AddDockItemAt(item, dockPanel.Children.Count);
+                if (item.IsCategory)
+                {
+                    AddDockItemAt(item, categoryDockContainer.Children.Count);
+                }
+                else
+                {
+                    AddDockItemAt(item, dockPanel.Children.Count);
+                }
             }
         }
         Console.WriteLine("Dock-Elemente geladen."); // Debugging
@@ -154,17 +160,28 @@ public class DockManager
     public void SaveDockItems()
     {
         var items = new List<DockItem>();
-        foreach (Button button in dockPanel.Children)
+        foreach (UIElement element in dockPanel.Children)
         {
-            // Hier können wir debuggen, ob jedes Button-Tag korrekt als DockItem erkannt wird
-            if (button.Tag is DockItem dockItem)
+            if (element is Button button && button.Tag is DockItem dockItem)
             {
                 Console.WriteLine($"Speichern: {dockItem.DisplayName}, Path: {dockItem.FilePath}, Category: {dockItem.Category}"); // Debugging
                 items.Add(dockItem);
             }
             else
             {
-                Console.WriteLine("Button-Tag ist kein DockItem"); // Debugging
+                Console.WriteLine("Element ist kein Button oder Button-Tag ist kein DockItem"); // Debugging
+            }
+        }
+        foreach (UIElement element in categoryDockContainer.Children)
+        {
+            if (element is Button button && button.Tag is DockItem dockItem)
+            {
+                Console.WriteLine($"Speichern im Kategorie-Dock: {dockItem.DisplayName}, Path: {dockItem.FilePath}, Category: {dockItem.Category}"); // Debugging
+                items.Add(dockItem);
+            }
+            else
+            {
+                Console.WriteLine("Element im Kategorie-Dock ist kein Button oder Button-Tag ist kein DockItem"); // Debugging
             }
         }
         SettingsManager.SaveSettings(items);
@@ -172,23 +189,19 @@ public class DockManager
 
 
 
-
-
-public void AddCategoryItem(string categoryName)
-{
-    var categoryItem = new DockItem
+    public void AddCategoryItem(string categoryName)
     {
-        FilePath = "",
-        DisplayName = categoryName,
-        Category = "",
-        IsCategory = true // Setze die IsCategory-Eigenschaft
-    };
+        var categoryItem = new DockItem
+        {
+            FilePath = "",
+            DisplayName = categoryName,
+            Category = "",
+            IsCategory = true // Setze die IsCategory-Eigenschaft
+        };
 
-    InitializeCategoryDock(); // Kategorie-Dock initialisieren und anzeigen
-    AddDockItemAt(categoryItem, dockPanel.Children.Count);
-}
-
-
+        InitializeCategoryDock(); // Kategorie-Dock initialisieren und anzeigen
+        AddDockItemAt(categoryItem, dockPanel.Children.Count);
+    }
 
 
 
@@ -335,86 +348,106 @@ public void AddCategoryItem(string categoryName)
         }
     }
 
-
-private void AddDockItemAt(DockItem item, int index)
-{
-    var icon = IconHelper.GetIcon(item.FilePath);
-    var image = new Image
+    private void AddDockItemAt(DockItem item, int index)
     {
-        Source = icon,
-        Width = 32,
-        Height = 32,
-        Margin = new Thickness(5)
-    };
-    var textBlock = new TextBlock
-    {
-        Text = item.DisplayName,
-        TextAlignment = TextAlignment.Center,
-        TextWrapping = TextWrapping.Wrap,
-        Width = 60,
-        Margin = new Thickness(5)
-    };
-    var stackPanel = new StackPanel
-    {
-        Orientation = Orientation.Vertical,
-        Width = 70
-    };
-    stackPanel.Children.Add(image);
-    stackPanel.Children.Add(textBlock);
-    var button = new Button
-    {
-        Content = stackPanel,
-        Tag = item,  // Das gesamte DockItem als Tag verwenden
-        Margin = new Thickness(5),
-        Width = 70
-    };
-
-    button.MouseRightButtonDown += (s, e) =>
-    {
-        Console.WriteLine("Rechtsklick auf Element: " + item.DisplayName); // Debugging
-        e.Handled = true; // Ereignis als verarbeitet markieren
-        mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
-        mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
-        mainWindow.EditMenuItem.Visibility = Visibility.Visible;
-        mainWindow.DockContextMenu.PlacementTarget = button;
-        mainWindow.DockContextMenu.IsOpen = true;
-        if (!mainWindow.DockContextMenu.IsOpen)
+        var icon = IconHelper.GetIcon(item.FilePath);
+        var image = new Image
         {
-            mainWindow.ShowDock(); // Dock sichtbar halten
-        }
-    };
-
-    button.PreviewMouseLeftButtonDown += (s, e) =>
-    {
-        Console.WriteLine("Button Mouse Down Event ausgelöst"); // Debugging
-        dragStartPoint = e.GetPosition(dockPanel);
-        draggedButton = button;
-        if (draggedButton != null)
+            Source = icon,
+            Width = 32,
+            Height = 32,
+            Margin = new Thickness(5)
+        };
+        var textBlock = new TextBlock
         {
-            Console.WriteLine("Drag Start: " + ((DockItem)draggedButton.Tag).FilePath); // Debugging
-        }
-    };
-
-    // Click-Event-Handler hinzufügen
-    button.Click += (s, e) =>
-    {
-        var dockItem = button.Tag as DockItem;
-        if (dockItem != null)
+            Text = item.DisplayName,
+            TextAlignment = TextAlignment.Center,
+            TextWrapping = TextWrapping.Wrap,
+            Width = 60,
+            Margin = new Thickness(5)
+        };
+        var stackPanel = new StackPanel
         {
-            Console.WriteLine("Button Click Event ausgelöst: " + dockItem.DisplayName); // Debugging
-            mainWindow.OpenDockItem(dockItem); // Aufruf von OpenDockItem im MainWindow
-        }
-        else
+            Orientation = Orientation.Vertical,
+            Width = 70
+        };
+        stackPanel.Children.Add(image);
+        stackPanel.Children.Add(textBlock);
+        var button = new Button
         {
-            Console.WriteLine("DockItem ist null"); // Debugging
-        }
-    };
+            Content = stackPanel,
+            Tag = item,  // Das gesamte DockItem als Tag verwenden
+            Margin = new Thickness(5),
+            Width = 70
+        };
 
-    dockPanel.Children.Insert(index, button);
-    Console.WriteLine($"Element eingefügt an Position: {index}, IsCategory: {item.IsCategory}"); // Debugging
-    SaveDockItems();
-}
+        button.MouseRightButtonDown += (s, e) =>
+        {
+            Console.WriteLine("Rechtsklick auf Element: " + item.DisplayName); // Debugging
+            e.Handled = true; // Ereignis als verarbeitet markieren
 
+            // Kontextelemente anzeigen
+            mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
+            mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
+            mainWindow.EditMenuItem.Visibility = Visibility.Visible;
+
+            // Kontextmenü über dem spezifischen Button-Element öffnen
+            mainWindow.DockContextMenu.PlacementTarget = button;
+            mainWindow.DockContextMenu.IsOpen = true;
+
+            Console.WriteLine("Kontextmenü für " + item.DisplayName + " geöffnet"); // Debugging
+        };
+
+        button.PreviewMouseLeftButtonDown += (s, e) =>
+        {
+            Console.WriteLine("Button Mouse Down Event ausgelöst"); // Debugging
+            dragStartPoint = e.GetPosition(dockPanel);
+            draggedButton = button;
+            if (draggedButton != null)
+            {
+                Console.WriteLine("Drag Start: " + ((DockItem)draggedButton.Tag).FilePath); // Debugging
+            }
+        };
+
+        button.PreviewMouseMove += (s, e) =>
+        {
+            if (dragStartPoint.HasValue && draggedButton == button)
+            {
+                Point position = e.GetPosition(dockPanel);
+                Vector diff = dragStartPoint.Value - position;
+
+                if (e.LeftButton == MouseButtonState.Pressed &&
+                    (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                     Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
+                {
+                    Console.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
+                    DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
+                    dragStartPoint = null;
+                    draggedButton = null;
+                    isDragging = false; // Setze Dragging-Flag zurück
+                }
+            }
+        };
+
+        // Click-Event-Handler hinzufügen
+        button.Click += (s, e) =>
+        {
+            var dockItem = button.Tag as DockItem;
+            if (dockItem != null)
+            {
+                Console.WriteLine("Button Click Event ausgelöst: " + dockItem.DisplayName); // Debugging
+                mainWindow.OpenDockItem(dockItem); // Aufruf von OpenDockItem im MainWindow
+            }
+            else
+            {
+                Console.WriteLine("DockItem ist null"); // Debugging
+            }
+        };
+
+        dockPanel.Children.Insert(index, button);
+        Console.WriteLine($"Element eingefügt an Position: {index}, IsCategory: {item.IsCategory}"); // Debugging
+        SaveDockItems();
+    }
 
 
     public void Open_Click(object sender, RoutedEventArgs e)
