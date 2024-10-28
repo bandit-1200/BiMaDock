@@ -337,10 +337,12 @@ namespace MyDockApp
 
                             if (button.Tag is DockItem dockItem && dockItem.IsCategory)
                             {
-                                Console.WriteLine("Kategorie-Element erkannt: " + dockItem.DisplayName); // Debugging
+                                Console.WriteLine("Kategorie-Element erkannt>: " + dockItem.DisplayName); // Debugging
                                 ShowCategoryDockPanel(new StackPanel
                                 {
-                                    Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
+                                    Name =dockItem.DisplayName,
+
+                                    // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
                                 });
                             }
 
@@ -650,24 +652,49 @@ private void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         //         Children = { new Button { Content = "Kategorie-Element", Width = 100, Height = 50 } }
         //     });
         // }
+public void ShowCategoryDockPanel(StackPanel categoryDock)
+{
+    Console.WriteLine("ShowCategoryDockPanel - Kategorie-Element erkannt: " + categoryDock.Name); // Debugging des Kategorienamens
+    Console.WriteLine("ShowCategoryDockPanel aufgerufen"); // Debugging
 
-        public void ShowCategoryDockPanel(StackPanel categoryDock)
+    // Kategorie-Dock leeren und hinzufügen
+    CategoryDockContainer.Children.Clear();
+    CategoryDockContainer.Children.Add(categoryDock);
+    CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockContainer setzen
+
+    // Falls das Kategorie-Dock leer ist, setze die Größe auf die eines Elements
+    if (CategoryDockContainer.Children.Count == 0)
+    {
+        CategoryDockContainer.MinWidth = 200; // Setze die Breite auf die eines Elements
+        CategoryDockContainer.MinHeight = 100; // Setze die Höhe auf die eines Elements
+    }
+
+    // Elemente der `Docksettings`-Liste überprüfen
+    var items = SettingsManager.LoadSettings();
+    foreach (var item in items)
+    {
+        Console.WriteLine($"Überprüfe Element: {item.DisplayName} mit Kategorie: {item.Category}"); // Debugging
+        if (!string.IsNullOrEmpty(item.Category) && item.Category == categoryDock.Name)
         {
-            Console.WriteLine("ShowCategoryDockPanel aufgerufen"); // Debugging
-            CategoryDockContainer.Children.Clear(); // Existierende Dockbar leeren
-            CategoryDockContainer.Children.Add(categoryDock); // Neue Dockbar hinzufügen
-            CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der zweiten Dockbar setzen
-
-            // MainStackPanel nach unten verschieben, um Platz zu schaffen
-            MainStackPanel.Margin = new Thickness(0, 0, 0, categoryDock.ActualHeight);
-
-            // Timer starten
-            categoryHideTimer.Start();
-
-            Console.WriteLine("CategoryDockContainer ist jetzt sichtbar, MainStackPanel neu positioniert."); // Debugging
+            var button = new Button
+            {
+                Content = item.DisplayName,
+                Width = 150,
+                Height = 50,
+                Margin = new Thickness(5)
+            };
+            CategoryDockContainer.Children.Add(button);
+            Console.WriteLine($"Element {item.DisplayName} zur Kategorie-Dock {categoryDock.Name} hinzugefügt."); // Debugging
         }
+    }
 
+    // MainStackPanel nach unten verschieben, um Platz zu schaffen
+    MainStackPanel.Margin = new Thickness(0, 0, 0, categoryDock.ActualHeight);
 
+    // Timer starten
+    categoryHideTimer.Start();
+    Console.WriteLine("CategoryDockContainer ist jetzt sichtbar, MainStackPanel neu positioniert."); // Debugging
+}
 
 
 
