@@ -706,6 +706,22 @@ var button = new Button
     Margin = new Thickness(5)
 };
 
+// Klick-Event-Handler hinzufügen
+button.Click += (s, e) =>
+{
+    var dockItem = button.Tag as DockItem;
+    if (dockItem != null)
+    {
+        OpenFile(dockItem.FilePath);
+        Console.WriteLine("Datei geöffnet: " + dockItem.FilePath); // Debugging
+    }
+    else
+    {
+        Console.WriteLine("DockItem ist null"); // Debugging
+    }
+};
+
+
             CategoryDockContainer.Children.Add(button);
             Console.WriteLine($"Element {item.DisplayName} zur Kategorie-Dock {categoryDock.Name} hinzugefügt."); // Debugging
         }
