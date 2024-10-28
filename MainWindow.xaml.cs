@@ -656,30 +656,50 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
 {
     Console.WriteLine("ShowCategoryDockPanel - Kategorie-Element erkannt: " + categoryDock.Name); // Debugging des Kategorienamens
     Console.WriteLine("ShowCategoryDockPanel aufgerufen"); // Debugging
-
+    
     // Kategorie-Dock leeren und hinzufügen
     CategoryDockContainer.Children.Clear();
     CategoryDockContainer.Children.Add(categoryDock);
     CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockContainer setzen
-
+    
     // Falls das Kategorie-Dock leer ist, setze die Größe auf die eines Elements
     if (CategoryDockContainer.Children.Count == 0)
     {
         CategoryDockContainer.MinWidth = 200; // Setze die Breite auf die eines Elements
         CategoryDockContainer.MinHeight = 100; // Setze die Höhe auf die eines Elements
     }
-
+    
     // Elemente der `Docksettings`-Liste überprüfen
     var items = SettingsManager.LoadSettings();
     foreach (var item in items)
     {
         Console.WriteLine($"Überprüfe Element: {item.DisplayName} mit Kategorie: {item.Category}"); // Debugging
+        
         if (!string.IsNullOrEmpty(item.Category) && item.Category == categoryDock.Name)
         {
             var button = new Button
             {
-                Content = item.DisplayName,
-                Width = 150,
+                Content = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Children =
+                    {
+                        new Image
+                        {
+                            Source = IconHelper.GetIcon(item.FilePath), // Hier das Symbol für das DockItem laden
+                            Width = 20,
+                            Height = 20,
+                            Margin = new Thickness(5)
+                        },
+                        new TextBlock
+                        {
+                            Text = item.DisplayName,
+                            VerticalAlignment = VerticalAlignment.Center
+                        }
+                    }
+                },
+                Tag = item, // Das gesamte DockItem als Tag verwenden
+                Width = 50,
                 Height = 50,
                 Margin = new Thickness(5)
             };
@@ -687,10 +707,10 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
             Console.WriteLine($"Element {item.DisplayName} zur Kategorie-Dock {categoryDock.Name} hinzugefügt."); // Debugging
         }
     }
-
+    
     // MainStackPanel nach unten verschieben, um Platz zu schaffen
     MainStackPanel.Margin = new Thickness(0, 0, 0, categoryDock.ActualHeight);
-
+    
     // Timer starten
     categoryHideTimer.Start();
     Console.WriteLine("CategoryDockContainer ist jetzt sichtbar, MainStackPanel neu positioniert."); // Debugging
