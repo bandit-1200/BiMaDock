@@ -677,32 +677,35 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
         
         if (!string.IsNullOrEmpty(item.Category) && item.Category == categoryDock.Name)
         {
-            var button = new Button
+var button = new Button
+{
+    Content = new StackPanel
+    {
+        Orientation = Orientation.Vertical, // Ändere die Ausrichtung zu Vertikal
+        Children =
+        {
+            new Image
             {
-                Content = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    Children =
-                    {
-                        new Image
-                        {
-                            Source = IconHelper.GetIcon(item.FilePath), // Hier das Symbol für das DockItem laden
-                            Width = 20,
-                            Height = 20,
-                            Margin = new Thickness(5)
-                        },
-                        new TextBlock
-                        {
-                            Text = item.DisplayName,
-                            VerticalAlignment = VerticalAlignment.Center
-                        }
-                    }
-                },
-                Tag = item, // Das gesamte DockItem als Tag verwenden
-                Width = 50,
-                Height = 50,
+                Source = IconHelper.GetIcon(item.FilePath), // Hier das Symbol für das DockItem laden
+                Width = 32, // Etwas größere Breite für bessere Sichtbarkeit
+                Height = 32, // Etwas größere Höhe für bessere Sichtbarkeit
                 Margin = new Thickness(5)
-            };
+            },
+            new TextBlock
+            {
+                Text = item.DisplayName,
+                TextAlignment = TextAlignment.Center, // Zentriere den Text
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(5, 0, 5, 0)
+            }
+        }
+    },
+    Tag = item, // Das gesamte DockItem als Tag verwenden
+    Width = 70, // Passe die Breite des Buttons an
+    Height = 80, // Passe die Höhe des Buttons an
+    Margin = new Thickness(5)
+};
+
             CategoryDockContainer.Children.Add(button);
             Console.WriteLine($"Element {item.DisplayName} zur Kategorie-Dock {categoryDock.Name} hinzugefügt."); // Debugging
         }
