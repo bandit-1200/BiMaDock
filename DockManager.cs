@@ -133,7 +133,7 @@ public void LoadDockItems()
             IsCategory = false,
             Position = 0
         };
-        AddDockItemAt(explorerItem, 0);
+        AddDockItemAt(explorerItem, 0, explorerItem.Category); // currentCategory übergeben
         var cmdItem = new DockItem
         {
             FilePath = @"C:\Windows\System32\cmd.exe",
@@ -142,42 +142,37 @@ public void LoadDockItems()
             IsCategory = false,
             Position = 1
         };
-        AddDockItemAt(cmdItem, 1);
+        AddDockItemAt(cmdItem, 1, cmdItem.Category); // currentCategory übergeben
     }
     else
     {
         foreach (var item in items)
         {
-            if (item.IsCategory)
-            {
-                AddDockItemAt(item, item.Position); // Lade das Kategorie-Element an der gespeicherten Position
-            }
-            else if (string.IsNullOrEmpty(item.Category))
-            {
-                AddDockItemAt(item, item.Position); // Lade das normale Element an der gespeicherten Position
-            }
-            else
-            {
-                AddDockItemAt(item, item.Position); // Lade das Element an der gespeicherten Position in der Kategorie
-            }
+            AddDockItemAt(item, item.Position, item.Category); // currentCategory übergeben
         }
     }
     Console.WriteLine("Dock-Elemente geladen."); // Debugging
 }
 
 
-
-
-
-public void SaveDockItems()
+public void SaveDockItems(string currentCategory)
 {
+    Console.WriteLine("SaveDockItems aufgerufen"); // Debugging zu Beginn des Aufrufs
+    Console.WriteLine("Aktuelle Kategorie: " + currentCategory); // Ausgabe der aktuellen Kategorie
+
     var items = new List<DockItem>();
     int mainDockIndex = 0;
+
     foreach (UIElement element in dockPanel.Children)
     {
         if (element is Button button && button.Tag is DockItem dockItem)
         {
             dockItem.Position = mainDockIndex++; // Speichere die Position im Hauptdock
+            if (dockItem.IsCategory)
+            {
+                // Kategorien sollten keine eigene Kategorie haben
+                dockItem.Category = "";
+            }
             Console.WriteLine($"Speichern: {dockItem.DisplayName}, Position: {dockItem.Position}, Path: {dockItem.FilePath}, Category: {dockItem.Category}"); // Debugging
             items.Add(dockItem);
         }
@@ -186,16 +181,25 @@ public void SaveDockItems()
             Console.WriteLine("Element ist kein Button oder Button-Tag ist kein DockItem"); // Debugging
         }
     }
-    
+
     var categoryDictionary = new Dictionary<string, int>();
+
     foreach (UIElement element in categoryDockContainer.Children)
     {
         if (element is Button button && button.Tag is DockItem dockItem)
         {
+            // Setze die Kategorie nur für Elemente, die einer Kategorie angehören und keine Kategorien sind
+            if (!dockItem.IsCategory && !string.IsNullOrEmpty(currentCategory))
+            {
+                dockItem.Category = currentCategory;
+                Console.WriteLine($"Kategorie für {dockItem.DisplayName} gesetzt auf: {currentCategory}"); // Debugging
+            }
+
             if (!categoryDictionary.ContainsKey(dockItem.Category))
             {
                 categoryDictionary[dockItem.Category] = 0;
             }
+
             dockItem.Position = categoryDictionary[dockItem.Category]++; // Speichere die Position in der Kategorie
             Console.WriteLine($"Speichern im Kategorie-Dock: {dockItem.DisplayName}, Position: {dockItem.Position}, Path: {dockItem.FilePath}, Category: {dockItem.Category}"); // Debugging
             items.Add(dockItem);
@@ -205,105 +209,73 @@ public void SaveDockItems()
             Console.WriteLine("Element im Kategorie-Dock ist kein Button oder Button-Tag ist kein DockItem"); // Debugging
         }
     }
+
+    // Debug-Ausgabe der gesamten Liste vor dem Speichern
+    Console.WriteLine("Gespeicherte DockItems:");
+    foreach (var item in items)
+    {
+        Console.WriteLine($"Item: {item.DisplayName}, Position: {item.Position}, Category: {item.Category}");
+    }
+
     SettingsManager.SaveSettings(items);
 }
 
 
-
-    public void AddCategoryItem(string categoryName)
+public void AddCategoryItem(string categoryName)
+{
+    var categoryItem = new DockItem
     {
-        var categoryItem = new DockItem
-        {
-            FilePath = "",
-            DisplayName = categoryName,
-            Category = "",
-            IsCategory = true // Setze die IsCategory-Eigenschaft
-        };
+        FilePath = "",
+        DisplayName = categoryName,
+        Category = "", // Kategorie bleibt leer
+        IsCategory = true // Setze die IsCategory-Eigenschaft
+    };
+    AddDockItemAt(categoryItem, dockPanel.Children.Count, categoryItem.DisplayName); // currentCategory übergeben
 
-        InitializeCategoryDock(); // Kategorie-Dock initialisieren und anzeigen
-        AddDockItemAt(categoryItem, dockPanel.Children.Count);
-    }
+    InitializeCategoryDock(categoryName); // Kategorie-Dock initialisieren und anzeigen
+}
 
 
 
-    public void DockPanel_Drop(object sender, DragEventArgs e)
+
+public void DockPanel_Drop(object sender, DragEventArgs e)
+{
+    Console.WriteLine("DockPanel_Drop aufgerufen"); // Debugging zu Beginn des Aufrufs
+    if (isDropInProgress) return; // Doppelte Drop-Verhinderung
+    isDropInProgress = true;
+    try
     {
-        if (isDropInProgress) return; // Doppelte Drop-Verhinderung
-        isDropInProgress = true;
-        try
+        // Hier können weitere Debugging-Informationen eingefügt werden
+        Console.WriteLine("DragEventArgs: " + e.ToString()); // Debugging der DragEventArgs
+
+        if (e.Data.GetDataPresent(DataFormats.Serializable))
         {
-            if (e.Data.GetDataPresent(DataFormats.Serializable))
+            Button? droppedButton = e.Data.GetData(DataFormats.Serializable) as Button;
+            if (droppedButton != null && droppedButton.Tag is DockItem droppedItem)
             {
-                Button? droppedButton = e.Data.GetData(DataFormats.Serializable) as Button;
-                if (droppedButton != null && droppedButton.Tag is DockItem droppedItem)
+                Console.WriteLine("Gedroppter Button: " + droppedItem.DisplayName); // Debugging des gedroppten Buttons
+
+                Point dropPosition = e.GetPosition(dockPanel);
+                bool droppedOnCategory = false;
+                foreach (Button button in dockPanel.Children)
                 {
-                    Point dropPosition = e.GetPosition(dockPanel);
-                    bool droppedOnCategory = false;
-
-                    foreach (Button button in dockPanel.Children)
+                    if (button.Tag is DockItem categoryItem && string.IsNullOrEmpty(categoryItem.FilePath) &&
+                        categoryItem.DisplayName == droppedItem.Category)
                     {
-                        if (button.Tag is DockItem categoryItem && string.IsNullOrEmpty(categoryItem.FilePath) &&
-                            categoryItem.DisplayName == droppedItem.Category)
-                        {
-                            droppedItem.Category = categoryItem.DisplayName;
-                            droppedOnCategory = true;
-                            break;
-                        }
+                        droppedItem.Category = categoryItem.DisplayName;
+                        droppedOnCategory = true;
+                        break;
                     }
-
-                    if (droppedOnCategory)
-                    {
-                        Console.WriteLine("Element zu Kategorie hinzugefügt: " + droppedItem.DisplayName);
-                        SaveDockItems();
-                        ShowCategoryDock(droppedItem);
-                    }
-                    else
-                    {
-                        dockPanel.Children.Remove(droppedButton);
-                        double dropCenterX = dropPosition.X;
-                        int newIndex = 0;
-                        bool inserted = false;
-                        for (int i = 0; i < dockPanel.Children.Count; i++)
-                        {
-                            if (dockPanel.Children[i] is Button button)
-                            {
-                                Point elementPosition = button.TranslatePoint(new Point(0, 0), dockPanel);
-                                double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
-                                if (dropCenterX < elementCenterX)
-                                {
-                                    dockPanel.Children.Insert(i, droppedButton);
-                                    inserted = true;
-                                    Console.WriteLine("Insert at index: " + i); // Debugging
-                                    break;
-                                }
-                            }
-                            newIndex++;
-                        }
-                        if (!inserted)
-                        {
-                            dockPanel.Children.Add(droppedButton);
-                            Console.WriteLine("Added at the end"); // Debugging
-                        }
-                        SaveDockItems();
-                        Console.WriteLine("Drop an Position: " + newIndex); // Debugging
-                    }
+                }
+                if (droppedOnCategory)
+                {
+                    Console.WriteLine("Element zu Kategorie hinzugefügt: " + droppedItem.DisplayName);
+                    SaveDockItems(droppedItem.Category); // Save with current category
+                    ShowCategoryDock(droppedItem);
                 }
                 else
                 {
-                    Console.WriteLine("Kein gültiger Button gedroppt"); // Debugging
-                }
-            }
-            else if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                foreach (var file in files)
-                {
-                    var dockItem = new DockItem
-                    {
-                        FilePath = file ?? string.Empty,
-                        DisplayName = System.IO.Path.GetFileNameWithoutExtension(file) ?? string.Empty,
-                    };
-                    Point dropPosition = e.GetPosition(dockPanel);
+                    dockPanel.Children.Remove(droppedButton);
                     double dropCenterX = dropPosition.X;
                     int newIndex = 0;
                     bool inserted = false;
@@ -315,8 +287,9 @@ public void SaveDockItems()
                             double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
                             if (dropCenterX < elementCenterX)
                             {
-                                AddDockItemAt(dockItem, i);
+                                dockPanel.Children.Insert(i, droppedButton);
                                 inserted = true;
+                                Console.WriteLine("Insert at index: " + i); // Debugging
                                 break;
                             }
                         }
@@ -324,24 +297,69 @@ public void SaveDockItems()
                     }
                     if (!inserted)
                     {
-                        AddDockItemAt(dockItem, newIndex);
+                        dockPanel.Children.Add(droppedButton);
+                        Console.WriteLine("Added at the end"); // Debugging
                     }
-                    Console.WriteLine("Externe Dateien abgelegt"); // Debugging
+                    SaveDockItems(droppedItem.Category); // Save with current category
+                    Console.WriteLine("Drop an Position: " + newIndex); // Debugging
                 }
             }
             else
             {
-                Console.WriteLine("Kein gültiges Drop-Format erkannt"); // Debugging
+                Console.WriteLine("Kein gültiger Button gedroppt"); // Debugging
             }
         }
-        finally
+        else if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
-            isDropInProgress = false; // Flag zurücksetzen
+            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            foreach (var file in files)
+            {
+                var dockItem = new DockItem
+                {
+                    FilePath = file ?? string.Empty,
+                    DisplayName = System.IO.Path.GetFileNameWithoutExtension(file) ?? string.Empty,
+                };
+                Point dropPosition = e.GetPosition(dockPanel);
+                double dropCenterX = dropPosition.X;
+                int newIndex = 0;
+                bool inserted = false;
+                for (int i = 0; i < dockPanel.Children.Count; i++)
+                {
+                    if (dockPanel.Children[i] is Button button)
+                    {
+                        Point elementPosition = button.TranslatePoint(new Point(0, 0), dockPanel);
+                        double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
+                        if (dropCenterX < elementCenterX)
+                        {
+                            AddDockItemAt(dockItem, i, dockItem.Category); // currentCategory übergeben
+                            inserted = true;
+                            break;
+                        }
+                    }
+                    newIndex++;
+                }
+                if (!inserted)
+                {
+                    AddDockItemAt(dockItem, newIndex, dockItem.Category); // currentCategory übergeben
+                }
+                Console.WriteLine("Externe Dateien abgelegt"); // Debugging
+            }
         }
-        mainWindow.SetDragging(false); // Dragging-Flag zurücksetzen
+        else
+        {
+            Console.WriteLine("Kein gültiges Drop-Format erkannt"); // Debugging
+        }
     }
+    finally
+    {
+        isDropInProgress = false; // Flag zurücksetzen
+    }
+    mainWindow.SetDragging(false); // Dragging-Flag zurücksetzen
+}
 
-    public void UpdateDockItemLocation(Button button)
+
+
+    public void UpdateDockItemLocation(Button button, string currentCategory)
     {
         var dockItem = button.Tag as DockItem;
         if (dockItem != null)
@@ -349,7 +367,7 @@ public void SaveDockItems()
             // Aktualisiere die Position des Dock-Items
             dockItems.Remove(dockItem);
             dockItems.Add(dockItem);
-            SaveDockItems();
+            SaveDockItems(currentCategory); // Hier wird die aktuelle Kategorie mitgegeben
             Console.WriteLine($"DockItem {dockItem.DisplayName} aktualisiert"); // Debug-Ausgabe
         }
         else
@@ -359,18 +377,19 @@ public void SaveDockItems()
     }
 
 
-    public void RemoveDockItem(Button button)
+
+    public void RemoveDockItem(Button button, string currentCategory)
     {
         if (dockPanel.Children.Contains(button))
         {
             dockPanel.Children.Remove(button);
-            SaveDockItems();
+            SaveDockItems(currentCategory); // Die aktuelle Kategorie übergeben
             Console.WriteLine("Element entfernt und Einstellungen gespeichert."); // Debug-Ausgabe
         }
     }
 
 
-private void AddDockItemAt(DockItem item, int index)
+private void AddDockItemAt(DockItem item, int index, string currentCategory)
 {
     var icon = IconHelper.GetIcon(item.FilePath);
     var image = new Image
@@ -402,7 +421,6 @@ private void AddDockItemAt(DockItem item, int index)
         Margin = new Thickness(5),
         Width = 70
     };
-
     button.MouseRightButtonDown += (s, e) =>
     {
         Console.WriteLine("Rechtsklick auf Element: " + item.DisplayName); // Debugging
@@ -416,7 +434,6 @@ private void AddDockItemAt(DockItem item, int index)
         mainWindow.DockContextMenu.IsOpen = true;
         Console.WriteLine("Kontextmenü für " + item.DisplayName + " geöffnet"); // Debugging
     };
-
     button.PreviewMouseLeftButtonDown += (s, e) =>
     {
         Console.WriteLine("Button Mouse Down Event ausgelöst"); // Debugging
@@ -427,7 +444,6 @@ private void AddDockItemAt(DockItem item, int index)
             Console.WriteLine("Drag Start: " + ((DockItem)draggedButton.Tag).FilePath); // Debugging
         }
     };
-
     button.PreviewMouseMove += (s, e) =>
     {
         if (dragStartPoint.HasValue && draggedButton == button)
@@ -446,7 +462,6 @@ private void AddDockItemAt(DockItem item, int index)
             }
         }
     };
-
     // Click-Event-Handler hinzufügen
     button.Click += (s, e) =>
     {
@@ -461,7 +476,6 @@ private void AddDockItemAt(DockItem item, int index)
             Console.WriteLine("DockItem ist null"); // Debugging
         }
     };
-
     // Platzieren des Elements abhängig vom Typ und Kategorie
     if (!string.IsNullOrEmpty(item.Category))
     {
@@ -477,8 +491,7 @@ private void AddDockItemAt(DockItem item, int index)
         dockPanel.Children.Insert(adjustedIndex, button);
         Console.WriteLine($"Element eingefügt an Position: {adjustedIndex} im Hauptdock, DisplayName: {item.DisplayName}"); // Debugging
     }
-
-    SaveDockItems(); // Speichern der Dock-Items
+    SaveDockItems(currentCategory); // Speichern der Dock-Items mit der aktuellen Kategorie
 }
 
 
@@ -519,33 +532,32 @@ private void AddDockItemAt(DockItem item, int index)
         }
     }
 
-    public void AddDockItem(DockItem item)
+    // public void AddDockItem(DockItem item)
+    // {
+    //     AddDockItemAt(item, dockPanel.Children.Count);
+    // }
+
+public void InitializeCategoryDock(string categoryName)
+{
+    Console.WriteLine("InitializeCategoryDock aufgerufen"); // Debug-Ausgabe
+
+    // Erstelle ein Standard-Dock-Item und weise es der Kategorie zu
+    var cmdItem = new DockItem
     {
-        AddDockItemAt(item, dockPanel.Children.Count);
-    }
+        FilePath = @"C:\Windows\System32\cmd.exe",
+        DisplayName = "Command Prompt",
+        Category = categoryName, // Zuweisung zur spezifischen Kategorie
+        IsCategory = false,
+        Position = 0
+    };
 
-    private void InitializeCategoryDock()
-    {
-        var categoryDock = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Background = new SolidColorBrush(Colors.LightGray),
-            Margin = new Thickness(5),
-            Visibility = Visibility.Visible // Ständige Sichtbarkeit zum Testen
-        };
+    // Füge das Standard-Element zum Kategoriedock hinzu
+    AddDockItemAt(cmdItem, 0, categoryName);
+    Console.WriteLine($"Standard-Element 'Command Prompt' zur Kategorie {categoryName} hinzugefügt"); // Debug-Ausgabe
+}
 
-        // Beispiel-Items zur Demonstration
-        var exampleItem = new Button
-        {
-            Content = "Example Item",
-            Width = 150,
-            Height = 30,
-            Margin = new Thickness(5)
-        };
 
-        categoryDock.Children.Add(exampleItem);
-        mainWindow.ShowCategoryDockPanel(categoryDock);
-    }
+
 
 
     private void ShowCategoryDock(DockItem categoryItem)
