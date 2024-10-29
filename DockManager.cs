@@ -195,14 +195,17 @@ public void SaveDockItems(string currentCategory)
                 Console.WriteLine($"Kategorie für {dockItem.DisplayName} gesetzt auf: {currentCategory}"); // Debugging
             }
 
-            if (!categoryDictionary.ContainsKey(dockItem.Category))
+            if (!string.IsNullOrEmpty(dockItem.Category) && !categoryDictionary.ContainsKey(dockItem.Category))
             {
                 categoryDictionary[dockItem.Category] = 0;
             }
 
-            dockItem.Position = categoryDictionary[dockItem.Category]++; // Speichere die Position in der Kategorie
-            Console.WriteLine($"Speichern im Kategorie-Dock: {dockItem.DisplayName}, Position: {dockItem.Position}, Path: {dockItem.FilePath}, Category: {dockItem.Category}"); // Debugging
-            items.Add(dockItem);
+            if (!string.IsNullOrEmpty(dockItem.Category))
+            {
+                dockItem.Position = categoryDictionary[dockItem.Category]++; // Speichere die Position in der Kategorie
+                Console.WriteLine($"Speichern im Kategorie-Dock: {dockItem.DisplayName}, Position: {dockItem.Position}, Path: {dockItem.FilePath}, Category: {dockItem.Category}"); // Debugging
+                items.Add(dockItem);
+            }
         }
         else
         {
@@ -219,7 +222,6 @@ public void SaveDockItems(string currentCategory)
 
     SettingsManager.SaveSettings(items);
 }
-
 
 public void AddCategoryItem(string categoryName)
 {
