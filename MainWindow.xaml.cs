@@ -689,6 +689,8 @@ private void Delete_Click(object sender, RoutedEventArgs e)
         //         Children = { new Button { Content = "Kategorie-Element", Width = 100, Height = 50 } }
         //     });
         // }
+        // Stelle sicher, dass du im Code den "CategoryDockBorder" statt "CategoryDockContainer" nutzt, wenn nötig
+
 public void ShowCategoryDockPanel(StackPanel categoryDock)
 {
     Console.WriteLine("ShowCategoryDockPanel - Kategorie-Element erkannt: " + categoryDock.Name); // Debugging des Kategorienamens
@@ -700,15 +702,8 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
 
     // Kategorie-Dock leeren und hinzufügen
     CategoryDockContainer.Children.Clear();
-    CategoryDockContainer.Children.Add(categoryDock);
     CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockContainer setzen
-
-    // Falls das Kategorie-Dock leer ist, setze die Größe auf die eines Elements
-    if (CategoryDockContainer.Children.Count == 0)
-    {
-        CategoryDockContainer.MinWidth = 200; // Setze die Breite auf die eines Elements
-        CategoryDockContainer.MinHeight = 100; // Setze die Höhe auf die eines Elements
-    }
+    CategoryDockBorder.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockBorder setzen
 
     // Elemente der `Docksettings`-Liste überprüfen
     var items = SettingsManager.LoadSettings();
@@ -716,7 +711,7 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
     {
         Console.WriteLine($"Überprüfe Element: {item.DisplayName} mit Kategorie: {item.Category}"); // Debugging
 
-        if (!string.IsNullOrEmpty(item.Category) && item.Category == categoryDock.Name)
+        if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
         {
             var button = new Button
             {
@@ -763,7 +758,7 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
             };
 
             CategoryDockContainer.Children.Add(button);
-            Console.WriteLine($"Element {item.DisplayName} zur Kategorie-Dock {categoryDock.Name} hinzugefügt."); // Debugging
+            Console.WriteLine($"Element {item.DisplayName} zur Kategorie-Dock {currentOpenCategory} hinzugefügt."); // Debugging
         }
     }
 
@@ -776,21 +771,21 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
 }
 
 
-        public void HideCategoryDockPanel()
-        {
-            // Console.WriteLine("HideCategoryDockPanel aufgerufen"); // Debugging
+public void HideCategoryDockPanel()
+{
+    Console.WriteLine("HideCategoryDockPanel aufgerufen"); // Debugging
+    CategoryDockContainer.Visibility = Visibility.Collapsed;
+    CategoryDockBorder.Visibility = Visibility.Collapsed; // Sichtbarkeit der CategoryDockBorder ändern
 
-            CategoryDockContainer.Children.Clear();
-            CategoryDockContainer.Visibility = Visibility.Collapsed;
+    // MainStackPanel zurücksetzen
+    MainStackPanel.Margin = new Thickness(0, 0, 0, 0);
 
-            // MainStackPanel zurücksetzen
-            MainStackPanel.Margin = new Thickness(0, 0, 0, 0);
+    // Timer stoppen
+    categoryHideTimer.Stop();
+    Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
+}
 
-            // Timer stoppen
-            categoryHideTimer.Stop();
 
-            // Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
-        }
 
 
 
