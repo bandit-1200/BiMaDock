@@ -20,6 +20,8 @@ public class DockManager
     private bool isDropInProgress = false;
     private List<string> categories; // Liste zur Verwaltung der Kategorien
     private List<DockItem> dockItems = new List<DockItem>();
+    private StackPanel CategoryDockContainer;
+
 
     public DockManager(StackPanel panel, StackPanel categoryPanel, MainWindow window)
     {
@@ -31,6 +33,8 @@ public class DockManager
         dockPanel.MouseEnter += DockPanel_MouseEnter;  // Event-Handler für MouseEnter hinzufügen
         categories = new List<string>(); // Initialisierung der Kategorienliste
         dockItems = new List<DockItem>(); // Initialisierung der Dock-Items-Liste
+
+
     }
 
 
@@ -115,6 +119,11 @@ public class DockManager
         }
     }
 
+    public void InitializeCategoryDockContainer(StackPanel container)
+    {
+        CategoryDockContainer = container ?? throw new ArgumentNullException(nameof(container), "CategoryDockContainer ist null.");
+    }
+
 
 
 
@@ -160,9 +169,17 @@ public class DockManager
         Console.WriteLine("SaveDockItems aufgerufen"); // Debugging zu Beginn des Aufrufs
         Console.WriteLine("Aktuelle Kategorie: " + currentCategory); // Ausgabe der aktuellen Kategorie
 
+        if (CategoryDockContainer == null)
+        {
+            Console.WriteLine("CategoryDockContainer ist null. Abbruch des Speichervorgangs.");
+            return;
+        }
+
         var items = new List<DockItem>();
+        var categoryItems = new List<DockItem>();
         int mainDockIndex = 0;
 
+        // Elemente des Haupt-Docks speichern
         foreach (UIElement element in dockPanel.Children)
         {
             if (element is Button button && button.Tag is DockItem dockItem)
@@ -182,29 +199,22 @@ public class DockManager
             }
         }
 
-        var categoryDictionary = new Dictionary<string, int>();
-
-        foreach (UIElement element in categoryDockContainer.Children)
+        // Elemente des Kategorie-Docks speichern
+        foreach (UIElement element in CategoryDockContainer.Children)
         {
             if (element is Button button && button.Tag is DockItem dockItem)
             {
-                // Setze die Kategorie nur für Elemente, die einer Kategorie angehören und keine Kategorien sind
-                if (!dockItem.IsCategory && !string.IsNullOrEmpty(currentCategory))
+                // Setze die Kategorie nur für Elemente, die der aktuellen Kategorie angehören und keine Kategorien sind
+                if (!dockItem.IsCategory && dockItem.Category == currentCategory)
                 {
-                    dockItem.Category = currentCategory;
                     Console.WriteLine($"Kategorie für {dockItem.DisplayName} gesetzt auf: {currentCategory}"); // Debugging
-                }
-
-                if (!string.IsNullOrEmpty(dockItem.Category) && !categoryDictionary.ContainsKey(dockItem.Category))
-                {
-                    categoryDictionary[dockItem.Category] = 0;
-                }
-
-                if (!string.IsNullOrEmpty(dockItem.Category))
-                {
-                    dockItem.Position = categoryDictionary[dockItem.Category]++; // Speichere die Position in der Kategorie
+                    dockItem.Position = categoryItems.Count; // Speichere die Position in der Kategorie
+                    categoryItems.Add(dockItem);
                     Console.WriteLine($"Speichern im Kategorie-Dock: {dockItem.DisplayName}, Position: {dockItem.Position}, Path: {dockItem.FilePath}, Category: {dockItem.Category}"); // Debugging
-                    items.Add(dockItem);
+                }
+                else if (dockItem.IsCategory)
+                {
+                    categoryItems.Add(dockItem);
                 }
             }
             else
@@ -212,6 +222,30 @@ public class DockManager
                 Console.WriteLine("Element im Kategorie-Dock ist kein Button oder Button-Tag ist kein DockItem"); // Debugging
             }
         }
+
+        // Nur die Elemente der aktuellen Kategorie zur Gesamtliste hinzufügen
+        items.AddRange(categoryItems);
+
+        // Bestehende Elemente anderer Kategorien aus der gespeicherten Liste hinzufügen
+        var existingItems = SettingsManager.LoadSettings();
+        var existingCategoryItems = new HashSet<string>();
+
+        foreach (var item in existingItems)
+        {
+            if (item.Category != currentCategory)
+            {
+                items.Add(item);
+            }
+            else
+            {
+                // Speichere die IDs/Keys der bestehenden Kategorie-Items
+                existingCategoryItems.Add(item.DisplayName + item.FilePath);
+            }
+        }
+
+        // Vermeide das Hinzufügen von Duplikaten
+        var uniqueItems = new HashSet<string>();
+        items.RemoveAll(item => !uniqueItems.Add(item.DisplayName + item.FilePath));
 
         // Debug-Ausgabe der gesamten Liste vor dem Speichern
         Console.WriteLine("Gespeicherte DockItems:");
@@ -232,10 +266,11 @@ public class DockManager
             Category = "", // Kategorie bleibt leer
             IsCategory = true // Setze die IsCategory-Eigenschaft
         };
-        AddDockItemAt(categoryItem, dockPanel.Children.Count, categoryItem.DisplayName); // currentCategory übergeben
-
+        AddDockItemAt(categoryItem, dockPanel.Children.Count, categoryItem.DisplayName); // new categoryItem übergeben
         InitializeCategoryDock(categoryName); // Kategorie-Dock initialisieren und anzeigen
     }
+
+
 
 
 
