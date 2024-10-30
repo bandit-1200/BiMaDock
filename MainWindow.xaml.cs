@@ -46,7 +46,7 @@ namespace MyDockApp
 
             // Timer initialisieren
             categoryHideTimer = new DispatcherTimer();
-            categoryHideTimer.Interval = TimeSpan.FromSeconds(5); // Zeitintervall auf 5 Sekunden setzen
+            categoryHideTimer.Interval = TimeSpan.FromSeconds(0.5); // Zeitintervall auf 5 Sekunden setzen
             categoryHideTimer.Tick += (s, e) => { HideCategoryDockPanel(); };
 
             this.Closing += (s, e) =>
@@ -110,44 +110,47 @@ namespace MyDockApp
             dockManager.Open_Click(sender, e);
         }
 
-        private void CheckMouseHover()
+private void CheckMouseHover()
+{
+    if (DockPanel != null && CategoryDockContainer != null)
+    {
+        var mousePosDock = Mouse.GetPosition(DockPanel);
+        var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Haupt-Docks
+
+        var mousePosCategory = Mouse.GetPosition(CategoryDockContainer);
+        var categoryBounds = new Rect(CategoryDockContainer.TranslatePoint(new Point(), this), CategoryDockContainer.RenderSize); // Grenzen des Kategorie-Docks
+
+        if (dockBounds.Contains(mousePosDock) || categoryBounds.Contains(mousePosCategory) || isDragging)
         {
-            if (DockPanel != null && CategoryDockContainer != null)
-            {
-                var mousePosDock = Mouse.GetPosition(DockPanel);
-                var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Haupt-Docks
+            // Console.WriteLine($"Mouse over DockPanel or CategoryDockContainer or Drag Start at {DateTime.Now}"); // Debug-Ausgabe
 
-                var mousePosCategory = Mouse.GetPosition(CategoryDockContainer);
-                var categoryBounds = new Rect(CategoryDockContainer.TranslatePoint(new Point(), this), CategoryDockContainer.RenderSize); // Grenzen des Kategorie-Docks
+            // Timer neu starten, wenn die Maus über einem der Docks ist oder ein Draggen erkannt wird
+            dockHideTimer.Stop();
+            dockHideTimer.Start();
+            // Console.WriteLine($"dockHideTimer neu gestartet: {DateTime.Now}"); // Debug-Ausgabe
 
-                if (dockBounds.Contains(mousePosDock) || categoryBounds.Contains(mousePosCategory) || isDragging)
-                {
-                    // Console.WriteLine($"Mouse over DockPanel or CategoryDockContainer or Drag Start at {DateTime.Now}"); // Debug-Ausgabe
+            categoryHideTimer.Stop();
+            categoryHideTimer.Start();
+            // Console.WriteLine($"categoryHideTimer neu gestartet: {DateTime.Now}"); // Debug-Ausgabe
 
-                    // Timer neu starten, wenn die Maus über einem der Docks ist oder ein Draggen erkannt wird
-                    dockHideTimer.Stop();
-                    dockHideTimer.Start();
-                    // Console.WriteLine($"dockHideTimer neu gestartet: {DateTime.Now}"); // Debug-Ausgabe
-
-                    categoryHideTimer.Stop();
-                    categoryHideTimer.Start();
-                    // Console.WriteLine($"categoryHideTimer neu gestartet: {DateTime.Now}"); // Debug-Ausgabe
-                }
-                else
-                {
-                    // Console.WriteLine($"Mouse not over DockPanel or CategoryDockContainer at {DateTime.Now}"); // Debug-Ausgabe
-
-                    // Timer stoppen und Countdown für das Ausblenden der Docks starten
-                    dockHideTimer.Start();
-                    categoryHideTimer.Start();
-                }
-            }
-            else
-            {
-                // Console.WriteLine($"Fehler: DockPanel oder CategoryDockContainer ist null at {DateTime.Now}"); // Debug-Ausgabe
-            }
+            // Beide Docks sichtbar machen
+            DockPanel.Visibility = Visibility.Visible;
+            CategoryDockContainer.Visibility = Visibility.Visible;
         }
+        else
+        {
+            // Console.WriteLine($"Mouse not over DockPanel or CategoryDockContainer at {DateTime.Now}"); // Debug-Ausgabe
 
+            // Timer stoppen und Countdown für das Ausblenden der Docks starten
+            dockHideTimer.Start();
+            categoryHideTimer.Start();
+        }
+    }
+    else
+    {
+        // Console.WriteLine($"Fehler: DockPanel oder CategoryDockContainer ist null at {DateTime.Now}"); // Debug-Ausgabe
+    }
+}
 
 
         public void ShowDock()
@@ -212,6 +215,31 @@ namespace MyDockApp
         }
 
 
+
+private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
+{
+    Console.WriteLine("Mouse entered CategoryDockContainer"); // Debug-Ausgabe
+    dockHideTimer.Stop();
+    dockHideTimer.Start();
+    categoryHideTimer.Stop();
+    categoryHideTimer.Start();
+}
+
+private void CategoryDockContainer_MouseLeave(object sender, MouseEventArgs e)
+{
+    Console.WriteLine("Mouse left CategoryDockContainer"); // Debug-Ausgabe
+    dockHideTimer.Start();
+    categoryHideTimer.Start();
+}
+
+private void CategoryDockContainer_MouseMove(object sender, MouseEventArgs e)
+{
+    Console.WriteLine("Mouse is moving over CategoryDockContainer"); // Debug-Ausgabe
+    dockHideTimer.Stop();
+    dockHideTimer.Start();
+    categoryHideTimer.Stop();
+    categoryHideTimer.Start();
+}
 
 
 
