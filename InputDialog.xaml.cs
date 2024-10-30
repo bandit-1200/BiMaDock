@@ -22,7 +22,20 @@ namespace MyDockApp
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            this.Answer = CategoryNameTextBox.Text;
+            string inputCategoryName = CategoryNameTextBox.Text;
+            var existingItems = SettingsManager.LoadSettings();
+
+            // Überprüfen, ob die Kategorie bereits existiert
+            foreach (var item in existingItems)
+            {
+                if (item.DisplayName == inputCategoryName && item.IsCategory)
+                {
+                    MessageBox.Show($"Kategorie {inputCategoryName} existiert bereits. Bitte wählen Sie einen anderen Namen.", "Kategorie existiert", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return; // Abbruch der Erstellung
+                }
+            }
+
+            this.Answer = inputCategoryName;
             this.DialogResult = true;
         }
     }
