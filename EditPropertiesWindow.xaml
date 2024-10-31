@@ -2,13 +2,13 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Eigenschaften bearbeiten" Height="300" Width="400"
-        WindowStartupLocation="CenterScreen"> <!-- Fenster in der Bildschirmmitte anzeigen -->
+        WindowStartupLocation="CenterScreen">
     <Grid>
         <StackPanel Margin="10">
             <TextBlock Text="Name:" />
             <TextBox Name="NameTextBox" Margin="0,0,0,10" />
             <TextBlock Text="Pfad:" />
-            <TextBox Name="PathTextBox" Margin="0,0,0,10" />
+            <TextBox Name="PathTextBox" Margin="0,0,0,10" IsEnabled="False" />
             <TextBlock Text="Symbol:" />
             <ScrollViewer Name="ScrollViewerSymbolPanel" Height="100">
                 <StackPanel Name="SymbolPanel" Orientation="Horizontal" Background="LightGray">
