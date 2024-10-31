@@ -23,6 +23,7 @@ namespace MyDockApp
         private DispatcherTimer categoryHideTimer;
         // private string currentOpenCategory;
         private string currentOpenCategory = "";
+        private bool isCategoryMessageShown = false;
 
 
         public void SetDragging(bool value)
@@ -519,35 +520,35 @@ namespace MyDockApp
 
 
 
-private void DockPanel_DragEnter(object sender, DragEventArgs e)
-{
-    Console.WriteLine("DockPanel_DragEnter aufgerufen"); // Debug-Ausgabe
+        private void DockPanel_DragEnter(object sender, DragEventArgs e)
+        {
+            Console.WriteLine("DockPanel_DragEnter aufgerufen"); // Debug-Ausgabe
 
-    if (e.Data.GetDataPresent(DataFormats.Serializable) && DockPanel != null)
-    {
-        e.Effects = DragDropEffects.Move;
-        DockPanel.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
-        Console.WriteLine("Element über dem Hauptdock erkannt"); // Debug-Ausgabe
-    }
-    else
-    {
-        e.Effects = DragDropEffects.None;
-        Console.WriteLine("Kein Element erkannt oder DockPanel ist null"); // Debug-Ausgabe
-    }
-}
+            if (e.Data.GetDataPresent(DataFormats.Serializable) && DockPanel != null)
+            {
+                e.Effects = DragDropEffects.Move;
+                DockPanel.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
+                Console.WriteLine("Element über dem Hauptdock erkannt"); // Debug-Ausgabe
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+                Console.WriteLine("Kein Element erkannt oder DockPanel ist null"); // Debug-Ausgabe
+            }
+        }
 
-private void DockPanel_DragLeave(object sender, DragEventArgs e)
-{
-    Console.WriteLine("DockPanel_DragLeave aufgerufen"); // Debug-Ausgabe
+        private void DockPanel_DragLeave(object sender, DragEventArgs e)
+        {
+            Console.WriteLine("DockPanel_DragLeave aufgerufen"); // Debug-Ausgabe
 
-    // Visuelles Feedback zurücksetzen
-    var brush = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFA500");
-    if (brush != null)
-    {
-        DockPanel.Background = brush; // Setze auf Orange zurück
-        Console.WriteLine("Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
-    }
-}
+            // Visuelles Feedback zurücksetzen
+            var brush = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFA500");
+            if (brush != null)
+            {
+                DockPanel.Background = brush; // Setze auf Orange zurück
+                Console.WriteLine("Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
+            }
+        }
 
 
 
@@ -576,60 +577,46 @@ private void DockPanel_DragLeave(object sender, DragEventArgs e)
             }
         }
 
-public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
-{
-    Console.WriteLine("CategoryDockContainer_Drop aufgerufen"); // Debugging
-    if (e.Data.GetDataPresent(DataFormats.Serializable))
-    {
-        var button = e.Data.GetData(DataFormats.Serializable) as Button;
-        if (button != null)
+
+
+        public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
-            var parent = VisualTreeHelper.GetParent(button) as Panel;
-            if (parent != null)
+            if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
             {
-                parent.Children.Remove(button);
-            }
-
-            var droppedItem = button.Tag as DockItem;
-            if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
-            {
-                // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
-                if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
+                var button = e.Data.GetData(DataFormats.Serializable) as Button;
+                if (button != null)
                 {
-                    droppedItem.Category = currentOpenCategory;
-                    Console.WriteLine($"Kategorie für {droppedItem.DisplayName} gesetzt auf: {droppedItem.Category}"); // Debug-Ausgabe
+                    var droppedItem = button.Tag as DockItem;
+                    if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
+                    {
+                        // Überprüfung auf Kategorie
+                        if (droppedItem.IsCategory)
+                        {
+                            MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
+                            isCategoryMessageShown = true; // Nachricht wurde gezeigt
+                            return; // Abbrechen, wenn es eine Kategorie ist
+                        }
 
-                    // Füge das Element dem Kategorie-Dock hinzu
-                    CategoryDockContainer.Children.Add(button);
-                    CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
-                    Console.WriteLine($"Element {button.Content} ins Kategoriedock verschoben"); // Debug-Ausgabe
+                        // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
+                        if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
+                        {
+                            droppedItem.Category = currentOpenCategory;
 
-                    // Aktualisiere die interne Struktur oder Daten, falls nötig
-                    UpdateDockItemLocation(button);
+                            // Füge das Element dem Kategorie-Dock hinzu
+                            CategoryDockContainer.Children.Add(button);
+                            CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
 
-                    // Dock-Items speichern
-                    dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
-                }
-                else
-                {
-                    Console.WriteLine($"Element {droppedItem.DisplayName} gehört zu einer anderen Kategorie: {droppedItem.Category}"); // Debug-Ausgabe
+                            // Aktualisiere die interne Struktur oder Daten, falls nötig
+                            UpdateDockItemLocation(button);
+
+                            // Dock-Items speichern
+                            dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
+                        }
+                    }
                 }
             }
-            else
-            {
-                Console.WriteLine("Kategorie konnte nicht gesetzt werden, da keine Kategorie geöffnet ist."); // Debug-Ausgabe
-            }
+            isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
         }
-        else
-        {
-            Console.WriteLine("Button ist null"); // Debug-Ausgabe
-        }
-    }
-    else
-    {
-        Console.WriteLine("Kein Button erkannt im Drop-Event"); // Debug-Ausgabe
-    }
-}
 
         public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
         {

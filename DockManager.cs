@@ -317,8 +317,10 @@ public void DockPanel_Drop(object sender, DragEventArgs e)
             Button? droppedButton = e.Data.GetData(DataFormats.Serializable) as Button;
             if (droppedButton != null && droppedButton.Tag is DockItem droppedItem)
             {
-                if (!string.IsNullOrEmpty(droppedItem.Category))
+                // Überprüfung auf Kategorie
+                if (droppedItem.IsCategory)
                 {
+                    Console.WriteLine("Element ist eine Kategorie und darf nicht verschoben werden."); // Debug-Ausgabe
                     return; // Abbrechen, wenn es eine Kategorie ist
                 }
 
@@ -414,7 +416,6 @@ public void DockPanel_Drop(object sender, DragEventArgs e)
     }
     mainWindow.SetDragging(false); // Dragging-Flag zurücksetzen
 }
-
 
     public void UpdateDockItemLocation(Button button, string currentCategory)
     {
