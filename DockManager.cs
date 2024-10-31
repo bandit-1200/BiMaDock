@@ -483,14 +483,16 @@ public void RemoveDockItem(Button button, string currentCategory)
             Height = 32,
             Margin = new Thickness(5)
         };
-        var textBlock = new TextBlock
-        {
-            Text = item.DisplayName,
-            TextAlignment = TextAlignment.Center,
-            TextWrapping = TextWrapping.Wrap,
-            Width = 60,
-            Margin = new Thickness(5)
-        };
+var textBlock = new TextBlock
+{
+    Text = item.DisplayName,
+    TextAlignment = TextAlignment.Center,
+    TextWrapping = TextWrapping.NoWrap, // Kein Umbruch
+    TextTrimming = TextTrimming.CharacterEllipsis, // Text abschneiden und mit "..." versehen
+    Width = 60,
+    Margin = new Thickness(5)
+};
+
         var stackPanel = new StackPanel
         {
             Orientation = Orientation.Vertical,
