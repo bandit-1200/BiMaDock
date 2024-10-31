@@ -60,6 +60,9 @@ namespace MyDockApp
             DockPanel.PreviewMouseMove += DockPanel_MouseMove;
             DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
             DockPanel.PreviewGiveFeedback += DockPanel_PreviewGiveFeedback; // Ereignis hinzufügen
+            DockPanel.DragEnter += DockPanel_DragEnter;
+            DockPanel.DragLeave += DockPanel_DragLeave;
+            DockPanel.Drop += DockPanel_Drop;
 
             this.Loaded += (s, e) =>
             {
@@ -167,6 +170,64 @@ namespace MyDockApp
                 // Console.WriteLine($"Fehler: DockPanel oder CategoryDockContainer ist null at {DateTime.Now}"); // Debug-Ausgabe
             }
         }
+
+
+
+        private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Console.WriteLine("Mouse Down Event ausgelöst"); // Debugging
+            isDragging = true; // Dragging-Flag setzen
+            var originalSource = e.OriginalSource as FrameworkElement;
+            while (originalSource != null && !(originalSource is Button))
+            {
+                originalSource = originalSource.Parent as FrameworkElement;
+            }
+            if (originalSource is Button button)
+            {
+                dragStartPoint = e.GetPosition(DockPanel);
+                draggedButton = button;
+                Console.WriteLine("Drag Start: " + draggedButton.Tag); // Debugging
+            }
+            else
+            {
+                Console.WriteLine("Kein Button als Quelle gefunden"); // Debugging
+            }
+        }
+
+
+        private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
+        {
+            Console.WriteLine("Mouse entered DockPanel");  // Debug-Ausgabe
+
+            // Timer neu starten, wenn die Maus über dem Dock ist
+            dockHideTimer.Stop();
+            dockHideTimer.Start();
+
+            categoryHideTimer.Stop();
+            categoryHideTimer.Start();
+        }
+
+
+
+        private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Console.WriteLine("Mouse left DockPanel");  // Debug-Ausgabe
+
+            // Timer stoppen, wenn die Maus das Dock verlässt
+            dockHideTimer.Stop();
+            categoryHideTimer.Stop();
+        }
+
+
+
+
+
+
+
+
+
+
+
 
 
         public void ShowDock()
@@ -458,47 +519,57 @@ namespace MyDockApp
 
 
 
-        private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
+private void DockPanel_DragEnter(object sender, DragEventArgs e)
+{
+    Console.WriteLine("DockPanel_DragEnter aufgerufen"); // Debug-Ausgabe
+
+    if (e.Data.GetDataPresent(DataFormats.Serializable) && DockPanel != null)
+    {
+        e.Effects = DragDropEffects.Move;
+        DockPanel.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
+        Console.WriteLine("Element über dem Hauptdock erkannt"); // Debug-Ausgabe
+    }
+    else
+    {
+        e.Effects = DragDropEffects.None;
+        Console.WriteLine("Kein Element erkannt oder DockPanel ist null"); // Debug-Ausgabe
+    }
+}
+
+private void DockPanel_DragLeave(object sender, DragEventArgs e)
+{
+    Console.WriteLine("DockPanel_DragLeave aufgerufen"); // Debug-Ausgabe
+
+    // Visuelles Feedback zurücksetzen
+    var brush = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFA500");
+    if (brush != null)
+    {
+        DockPanel.Background = brush; // Setze auf Orange zurück
+        Console.WriteLine("Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
+    }
+}
+
+private void DockPanel_Drop(object sender, DragEventArgs e)
+{
+    Console.WriteLine("DockPanel_Drop aufgerufen"); // Debug-Ausgabe
+
+    if (e.Data.GetDataPresent(DataFormats.Serializable) && DockPanel != null)
+    {
+        // Prozess zur Verarbeitung des gedroppten Elements hinzufügen
+
+        // Visuelles Feedback zurücksetzen
+        var brush = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFA500");
+        if (brush != null)
         {
-            Console.WriteLine("Mouse entered DockPanel");  // Debug-Ausgabe
-
-            // Timer neu starten, wenn die Maus über dem Dock ist
-            dockHideTimer.Stop();
-            dockHideTimer.Start();
-
-            categoryHideTimer.Stop();
-            categoryHideTimer.Start();
+            DockPanel.Background = brush; // Setze auf Orange zurück
+            Console.WriteLine("Element wurde ins Hauptdock gedroppt und Hintergrund zurückgesetzt"); // Debug-Ausgabe
         }
-
-        private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
-        {
-            Console.WriteLine("Mouse left DockPanel");  // Debug-Ausgabe
-
-            // Timer stoppen, wenn die Maus das Dock verlässt
-            dockHideTimer.Stop();
-            categoryHideTimer.Stop();
-        }
-
-        private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            Console.WriteLine("Mouse Down Event ausgelöst"); // Debugging
-            isDragging = true; // Dragging-Flag setzen
-            var originalSource = e.OriginalSource as FrameworkElement;
-            while (originalSource != null && !(originalSource is Button))
-            {
-                originalSource = originalSource.Parent as FrameworkElement;
-            }
-            if (originalSource is Button button)
-            {
-                dragStartPoint = e.GetPosition(DockPanel);
-                draggedButton = button;
-                Console.WriteLine("Drag Start: " + draggedButton.Tag); // Debugging
-            }
-            else
-            {
-                Console.WriteLine("Kein Button als Quelle gefunden"); // Debugging
-            }
-        }
+    }
+    else
+    {
+        Console.WriteLine("Kein Element erkannt oder DockPanel ist null"); // Debug-Ausgabe
+    }
+}
 
 
 
@@ -725,42 +796,42 @@ namespace MyDockApp
 
 
 
-public void ShowCategoryDockPanel(StackPanel categoryDock)
-{
-    Console.WriteLine("ShowCategoryDockPanel - Kategorie-Element erkannt: " + categoryDock.Name); // Debugging des Kategorienamens
-    Console.WriteLine("ShowCategoryDockPanel aufgerufen"); // Debugging
-    // Aktuelle Kategorie speichern und Tag setzen
-    currentOpenCategory = categoryDock.Name;
-    CategoryDockContainer.Tag = currentOpenCategory;
-    Console.WriteLine($"Aktuelle Kategorie gesetzt auf: {currentOpenCategory}"); // Debugging
-    // Kategorie-Dock leeren
-    CategoryDockContainer.Children.Clear();
-    // Kategorie-Dock hinzufügen
-    CategoryDockContainer.Children.Add(categoryDock);
-    CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockContainer setzen
-    CategoryDockBorder.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockBorder setzen
-
-    // Elemente der `Docksettings`-Liste überprüfen
-    var items = SettingsManager.LoadSettings();
-    foreach (var item in items)
-    {
-        Console.WriteLine($"Überprüfe Element: {item.DisplayName} mit Kategorie: {item.Category}"); // Debugging
-        if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+        public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
-            dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory); // Event-Handler werden in AddDockItemAt gesetzt
+            Console.WriteLine("ShowCategoryDockPanel - Kategorie-Element erkannt: " + categoryDock.Name); // Debugging des Kategorienamens
+            Console.WriteLine("ShowCategoryDockPanel aufgerufen"); // Debugging
+                                                                   // Aktuelle Kategorie speichern und Tag setzen
+            currentOpenCategory = categoryDock.Name;
+            CategoryDockContainer.Tag = currentOpenCategory;
+            Console.WriteLine($"Aktuelle Kategorie gesetzt auf: {currentOpenCategory}"); // Debugging
+                                                                                         // Kategorie-Dock leeren
+            CategoryDockContainer.Children.Clear();
+            // Kategorie-Dock hinzufügen
+            CategoryDockContainer.Children.Add(categoryDock);
+            CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockContainer setzen
+            CategoryDockBorder.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockBorder setzen
+
+            // Elemente der `Docksettings`-Liste überprüfen
+            var items = SettingsManager.LoadSettings();
+            foreach (var item in items)
+            {
+                Console.WriteLine($"Überprüfe Element: {item.DisplayName} mit Kategorie: {item.Category}"); // Debugging
+                if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+                {
+                    dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory); // Event-Handler werden in AddDockItemAt gesetzt
+                }
+            }
+
+            // Dynamische Breite des Kategorie-Docks setzen
+            CategoryDockContainer.Width = double.NaN; // Automatische Breite basierend auf Inhalten
+            CategoryDockContainer.VerticalAlignment = VerticalAlignment.Top;
+
+            // MainStackPanel nicht nach unten verschieben, um Platz zu schaffen
+            MainStackPanel.Margin = new Thickness(0);
+            // Timer starten
+            categoryHideTimer.Start();
+            Console.WriteLine("CategoryDockContainer ist jetzt sichtbar, MainStackPanel neu positioniert."); // Debugging
         }
-    }
-
-    // Dynamische Breite des Kategorie-Docks setzen
-    CategoryDockContainer.Width = double.NaN; // Automatische Breite basierend auf Inhalten
-    CategoryDockContainer.VerticalAlignment = VerticalAlignment.Top;
-
-    // MainStackPanel nicht nach unten verschieben, um Platz zu schaffen
-    MainStackPanel.Margin = new Thickness(0); 
-    // Timer starten
-    categoryHideTimer.Start();
-    Console.WriteLine("CategoryDockContainer ist jetzt sichtbar, MainStackPanel neu positioniert."); // Debugging
-}
 
         public void HideCategoryDockPanel()
         {
