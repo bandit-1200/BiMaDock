@@ -825,74 +825,106 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
 
 
 
-        private void Edit_Click(object sender, RoutedEventArgs e)
+    private void Edit_Click(object sender, RoutedEventArgs e)
+{
+    if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+    {
+        // Lade die Werte aus den DockSettings
+        var settings = LoadDockSettings(dockItem);
+
+        Console.WriteLine("Edit_Click aufgerufen, filePath: " + settings.FilePath); // Debug-Ausgabe
+
+        EditPropertiesWindow editWindow = new EditPropertiesWindow
         {
-            if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+            Owner = this,
+            NameTextBox = { Text = settings.DisplayName },
+            PathTextBox = { Text = settings.FilePath }
+        };
+
+        bool? dialogResult = editWindow.ShowDialog();
+        if (dialogResult == true)
+        {
+            Console.WriteLine("EditPropertiesWindow Dialog result: true"); // Debug-Ausgabe
+
+            string newName = editWindow.NameTextBox.Text;
+            string newPath = editWindow.PathTextBox.Text;
+
+            if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
             {
-                Console.WriteLine("Edit_Click aufgerufen, filePath: " + dockItem.FilePath); // Debug-Ausgabe
-                EditPropertiesWindow editWindow = new EditPropertiesWindow
+                Console.WriteLine("Neuer Name: " + newName + ", Neuer Pfad: " + newPath); // Debug-Ausgabe
+
+                var icon = IconHelper.GetIcon(newPath);
+                var image = new Image
                 {
-                    Owner = this,
-                    NameTextBox = { Text = System.IO.Path.GetFileNameWithoutExtension(dockItem.FilePath) },
-                    PathTextBox = { Text = dockItem.FilePath }
+                    Source = icon,
+                    Width = 32,
+                    Height = 32,
+                    Margin = new Thickness(5)
                 };
 
-                if (editWindow.ShowDialog() == true)
+                var textBlock = new TextBlock
                 {
-                    Console.WriteLine("EditPropertiesWindow Dialog result: true"); // Debug-Ausgabe
-                    string newName = editWindow.NameTextBox.Text;
-                    string newPath = editWindow.PathTextBox.Text;
-                    if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
-                    {
-                        Console.WriteLine("Neuer Name: " + newName + ", Neuer Pfad: " + newPath); // Debug-Ausgabe
-                        var icon = IconHelper.GetIcon(newPath);
-                        var image = new Image
-                        {
-                            Source = icon,
-                            Width = 32,
-                            Height = 32,
-                            Margin = new Thickness(5)
-                        };
-                        var textBlock = new TextBlock
-                        {
-                            Text = newName,
-                            TextAlignment = TextAlignment.Center,
-                            TextWrapping = TextWrapping.Wrap,
-                            Width = 60,
-                            Margin = new Thickness(5)
-                        };
-                        var stackPanel = new StackPanel
-                        {
-                            Orientation = Orientation.Vertical,
-                            Width = 70
-                        };
-                        stackPanel.Children.Add(image);
-                        stackPanel.Children.Add(textBlock);
-                        button.Content = stackPanel;
-                        dockItem.DisplayName = newName;
-                        dockItem.FilePath = newPath;
-                        button.Tag = dockItem;
+                    Text = newName,
+                    TextAlignment = TextAlignment.Center,
+                    TextWrapping = TextWrapping.Wrap,
+                    Width = 60,
+                    Margin = new Thickness(5)
+                };
 
-                        // Übergabe der aktuellen Kategorie an SaveDockItems
-                        dockManager.SaveDockItems(dockItem.Category);
-
-                        Console.WriteLine("Dock-Elemente gespeichert"); // Debug-Ausgabe
-                    }
-                    else
-                    {
-                        Console.WriteLine("Ungültiger Name oder Pfad"); // Debug-Ausgabe
-                    }
-                }
-                else
+                var stackPanel = new StackPanel
                 {
-                    Console.WriteLine("EditPropertiesWindow Dialog result: false"); // Debug-Ausgabe
-                }
+                    Orientation = Orientation.Vertical,
+                    Width = 70
+                };
+                stackPanel.Children.Add(image);
+                stackPanel.Children.Add(textBlock);
+
+                button.Content = stackPanel;
+                dockItem.DisplayName = newName;
+                dockItem.FilePath = newPath;
+                button.Tag = dockItem;
+
+                // Übergabe der aktuellen Kategorie an SaveDockItems
+                dockManager.SaveDockItems(dockItem.Category);
+                Console.WriteLine("Dock-Elemente gespeichert"); // Debug-Ausgabe
             }
             else
             {
-                Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem"); // Debug-Ausgabe
+                Console.WriteLine("Ungültiger Name oder Pfad"); // Debug-Ausgabe
             }
         }
+        else
+        {
+            Console.WriteLine("EditPropertiesWindow Dialog result: false"); // Debug-Ausgabe
+        }
+    }
+    else
+    {
+        Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem"); // Debug-Ausgabe
+    }
+}
+
+private DockItem LoadDockSettings(DockItem dockItem)
+{
+    // Lade die DockSettings von der zentralen Stelle
+    // Hier muss der Code hinzugefügt werden, um die Werte aus den DockSettings zu laden
+    return dockItem; // Placeholder, hier den geladenen DockItem zurückgeben
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     }
 
