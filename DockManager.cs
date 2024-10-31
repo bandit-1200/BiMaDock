@@ -12,7 +12,7 @@ public class DockManager
 {
 
     private StackPanel dockPanel;
-    private StackPanel categoryDockContainer; // Referenz zu CategoryDockContainer
+    private StackPanel? categoryDockContainer; // Referenz zu CategoryDockContainer
     private MainWindow mainWindow;
     private Point? dragStartPoint = null;  // Definition hinzugefügt
     private Button? draggedButton = null;  // Definition hinzugefügt
@@ -28,7 +28,6 @@ public class DockManager
         dockPanel = panel;
         categoryDockContainer = categoryPanel; // Zuweisung des Kategorie-Docks
         mainWindow = window;
-        // dockPanel.Drop += DockPanel_Drop;
         dockPanel.MouseMove += DockPanel_MouseMove;  // Event-Handler für MouseMove hinzufügen
         dockPanel.MouseEnter += DockPanel_MouseEnter;  // Event-Handler für MouseEnter hinzufügen
         categories = new List<string>(); // Initialisierung der Kategorienliste
@@ -96,7 +95,7 @@ public class DockManager
                     Rect elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
                     if (elementRect.Contains(mousePosition))
                     {
-                        Console.WriteLine($"Maus über Element: {button.Tag}");
+                        // Console.WriteLine($"Maus über Element: {button.Tag}");
                         isOverElement = true;
                         break;
                     }
@@ -113,19 +112,19 @@ public class DockManager
             {
                 if (previousElement is Button prevButton && nextElement is Button nextButton)
                 {
-                    Console.WriteLine($"Maus zwischen Elementen: {prevButton.Tag} und {nextButton.Tag}");
+                    // Console.WriteLine($"Maus zwischen Elementen: {prevButton.Tag} und {nextButton.Tag}");
                 }
                 else if (nextElement is Button onlyNextButton)
                 {
-                    Console.WriteLine($"Maus vor dem ersten Element: {onlyNextButton.Tag}");
+                    // Console.WriteLine($"Maus vor dem ersten Element: {onlyNextButton.Tag}");
                 }
                 else if (previousElement is Button onlyPrevButton)
                 {
-                    Console.WriteLine($"Maus nach dem letzten Element: {onlyPrevButton.Tag}");
+                    // Console.WriteLine($"Maus nach dem letzten Element: {onlyPrevButton.Tag}");
                 }
                 else
                 {
-                    Console.WriteLine("Maus über Dock ohne Element");
+                    // Console.WriteLine("Maus über Dock ohne Element");
                 }
             }
         }

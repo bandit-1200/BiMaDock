@@ -8,7 +8,7 @@ using System.Windows.Media.Imaging;
 
 public static class IconHelper
 {
-    [DllImport("Shell32.dll")]
+    [DllImport("Shell32.dll", CharSet = CharSet.Auto)]
     private static extern int SHGetFileInfo(string pszPath, uint dwFileAttributes, out SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
 
     private const uint SHGFI_ICON = 0x000000100;
@@ -27,33 +27,24 @@ public static class IconHelper
         public string szTypeName;
     }
 
-public static BitmapSource GetIcon(string filePath)
-{
-    try
+    public static BitmapSource GetIcon(string filePath)
     {
         SHFILEINFO shinfo = new SHFILEINFO();
-        SHGetFileInfo(filePath, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SMALLICON);
+        int result = SHGetFileInfo(filePath, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SMALLICON);
 
-        if (shinfo.hIcon != IntPtr.Zero)
+        if (result == 0 || shinfo.hIcon == IntPtr.Zero)
         {
-            using (var icon = System.Drawing.Icon.FromHandle(shinfo.hIcon))
-            {
-                var bitmap = icon.ToBitmap();
-                var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                return bitmapSource;
-            }
+            // Rückgabe eines leeren BitmapSource, um Nullverweis zu vermeiden
+            return Imaging.CreateBitmapSourceFromHBitmap(new Bitmap(1, 1).GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
         }
-        else
+
+        using (var icon = System.Drawing.Icon.FromHandle(shinfo.hIcon))
         {
-            Console.WriteLine($"Kein Icon gefunden für: {filePath}");
-            return null;
+            var bitmap = icon.ToBitmap();
+            var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            return bitmapSource;
         }
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Fehler beim Abrufen des Icons für: {filePath}, Fehler: {ex.Message}");
-        return null;
-    }
-}
+
 
 }

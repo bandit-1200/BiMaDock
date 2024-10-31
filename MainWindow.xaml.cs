@@ -453,7 +453,7 @@ namespace MyDockApp
                     (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                      Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
                 {
-                    Console.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
+                    // Console.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
                     DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
                     dragStartPoint = null;
                     draggedButton = null;
@@ -473,7 +473,7 @@ namespace MyDockApp
 
                         if (elementRect.Contains(mousePosition))
                         {
-                            Console.WriteLine($"Maus über Element: {button.Tag}, Position: {mousePosition}"); // Debugging
+                            // Console.WriteLine($"Maus über Element: {button.Tag}, Position: {mousePosition}"); // Debugging
                             isOverElement = true;
 
                             // if (button.Tag is DockItem dockItem && dockItem.IsCategory)
@@ -494,7 +494,7 @@ namespace MyDockApp
 
                 if (!isOverElement)
                 {
-                    Console.WriteLine($"Maus über Dock ohne Element, Position: {mousePosition}"); // Debugging
+                    // Console.WriteLine($"Maus über Dock ohne Element, Position: {mousePosition}"); // Debugging
                 }
             }
         }
@@ -808,7 +808,7 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
 
         public void HideCategoryDockPanel()
         {
-            Console.WriteLine("HideCategoryDockPanel aufgerufen"); // Debugging
+            // Console.WriteLine("HideCategoryDockPanel aufgerufen"); // Debugging
             CategoryDockContainer.Visibility = Visibility.Collapsed;
             CategoryDockBorder.Visibility = Visibility.Collapsed; // Sichtbarkeit der CategoryDockBorder ändern
 
@@ -817,9 +817,8 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
 
             // Timer stoppen
             categoryHideTimer.Stop();
-            Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
+            // Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
         }
-
 
 
 
@@ -829,10 +828,7 @@ private void Edit_Click(object sender, RoutedEventArgs e)
 {
     if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
     {
-        // Lade die Werte aus den DockSettings
         var dockItems = SettingsManager.LoadSettings();
-
-        // Lade die aktuellen Werte des DockItems
         var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
 
         if (settings == null)
@@ -844,43 +840,48 @@ private void Edit_Click(object sender, RoutedEventArgs e)
         EditPropertiesWindow editWindow = new EditPropertiesWindow
         {
             Owner = this,
-            NameTextBox = { Text = settings.DisplayName },
-            PathTextBox = { Text = settings.FilePath }
+            NameTextBox = { Text = settings.DisplayName }
         };
+
+        if (!settings.IsCategory)
+        {
+            editWindow.PathTextBox.Text = settings.FilePath;
+        }
 
         bool? dialogResult = editWindow.ShowDialog();
         if (dialogResult == true)
         {
             string newName = editWindow.NameTextBox.Text;
-            string newPath = editWindow.PathTextBox.Text;
 
-            if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
+            if (!settings.IsCategory)
             {
-                // Überprüfen, ob der neue Name bereits als Kategorie existiert
+                string newPath = editWindow.PathTextBox.Text;
+                if (string.IsNullOrEmpty(newPath))
+                {
+                    MessageBox.Show("Ungültiger Pfad", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                settings.FilePath = newPath;
+            }
+
+            if (!string.IsNullOrEmpty(newName))
+            {
                 if (dockItem.IsCategory && dockItems.Any(di => di.IsCategory && di.DisplayName == newName))
                 {
                     MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Umbenennen der Kategorie
                 if (dockItem.IsCategory)
                 {
                     var oldCategory = dockItem.DisplayName;
+                    dockItem.DisplayName = newName;
+
                     foreach (var item in dockItems.Where(di => di.Category == oldCategory))
                     {
                         item.Category = newName;
                     }
                 }
-
-                var icon = IconHelper.GetIcon(newPath);
-                var image = new Image
-                {
-                    Source = icon,
-                    Width = 32,
-                    Height = 32,
-                    Margin = new Thickness(5)
-                };
 
                 var textBlock = new TextBlock
                 {
@@ -891,26 +892,20 @@ private void Edit_Click(object sender, RoutedEventArgs e)
                     Margin = new Thickness(5)
                 };
 
-                var stackPanel = new StackPanel
-                {
-                    Orientation = Orientation.Vertical,
-                    Width = 70
-                };
-                stackPanel.Children.Add(image);
+                var stackPanel = (StackPanel)button.Content;
+                stackPanel.Children.RemoveAt(1);
                 stackPanel.Children.Add(textBlock);
 
-                button.Content = stackPanel;
-                dockItem.DisplayName = newName;
-                dockItem.FilePath = newPath;
                 button.Tag = dockItem;
 
-                // Aktualisiere und speichere die geänderten DockItems
                 SettingsManager.SaveSettings(dockItems);
+                // MessageBox.Show("Kategorie erfolgreich umbenannt und gespeichert.", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("Ungültiger Name oder Pfad", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                // MessageBox.Show("Ungültiger Name", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+              dockManager.SaveDockItems(currentOpenCategory);
         }
     }
     else
@@ -918,9 +913,6 @@ private void Edit_Click(object sender, RoutedEventArgs e)
         MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 }
-
-
-
 
 
 // private DockItem LoadDockSettings(DockItem dockItem)
