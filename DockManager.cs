@@ -447,15 +447,31 @@ public class DockManager
 
 
 
-    public void RemoveDockItem(Button button, string currentCategory)
+public void RemoveDockItem(Button button, string currentCategory)
+{
+    if (button.Tag is DockItem dockItem)
     {
-        if (dockPanel.Children.Contains(button))
+        Console.WriteLine($"Lösche Dock-Item: {dockItem.DisplayName} aus Kategorie: {currentCategory}"); // Debug-Ausgabe
+        if (string.IsNullOrEmpty(currentCategory))
         {
+            // Element aus Hauptdock entfernen
             dockPanel.Children.Remove(button);
-            SaveDockItems(currentCategory); // Die aktuelle Kategorie übergeben
-            Console.WriteLine("Element entfernt und Einstellungen gespeichert."); // Debug-Ausgabe
         }
+        else
+        {
+            // Element aus Kategorie-Dock entfernen
+            categoryDockContainer.Children.Remove(button);
+        }
+        // Aktualisiere und speichere die Dock-Items nach dem Löschen
+        SaveDockItems(currentCategory);
+        Console.WriteLine($"Dock-Item {dockItem.DisplayName} gelöscht und Dock aktualisiert"); // Debug-Ausgabe
     }
+    else
+    {
+        Console.WriteLine("Fehler: Button-Tag ist kein DockItem"); // Debug-Ausgabe
+    }
+}
+
 
     public void AddDockItemAt(DockItem item, int index, string currentCategory)
     {

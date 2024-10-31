@@ -685,7 +685,9 @@ namespace MyDockApp
 
 
         private void Delete_Click(object sender, RoutedEventArgs e)
+
         {
+            Console.WriteLine("Delete_Click aufgerufen");
             if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
             {
                 Console.WriteLine($"Delete_Click aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
@@ -723,38 +725,38 @@ namespace MyDockApp
 
 
 
-public void ShowCategoryDockPanel(StackPanel categoryDock)
-{
-    Console.WriteLine("ShowCategoryDockPanel - Kategorie-Element erkannt: " + categoryDock.Name); // Debugging des Kategorienamens
-    Console.WriteLine("ShowCategoryDockPanel aufgerufen"); // Debugging
-    // Aktuelle Kategorie speichern und Tag setzen
-    currentOpenCategory = categoryDock.Name;
-    CategoryDockContainer.Tag = currentOpenCategory;
-    Console.WriteLine($"Aktuelle Kategorie gesetzt auf: {currentOpenCategory}"); // Debugging
-    // Kategorie-Dock leeren
-    CategoryDockContainer.Children.Clear();
-    // Kategorie-Dock hinzufügen
-    CategoryDockContainer.Children.Add(categoryDock);
-    CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockContainer setzen
-    CategoryDockBorder.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockBorder setzen
-
-    // Elemente der `Docksettings`-Liste überprüfen
-    var items = SettingsManager.LoadSettings();
-    foreach (var item in items)
-    {
-        Console.WriteLine($"Überprüfe Element: {item.DisplayName} mit Kategorie: {item.Category}"); // Debugging
-        if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+        public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
-            dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory); // Event-Handler werden in AddDockItemAt gesetzt
-        }
-    }
+            Console.WriteLine("ShowCategoryDockPanel - Kategorie-Element erkannt: " + categoryDock.Name); // Debugging des Kategorienamens
+            Console.WriteLine("ShowCategoryDockPanel aufgerufen"); // Debugging
+                                                                   // Aktuelle Kategorie speichern und Tag setzen
+            currentOpenCategory = categoryDock.Name;
+            CategoryDockContainer.Tag = currentOpenCategory;
+            Console.WriteLine($"Aktuelle Kategorie gesetzt auf: {currentOpenCategory}"); // Debugging
+                                                                                         // Kategorie-Dock leeren
+            CategoryDockContainer.Children.Clear();
+            // Kategorie-Dock hinzufügen
+            CategoryDockContainer.Children.Add(categoryDock);
+            CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockContainer setzen
+            CategoryDockBorder.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockBorder setzen
 
-    // MainStackPanel nach unten verschieben, um Platz zu schaffen
-    MainStackPanel.Margin = new Thickness(0, 0, 0, categoryDock.ActualHeight);
-    // Timer starten
-    categoryHideTimer.Start();
-    Console.WriteLine("CategoryDockContainer ist jetzt sichtbar, MainStackPanel neu positioniert."); // Debugging
-}
+            // Elemente der `Docksettings`-Liste überprüfen
+            var items = SettingsManager.LoadSettings();
+            foreach (var item in items)
+            {
+                Console.WriteLine($"Überprüfe Element: {item.DisplayName} mit Kategorie: {item.Category}"); // Debugging
+                if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+                {
+                    dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory); // Event-Handler werden in AddDockItemAt gesetzt
+                }
+            }
+
+            // MainStackPanel nach unten verschieben, um Platz zu schaffen
+            MainStackPanel.Margin = new Thickness(0, 0, 0, categoryDock.ActualHeight);
+            // Timer starten
+            categoryHideTimer.Start();
+            Console.WriteLine("CategoryDockContainer ist jetzt sichtbar, MainStackPanel neu positioniert."); // Debugging
+        }
 
         public void HideCategoryDockPanel()
         {
