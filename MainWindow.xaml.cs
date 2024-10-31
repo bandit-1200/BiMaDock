@@ -579,44 +579,54 @@ namespace MyDockApp
 
 
 
-        public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
+
+
+public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
+{
+    if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
+    {
+        var button = e.Data.GetData(DataFormats.Serializable) as Button;
+        if (button != null)
         {
-            if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
+            var droppedItem = button.Tag as DockItem;
+            if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
             {
-                var button = e.Data.GetData(DataFormats.Serializable) as Button;
-                if (button != null)
+                // Überprüfung auf Kategorie
+                if (droppedItem.IsCategory)
                 {
-                    var droppedItem = button.Tag as DockItem;
-                    if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
+                    if (!isCategoryMessageShown)
                     {
-                        // Überprüfung auf Kategorie
-                        if (droppedItem.IsCategory)
-                        {
-                            MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
-                            isCategoryMessageShown = true; // Nachricht wurde gezeigt
-                            return; // Abbrechen, wenn es eine Kategorie ist
-                        }
-
-                        // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
-                        if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
-                        {
-                            droppedItem.Category = currentOpenCategory;
-
-                            // Füge das Element dem Kategorie-Dock hinzu
-                            CategoryDockContainer.Children.Add(button);
-                            CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
-
-                            // Aktualisiere die interne Struktur oder Daten, falls nötig
-                            UpdateDockItemLocation(button);
-
-                            // Dock-Items speichern
-                            dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
-                        }
+                        MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
+                        isCategoryMessageShown = true; // Nachricht wurde gezeigt
                     }
+                    return; // Abbrechen, wenn es eine Kategorie ist
+                }
+
+                // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
+                if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
+                {
+                    droppedItem.Category = currentOpenCategory;
+
+                    // Füge das Element dem Kategorie-Dock hinzu
+                    if (!CategoryDockContainer.Children.Contains(button))
+                    {
+                        CategoryDockContainer.Children.Add(button);
+                    }
+                    CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
+
+                    // Aktualisiere die interne Struktur oder Daten, falls nötig
+                    UpdateDockItemLocation(button);
+
+                    // Dock-Items speichern
+                    dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
                 }
             }
-            isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
         }
+    }
+    isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
+}
+
+
 
         public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
         {
@@ -758,42 +768,39 @@ namespace MyDockApp
 
 
 
-        public void ShowCategoryDockPanel(StackPanel categoryDock)
+public void ShowCategoryDockPanel(StackPanel categoryDock)
+{
+    currentOpenCategory = categoryDock.Name;
+    CategoryDockContainer.Tag = currentOpenCategory;
+    CategoryDockContainer.Children.Clear();
+    CategoryDockContainer.Children.Add(categoryDock);
+    CategoryDockContainer.Visibility = Visibility.Visible;
+    CategoryDockBorder.Visibility = Visibility.Visible;
+
+    // Sicherstellen, dass das Kategoriedock eine Mindestbreite hat
+    CategoryDockContainer.MinWidth = 350; // Setze auf eine Mindestbreite von 350
+
+    var items = SettingsManager.LoadSettings();
+    foreach (var item in items)
+    {
+        if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
         {
-            Console.WriteLine("ShowCategoryDockPanel - Kategorie-Element erkannt: " + categoryDock.Name); // Debugging des Kategorienamens
-            Console.WriteLine("ShowCategoryDockPanel aufgerufen"); // Debugging
-                                                                   // Aktuelle Kategorie speichern und Tag setzen
-            currentOpenCategory = categoryDock.Name;
-            CategoryDockContainer.Tag = currentOpenCategory;
-            Console.WriteLine($"Aktuelle Kategorie gesetzt auf: {currentOpenCategory}"); // Debugging
-                                                                                         // Kategorie-Dock leeren
-            CategoryDockContainer.Children.Clear();
-            // Kategorie-Dock hinzufügen
-            CategoryDockContainer.Children.Add(categoryDock);
-            CategoryDockContainer.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockContainer setzen
-            CategoryDockBorder.Visibility = Visibility.Visible; // Sichtbarkeit der CategoryDockBorder setzen
-
-            // Elemente der `Docksettings`-Liste überprüfen
-            var items = SettingsManager.LoadSettings();
-            foreach (var item in items)
-            {
-                Console.WriteLine($"Überprüfe Element: {item.DisplayName} mit Kategorie: {item.Category}"); // Debugging
-                if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
-                {
-                    dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory); // Event-Handler werden in AddDockItemAt gesetzt
-                }
-            }
-
-            // Dynamische Breite des Kategorie-Docks setzen
-            CategoryDockContainer.Width = double.NaN; // Automatische Breite basierend auf Inhalten
-            CategoryDockContainer.VerticalAlignment = VerticalAlignment.Top;
-
-            // MainStackPanel nicht nach unten verschieben, um Platz zu schaffen
-            MainStackPanel.Margin = new Thickness(0);
-            // Timer starten
-            categoryHideTimer.Start();
-            Console.WriteLine("CategoryDockContainer ist jetzt sichtbar, MainStackPanel neu positioniert."); // Debugging
+            dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
         }
+    }
+
+    // Zentrierung der Button-Elemente direkt sicherstellen
+    foreach (UIElement child in CategoryDockContainer.Children)
+    {
+        if (child is FrameworkElement frameworkElement)
+        {
+            frameworkElement.HorizontalAlignment = HorizontalAlignment.Center;
+        }
+    }
+
+    MainStackPanel.Margin = new Thickness(0);
+    categoryHideTimer.Start();
+}
 
         public void HideCategoryDockPanel()
         {
