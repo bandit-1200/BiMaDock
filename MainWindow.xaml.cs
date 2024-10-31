@@ -588,6 +588,12 @@ public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         var button = e.Data.GetData(DataFormats.Serializable) as Button;
         if (button != null)
         {
+            var parent = VisualTreeHelper.GetParent(button) as Panel;
+            if (parent != null)
+            {
+                parent.Children.Remove(button);
+            }
+
             var droppedItem = button.Tag as DockItem;
             if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
             {
@@ -623,6 +629,13 @@ public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
             }
         }
     }
+    else
+    {
+        e.Handled = true; // Stelle sicher, dass das Ereignis verarbeitet wurde
+    }
+
+    // Visuelles Feedback zurücksetzen
+    CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
     isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
 }
 
@@ -777,8 +790,8 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
     CategoryDockContainer.Visibility = Visibility.Visible;
     CategoryDockBorder.Visibility = Visibility.Visible;
 
-    // Sicherstellen, dass das Kategoriedock eine Mindestbreite hat
-    CategoryDockContainer.MinWidth = 350; // Setze auf eine Mindestbreite von 350
+    // Programmgesteuerte Mindestbreite setzen
+    // CategoryDockContainer.MinWidth = 350; 
 
     var items = SettingsManager.LoadSettings();
     foreach (var item in items)
@@ -786,15 +799,6 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
         if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
         {
             dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
-        }
-    }
-
-    // Zentrierung der Button-Elemente direkt sicherstellen
-    foreach (UIElement child in CategoryDockContainer.Children)
-    {
-        if (child is FrameworkElement frameworkElement)
-        {
-            frameworkElement.HorizontalAlignment = HorizontalAlignment.Center;
         }
     }
 
