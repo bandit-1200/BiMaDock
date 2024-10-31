@@ -27,13 +27,33 @@ public static class IconHelper
         public string szTypeName;
     }
 
-    public static BitmapSource GetIcon(string filePath)
+public static BitmapSource GetIcon(string filePath)
+{
+    try
     {
         SHFILEINFO shinfo = new SHFILEINFO();
         SHGetFileInfo(filePath, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SMALLICON);
-        var icon = System.Drawing.Icon.FromHandle(shinfo.hIcon);
-        var bitmap = icon.ToBitmap();
-        var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-        return bitmapSource;
+
+        if (shinfo.hIcon != IntPtr.Zero)
+        {
+            using (var icon = System.Drawing.Icon.FromHandle(shinfo.hIcon))
+            {
+                var bitmap = icon.ToBitmap();
+                var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                return bitmapSource;
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Kein Icon gefunden für: {filePath}");
+            return null;
+        }
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Fehler beim Abrufen des Icons für: {filePath}, Fehler: {ex.Message}");
+        return null;
+    }
+}
+
 }

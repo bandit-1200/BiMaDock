@@ -457,7 +457,7 @@ public class DockManager
         }
     }
 
-    private void AddDockItemAt(DockItem item, int index, string currentCategory)
+    public void AddDockItemAt(DockItem item, int index, string currentCategory)
     {
         var icon = IconHelper.GetIcon(item.FilePath);
         var image = new Image
