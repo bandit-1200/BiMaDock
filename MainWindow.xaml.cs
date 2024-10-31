@@ -825,14 +825,21 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
 
 
 
-    private void Edit_Click(object sender, RoutedEventArgs e)
+private void Edit_Click(object sender, RoutedEventArgs e)
 {
     if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
     {
         // Lade die Werte aus den DockSettings
-        var settings = LoadDockSettings(dockItem);
+        var dockItems = SettingsManager.LoadSettings();
 
-        Console.WriteLine("Edit_Click aufgerufen, filePath: " + settings.FilePath); // Debug-Ausgabe
+        // Lade die aktuellen Werte des DockItems
+        var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
+
+        if (settings == null)
+        {
+            MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
 
         EditPropertiesWindow editWindow = new EditPropertiesWindow
         {
@@ -844,14 +851,27 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
         bool? dialogResult = editWindow.ShowDialog();
         if (dialogResult == true)
         {
-            Console.WriteLine("EditPropertiesWindow Dialog result: true"); // Debug-Ausgabe
-
             string newName = editWindow.NameTextBox.Text;
             string newPath = editWindow.PathTextBox.Text;
 
             if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newPath))
             {
-                Console.WriteLine("Neuer Name: " + newName + ", Neuer Pfad: " + newPath); // Debug-Ausgabe
+                // Überprüfen, ob der neue Name bereits als Kategorie existiert
+                if (dockItem.IsCategory && dockItems.Any(di => di.IsCategory && di.DisplayName == newName))
+                {
+                    MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Umbenennen der Kategorie
+                if (dockItem.IsCategory)
+                {
+                    var oldCategory = dockItem.DisplayName;
+                    foreach (var item in dockItems.Where(di => di.Category == oldCategory))
+                    {
+                        item.Category = newName;
+                    }
+                }
 
                 var icon = IconHelper.GetIcon(newPath);
                 var image = new Image
@@ -884,32 +904,31 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
                 dockItem.FilePath = newPath;
                 button.Tag = dockItem;
 
-                // Übergabe der aktuellen Kategorie an SaveDockItems
-                dockManager.SaveDockItems(dockItem.Category);
-                Console.WriteLine("Dock-Elemente gespeichert"); // Debug-Ausgabe
+                // Aktualisiere und speichere die geänderten DockItems
+                SettingsManager.SaveSettings(dockItems);
             }
             else
             {
-                Console.WriteLine("Ungültiger Name oder Pfad"); // Debug-Ausgabe
+                MessageBox.Show("Ungültiger Name oder Pfad", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-        else
-        {
-            Console.WriteLine("EditPropertiesWindow Dialog result: false"); // Debug-Ausgabe
         }
     }
     else
     {
-        Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem"); // Debug-Ausgabe
+        MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 }
 
-private DockItem LoadDockSettings(DockItem dockItem)
-{
-    // Lade die DockSettings von der zentralen Stelle
-    // Hier muss der Code hinzugefügt werden, um die Werte aus den DockSettings zu laden
-    return dockItem; // Placeholder, hier den geladenen DockItem zurückgeben
-}
+
+
+
+
+// private DockItem LoadDockSettings(DockItem dockItem)
+// {
+//     // Lade die DockSettings von der zentralen Stelle
+//     // Hier muss der Code hinzugefügt werden, um die Werte aus den DockSettings zu laden
+//     return dockItem; // Placeholder, hier den geladenen DockItem zurückgeben
+// }
 
 
 

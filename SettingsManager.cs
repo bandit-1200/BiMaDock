@@ -8,16 +8,16 @@ public static class SettingsManager
     private static string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MyDockApp");
     private static string settingsFilePath = Path.Combine(appDataPath, "docksettings.json");
 
-    public static void SaveSettings(List<DockItem> items)
+public static void SaveSettings(List<DockItem> items)
+{
+    if (!Directory.Exists(appDataPath))
     {
-        if (!Directory.Exists(appDataPath))
-        {
-            Directory.CreateDirectory(appDataPath);
-        }
-
-        var json = JsonConvert.SerializeObject(items, Formatting.Indented);
-        File.WriteAllText(settingsFilePath, json);
+        Directory.CreateDirectory(appDataPath);
     }
+    var json = JsonConvert.SerializeObject(items, Formatting.Indented);
+    File.WriteAllText(settingsFilePath, json);
+}
+
 
 public static List<DockItem> LoadSettings()
 {
@@ -29,5 +29,9 @@ public static List<DockItem> LoadSettings()
     }
     return new List<DockItem>();
 }
+
+
+
+
 
 }
