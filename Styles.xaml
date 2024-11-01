@@ -14,7 +14,7 @@
         <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
         <Setter Property="Orientation" Value="Horizontal"/>
         <Setter Property="Height" Value="80"/>
-        <Setter Property="Margin" Value="10,0"/>
+        <Setter Property="Margin" Value="0"/>
     </Style>
     <Style x:Key="CategoryDockStyle" TargetType="StackPanel">
         <Setter Property="Background" Value="{StaticResource SecondaryColor}"/>
