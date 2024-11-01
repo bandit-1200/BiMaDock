@@ -83,7 +83,7 @@ namespace MyDockApp
                 // Periodische Überprüfung, ob die Maus über einem der Docks ist
                 var hoverCheckTimer = new DispatcherTimer
                 {
-                    Interval = TimeSpan.FromSeconds(1)
+                    Interval = TimeSpan.FromSeconds(0.2)
                 };
                 hoverCheckTimer.Tick += (s, e) => CheckMouseHover();
                 hoverCheckTimer.Start();
@@ -130,48 +130,38 @@ namespace MyDockApp
             dockManager.Open_Click(sender, e);
         }
 
-        private void CheckMouseHover()
+private void CheckMouseHover()
+{
+    if (DockPanel != null && CategoryDockContainer != null)
+    {
+        var mousePosDock = Mouse.GetPosition(DockPanel);
+        var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Haupt-Docks
+        var mousePosCategory = Mouse.GetPosition(CategoryDockContainer);
+        var categoryBounds = new Rect(CategoryDockContainer.TranslatePoint(new Point(), this), CategoryDockContainer.RenderSize); // Grenzen des Kategorie-Docks
+
+        if (dockBounds.Contains(mousePosDock) || categoryBounds.Contains(mousePosCategory) || isDragging)
         {
-            if (DockPanel != null && CategoryDockContainer != null)
-            {
-                var mousePosDock = Mouse.GetPosition(DockPanel);
-                var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Haupt-Docks
-
-                var mousePosCategory = Mouse.GetPosition(CategoryDockContainer);
-                var categoryBounds = new Rect(CategoryDockContainer.TranslatePoint(new Point(), this), CategoryDockContainer.RenderSize); // Grenzen des Kategorie-Docks
-
-                if (dockBounds.Contains(mousePosDock) || categoryBounds.Contains(mousePosCategory) || isDragging)
-                {
-                    // Console.WriteLine($"Mouse over DockPanel or CategoryDockContainer or Drag Start at {DateTime.Now}"); // Debug-Ausgabe
-
-                    // Timer neu starten, wenn die Maus über einem der Docks ist oder ein Draggen erkannt wird
-                    dockHideTimer.Stop();
-                    dockHideTimer.Start();
-                    // Console.WriteLine($"dockHideTimer neu gestartet: {DateTime.Now}"); // Debug-Ausgabe
-
-                    categoryHideTimer.Stop();
-                    categoryHideTimer.Start();
-                    // Console.WriteLine($"categoryHideTimer neu gestartet: {DateTime.Now}"); // Debug-Ausgabe
-
-                    // Beide Docks sichtbar machen
-                    DockPanel.Visibility = Visibility.Visible;
-                    CategoryDockContainer.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    // Console.WriteLine($"Mouse not over DockPanel or CategoryDockContainer at {DateTime.Now}"); // Debug-Ausgabe
-
-                    // Timer stoppen und Countdown für das Ausblenden der Docks starten
-                    dockHideTimer.Start();
-                    categoryHideTimer.Start();
-                }
-            }
-            else
-            {
-                // Console.WriteLine($"Fehler: DockPanel oder CategoryDockContainer ist null at {DateTime.Now}"); // Debug-Ausgabe
-            }
+            // Console.WriteLine($"Mouse over DockPanel or CategoryDockContainer or Drag Start at {DateTime.Now}"); // Debug-Ausgabe
+            // Timer stoppen, wenn die Maus über einem der Docks ist oder ein Draggen erkannt wird
+            dockHideTimer.Stop();
+            categoryHideTimer.Stop();
+            // Beide Docks sichtbar machen
+            ShowDock();
+            CategoryDockContainer.Visibility = Visibility.Visible;
         }
-
+        else
+        {
+            // Console.WriteLine($"Mouse not over DockPanel or CategoryDockContainer at {DateTime.Now}"); // Debug-Ausgabe
+            // Timer starten und Countdown für das Ausblenden der Docks starten
+            dockHideTimer.Start();
+            categoryHideTimer.Start();
+        }
+    }
+    else
+    {
+        // Console.WriteLine($"Fehler: DockPanel oder CategoryDockContainer ist null at {DateTime.Now}"); // Debug-Ausgabe
+    }
+}
 
 
         private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -195,132 +185,22 @@ namespace MyDockApp
             }
         }
 
-
-        private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
-        {
-            Console.WriteLine("Mouse entered DockPanel");  // Debug-Ausgabe
-
-            // Timer neu starten, wenn die Maus über dem Dock ist
-            dockHideTimer.Stop();
-            dockHideTimer.Start();
-
-            categoryHideTimer.Stop();
-            categoryHideTimer.Start();
-        }
-
-
-
-        private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
-        {
-            Console.WriteLine("Mouse left DockPanel");  // Debug-Ausgabe
-
-            // Timer stoppen, wenn die Maus das Dock verlässt
-            dockHideTimer.Stop();
-            categoryHideTimer.Stop();
-        }
-
-
-
-
-
-
-
-
-
-
-
-public void ShowDock()
+private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
 {
-    if (!dockVisible)
-    {
-        dockVisible = true;
-        var duration = TimeSpan.FromMilliseconds(100);
-        var slideAnimation = new ThicknessAnimation
-        {
-            From = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0),
-            To = new Thickness(0, 0, 0, 0),
-            Duration = duration,
-            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
-            FillBehavior = FillBehavior.HoldEnd
-        };
-        slideAnimation.Completed += (s, e) =>
-        {
-            DockPanel.Margin = new Thickness(0, 0, 0, 0);
-            Console.WriteLine("Dock vollständig eingeblendet"); // Debugging
-        };
-
-        
-
-        // Endkappen einblenden
-        var endCapAnimation = new DoubleAnimation
-        {
-            To = 0,
-            Duration = duration,
-            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
-        };
-
-        if (LeftEndCap.RenderTransform == null)
-        {
-            LeftEndCap.RenderTransform = new TranslateTransform();
-        }
-        if (RightEndCap.RenderTransform == null)
-        {
-            RightEndCap.RenderTransform = new TranslateTransform();
-        }
-        DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
-        LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
-        RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
-    }
+    Console.WriteLine("Mouse entered DockPanel");  // Debug-Ausgabe
+    // Sicherstellen, dass das Dock sichtbar bleibt
+    ShowDock();
+    // Timer stoppen, da die Maus über dem Dock ist
+    dockHideTimer.Stop();
+    categoryHideTimer.Stop();
 }
 
-
-
-
-
-public void HideDock()
+private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
 {
-    if (dockVisible)
-    {
-        dockVisible = false;
-        var duration = TimeSpan.FromMilliseconds(100);
-        var toValue = -DockPanel.ActualHeight + 5;
-        var slideAnimation = new ThicknessAnimation
-        {
-            From = new Thickness(0, 0, 0, 0),
-            To = new Thickness(0, -DockPanel.ActualHeight + toValue, 0, 0),
-            Duration = duration,
-            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
-            FillBehavior = FillBehavior.HoldEnd
-        };
-
-        slideAnimation.Completed += (s, e) =>
-        {
-            DockPanel.Margin = new Thickness(0, -DockPanel.ActualHeight + toValue, 0, 0);
-            Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
-        };
-
-        
-
-        // Endkappen ausblenden
-        var endCapAnimation = new DoubleAnimation
-        {
-            To = -DockPanel.ActualHeight + toValue,
-            Duration = duration,
-            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
-        };
-
-        if (LeftEndCap.RenderTransform == null)
-        {
-            LeftEndCap.RenderTransform = new TranslateTransform();
-        }
-        if (RightEndCap.RenderTransform == null)
-        {
-            RightEndCap.RenderTransform = new TranslateTransform();
-        }
-        DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
-        LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
-        RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
-    }
+    Console.WriteLine("Mouse left DockPanel");  // Debug-Ausgabe
+    // Timer starten, der das Dock nach einer Verzögerung ausblendet
+    dockHideTimer.Start();
+    categoryHideTimer.Start();
 }
 
 
@@ -329,51 +209,109 @@ public void HideDock()
 
 
 
-public void HideEndCaps()
-{
-    var toValue = -DockPanel.ActualHeight + 5;
-    var endCapAnimation = new DoubleAnimation
-    {
-        To = -DockPanel.ActualHeight + toValue,
-        Duration = TimeSpan.FromMilliseconds(500),
-        EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
-    };
-
-    if (LeftEndCap.RenderTransform == null)
-    {
-        LeftEndCap.RenderTransform = new TranslateTransform();
-    }
-    if (RightEndCap.RenderTransform == null)
-    {
-        RightEndCap.RenderTransform = new TranslateTransform();
-    }
-
-    LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
-    RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
-}
 
 
-public void ShowEndCaps()
-{
-    var endCapAnimation = new DoubleAnimation
-    {
-        To = 0,
-        Duration = TimeSpan.FromMilliseconds(500),
-        EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
-    };
 
-    if (LeftEndCap.RenderTransform == null)
-    {
-        LeftEndCap.RenderTransform = new TranslateTransform();
-    }
-    if (RightEndCap.RenderTransform == null)
-    {
-        RightEndCap.RenderTransform = new TranslateTransform();
-    }
 
-    LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
-    RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
-}
+
+        public void ShowDock()
+        {
+            if (!dockVisible)
+            {
+                dockVisible = true;
+                var duration = TimeSpan.FromMilliseconds(100);
+                var slideAnimation = new ThicknessAnimation
+                {
+                    From = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0),
+                    To = new Thickness(0, 0, 0, 0),
+                    Duration = duration,
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
+                    FillBehavior = FillBehavior.HoldEnd
+                };
+                slideAnimation.Completed += (s, e) =>
+                {
+                    DockPanel.Margin = new Thickness(0, 0, 0, 0);
+                    Console.WriteLine("Dock vollständig eingeblendet"); // Debugging
+                };
+
+
+
+                // Endkappen einblenden
+                var endCapAnimation = new DoubleAnimation
+                {
+                    To = 0,
+                    Duration = duration,
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+                };
+
+                if (LeftEndCap.RenderTransform == null)
+                {
+                    LeftEndCap.RenderTransform = new TranslateTransform();
+                }
+                if (RightEndCap.RenderTransform == null)
+                {
+                    RightEndCap.RenderTransform = new TranslateTransform();
+                }
+                DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
+                LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
+                RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
+            }
+        }
+
+
+
+
+
+        public void HideDock()
+        {
+            if (dockVisible)
+            {
+                dockVisible = false;
+                var duration = TimeSpan.FromMilliseconds(100);
+                var toValue = -DockPanel.ActualHeight + 5;
+                var slideAnimation = new ThicknessAnimation
+                {
+                    From = new Thickness(0, 0, 0, 0),
+                    To = new Thickness(0, -DockPanel.ActualHeight + toValue, 0, 0),
+                    Duration = duration,
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
+                    FillBehavior = FillBehavior.HoldEnd
+                };
+
+                slideAnimation.Completed += (s, e) =>
+                {
+                    DockPanel.Margin = new Thickness(0, -DockPanel.ActualHeight + toValue, 0, 0);
+                    Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
+                };
+
+
+
+                // Endkappen ausblenden
+                var endCapAnimation = new DoubleAnimation
+                {
+                    To = -DockPanel.ActualHeight + toValue,
+                    Duration = duration,
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+                };
+
+                if (LeftEndCap.RenderTransform == null)
+                {
+                    LeftEndCap.RenderTransform = new TranslateTransform();
+                }
+                if (RightEndCap.RenderTransform == null)
+                {
+                    RightEndCap.RenderTransform = new TranslateTransform();
+                }
+                DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
+                LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
+                RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
+            }
+        }
+
+
+
+
+
 
 
 
