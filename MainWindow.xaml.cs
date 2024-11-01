@@ -31,6 +31,18 @@ namespace MyDockApp
             isDragging = value;
         }
 
+        [Flags]
+        public enum DockStatus
+        {
+            None = 0,
+            MainDockHover = 1,
+            CategoryDockHover = 2,
+            ContextMenuOpen = 4,
+            CategoryElementClicked = 8
+        }
+
+        private DockStatus currentDockStatus = DockStatus.None;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -141,7 +153,6 @@ private void CheckMouseHover()
 
         if (dockBounds.Contains(mousePosDock) || categoryBounds.Contains(mousePosCategory) || isDragging)
         {
-            // Console.WriteLine($"Mouse over DockPanel or CategoryDockContainer or Drag Start at {DateTime.Now}"); // Debug-Ausgabe
             // Timer stoppen, wenn die Maus über einem der Docks ist oder ein Draggen erkannt wird
             dockHideTimer.Stop();
             categoryHideTimer.Stop();
@@ -151,18 +162,12 @@ private void CheckMouseHover()
         }
         else
         {
-            // Console.WriteLine($"Mouse not over DockPanel or CategoryDockContainer at {DateTime.Now}"); // Debug-Ausgabe
             // Timer starten und Countdown für das Ausblenden der Docks starten
-            dockHideTimer.Start();
-            categoryHideTimer.Start();
+            // dockHideTimer.Start();
+            // categoryHideTimer.Start();
         }
     }
-    else
-    {
-        // Console.WriteLine($"Fehler: DockPanel oder CategoryDockContainer ist null at {DateTime.Now}"); // Debug-Ausgabe
-    }
 }
-
 
         private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -187,21 +192,17 @@ private void CheckMouseHover()
 
 private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
 {
-    Console.WriteLine("Mouse entered DockPanel");  // Debug-Ausgabe
-    // Sicherstellen, dass das Dock sichtbar bleibt
-    ShowDock();
-    // Timer stoppen, da die Maus über dem Dock ist
-    dockHideTimer.Stop();
-    categoryHideTimer.Stop();
+    currentDockStatus |= DockStatus.MainDockHover; // Setzt das MainDockHover-Flag
+    CheckAllConditions();
 }
+
 
 private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
 {
-    Console.WriteLine("Mouse left DockPanel");  // Debug-Ausgabe
-    // Timer starten, der das Dock nach einer Verzögerung ausblendet
-    dockHideTimer.Start();
-    categoryHideTimer.Start();
+    currentDockStatus &= ~DockStatus.MainDockHover; // Löscht das MainDockHover-Flag
+    CheckAllConditions();
 }
+
 
 
 
@@ -335,11 +336,11 @@ private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
                     Console.WriteLine("Mouse over DockPanel");  // Debug-Ausgabe
 
                     // Timer neu starten, wenn die Maus über dem Dock ist
-                    dockHideTimer.Stop();
-                    dockHideTimer.Start();
+                    // dockHideTimer.Stop();
+                    // dockHideTimer.Start();
 
-                    categoryHideTimer.Stop();
-                    categoryHideTimer.Start();
+                    // categoryHideTimer.Stop();
+                    // categoryHideTimer.Start();
                 }
                 else
                 {
@@ -356,21 +357,74 @@ private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
 
 
 
-        private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
-        {
-            Console.WriteLine("Mouse entered CategoryDockContainer"); // Debug-Ausgabe
-            dockHideTimer.Stop();
-            dockHideTimer.Start();
-            categoryHideTimer.Stop();
-            categoryHideTimer.Start();
-        }
+// private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
+// {
+//     Console.WriteLine("Mouse entered CategoryDockContainer"); // Debug-Ausgabe
+//     // Sicherstellen, dass beide Docks sichtbar bleiben
+//     ShowDock();
+//     CategoryDockContainer.Visibility = Visibility.Visible;
+//     // Timer stoppen
+//     // dockHideTimer.Stop();
+//     // categoryHideTimer.Stop();
+// }
 
-        private void CategoryDockContainer_MouseLeave(object sender, MouseEventArgs e)
-        {
-            Console.WriteLine("Mouse left CategoryDockContainer"); // Debug-Ausgabe
-            dockHideTimer.Start();
-            categoryHideTimer.Start();
-        }
+
+private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
+{
+    currentDockStatus |= DockStatus.CategoryDockHover; // Setzt das CategoryDockHover-Flag
+    currentDockStatus &= ~DockStatus.CategoryElementClicked; // Löscht das CategoryElementClicked-Flag
+    CheckAllConditions();
+}
+
+
+
+private void CategoryDockContainer_MouseLeave(object sender, MouseEventArgs e)
+{
+    currentDockStatus &= ~DockStatus.CategoryDockHover; // Löscht das CategoryDockHover-Flag
+    CheckAllConditions();
+}
+
+private void DockPanel_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+{
+    currentDockStatus |= DockStatus.ContextMenuOpen; // Setzt das ContextMenuOpen-Flag
+    OpenMenuItem.Visibility = Visibility.Collapsed;
+    DeleteMenuItem.Visibility = Visibility.Collapsed;
+    EditMenuItem.Visibility = Visibility.Collapsed;
+    DockContextMenu.IsOpen = true;
+    CheckAllConditions();
+}
+
+private void DockContextMenu_Closed(object sender, RoutedEventArgs e)
+{
+    currentDockStatus &= ~DockStatus.ContextMenuOpen; // Löscht das ContextMenuOpen-Flag
+    CheckAllConditions();
+}
+
+private void CheckAllConditions()
+{
+    // Ausgabe im Klartext
+    Console.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
+
+    if (currentDockStatus > 0) // Überprüft, ob irgendein Flag gesetzt ist
+    {
+        Console.WriteLine("Conditions met, showing dock."); // Debug-Ausgabe
+        ShowDock();
+        categoryHideTimer.Stop();
+        dockHideTimer.Stop();
+    }
+    else
+    {
+        Console.WriteLine("Conditions not met, hiding dock."); // Debug-Ausgabe
+        categoryHideTimer.Start();
+        dockHideTimer.Start();
+    }
+}
+
+
+
+
+
+
         public void CategoryDockContainer_MouseMove(object sender, MouseEventArgs e)
         {
             if (dragStartPoint.HasValue && draggedButton != null)
@@ -811,30 +865,34 @@ private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
 
 
 
-        public void ShowCategoryDockPanel(StackPanel categoryDock)
+public void ShowCategoryDockPanel(StackPanel categoryDock)
+{
+    currentDockStatus |= DockStatus.CategoryElementClicked; // Setzt das CategoryElementClicked-Flag
+    currentOpenCategory = categoryDock.Name;
+    CategoryDockContainer.Tag = currentOpenCategory;
+    CategoryDockContainer.Children.Clear();
+    CategoryDockContainer.Children.Add(categoryDock);
+    CategoryDockContainer.Visibility = Visibility.Visible;
+    CategoryDockBorder.Visibility = Visibility.Visible;
+    // Programmgesteuerte Mindestbreite setzen
+    // CategoryDockContainer.MinWidth = 350; 
+    var items = SettingsManager.LoadSettings();
+    foreach (var item in items)
+    {
+        if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
         {
-            currentOpenCategory = categoryDock.Name;
-            CategoryDockContainer.Tag = currentOpenCategory;
-            CategoryDockContainer.Children.Clear();
-            CategoryDockContainer.Children.Add(categoryDock);
-            CategoryDockContainer.Visibility = Visibility.Visible;
-            CategoryDockBorder.Visibility = Visibility.Visible;
-
-            // Programmgesteuerte Mindestbreite setzen
-            // CategoryDockContainer.MinWidth = 350; 
-
-            var items = SettingsManager.LoadSettings();
-            foreach (var item in items)
-            {
-                if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
-                {
-                    dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
-                }
-            }
-
-            MainStackPanel.Margin = new Thickness(0);
-            categoryHideTimer.Start();
+            dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
         }
+    }
+    MainStackPanel.Margin = new Thickness(0);
+    categoryHideTimer.Start();
+    CheckAllConditions(); // Überprüft alle Bedingungen
+}
+
+
+
+
+
 
         public void HideCategoryDockPanel()
         {
