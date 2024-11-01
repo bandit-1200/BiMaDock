@@ -323,7 +323,7 @@ public void AddCategoryItem(string categoryName)
 public void DockPanel_Drop(object sender, DragEventArgs e)
 {
     if (isDropInProgress) return; // Doppelte Drop-Verhinderung
-    isDropInProgress = true;
+    // isDropInProgress = true;
     try
     {
         if (e.Data.GetDataPresent(DataFormats.Serializable))

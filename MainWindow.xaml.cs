@@ -40,7 +40,9 @@ namespace MyDockApp
             MainDockHover = 1,
             CategoryDockHover = 2,
             ContextMenuOpen = 4,
-            CategoryElementClicked = 8
+            CategoryElementClicked = 8,
+            DraggingToDock = 16
+
         }
 
         private DockStatus currentDockStatus = DockStatus.None;
@@ -56,12 +58,12 @@ namespace MyDockApp
 
             // Timer initialisieren
             dockHideTimer = new DispatcherTimer();
-            dockHideTimer.Interval = TimeSpan.FromSeconds(1); // Zeitintervall auf 5 Sekunden setzen
+            dockHideTimer.Interval = TimeSpan.FromSeconds(0.3); // Zeitintervall auf 5 Sekunden setzen
             dockHideTimer.Tick += (s, e) => { HideDock(); };
 
             // Timer initialisieren
             categoryHideTimer = new DispatcherTimer();
-            categoryHideTimer.Interval = TimeSpan.FromSeconds(1); // Zeitintervall auf 5 Sekunden setzen
+            categoryHideTimer.Interval = TimeSpan.FromSeconds(0.3); // Zeitintervall auf 5 Sekunden setzen
             categoryHideTimer.Tick += (s, e) => { HideCategoryDockPanel(); };
 
             this.Closing += (s, e) =>
@@ -144,32 +146,32 @@ namespace MyDockApp
             dockManager.Open_Click(sender, e);
         }
 
-private void CheckMouseHover()
-{
-    if (DockPanel != null && CategoryDockContainer != null)
-    {
-        var mousePosDock = Mouse.GetPosition(DockPanel);
-        var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Haupt-Docks
-        var mousePosCategory = Mouse.GetPosition(CategoryDockContainer);
-        var categoryBounds = new Rect(CategoryDockContainer.TranslatePoint(new Point(), this), CategoryDockContainer.RenderSize); // Grenzen des Kategorie-Docks
+        private void CheckMouseHover()
+        {
+            if (DockPanel != null && CategoryDockContainer != null)
+            {
+                var mousePosDock = Mouse.GetPosition(DockPanel);
+                var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Haupt-Docks
+                var mousePosCategory = Mouse.GetPosition(CategoryDockContainer);
+                var categoryBounds = new Rect(CategoryDockContainer.TranslatePoint(new Point(), this), CategoryDockContainer.RenderSize); // Grenzen des Kategorie-Docks
 
-        if (dockBounds.Contains(mousePosDock) || categoryBounds.Contains(mousePosCategory) || isDragging)
-        {
-            // Timer stoppen, wenn die Maus über einem der Docks ist oder ein Draggen erkannt wird
-            dockHideTimer.Stop();
-            categoryHideTimer.Stop();
-            // Beide Docks sichtbar machen
-            ShowDock();
-            CategoryDockContainer.Visibility = Visibility.Visible;
+                if (dockBounds.Contains(mousePosDock) || categoryBounds.Contains(mousePosCategory) || isDragging)
+                {
+                    // Timer stoppen, wenn die Maus über einem der Docks ist oder ein Draggen erkannt wird
+                    dockHideTimer.Stop();
+                    categoryHideTimer.Stop();
+                    // Beide Docks sichtbar machen
+                    ShowDock();
+                    CategoryDockContainer.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    // Timer starten und Countdown für das Ausblenden der Docks starten
+                    // dockHideTimer.Start();
+                    // categoryHideTimer.Start();
+                }
+            }
         }
-        else
-        {
-            // Timer starten und Countdown für das Ausblenden der Docks starten
-            // dockHideTimer.Start();
-            // categoryHideTimer.Start();
-        }
-    }
-}
 
         private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -184,26 +186,27 @@ private void CheckMouseHover()
             {
                 dragStartPoint = e.GetPosition(DockPanel);
                 draggedButton = button;
-                Console.WriteLine("Drag Start: " + draggedButton.Tag); // Debugging
+                Console.WriteLine("DockPanel_MouseLeftButtonDown: Drag Start: " + draggedButton.Tag); // Debugging
             }
             else
             {
-                Console.WriteLine("Kein Button als Quelle gefunden"); // Debugging
+                Console.WriteLine("DockPanel_MouseLeftButtonDown: Kein Button als Quelle gefunden"); // Debugging
             }
         }
 
-private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
-{
-    currentDockStatus |= DockStatus.MainDockHover; // Setzt das MainDockHover-Flag
-    CheckAllConditions();
-}
+        private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
+        {
+            currentDockStatus |= DockStatus.MainDockHover; // Setzt das MainDockHover-Flag
+            CheckAllConditions();
+        }
 
 
-private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
-{
-    currentDockStatus &= ~DockStatus.MainDockHover; // Löscht das MainDockHover-Flag
-    CheckAllConditions();
-}
+        private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
+        {
+            currentDockStatus &= ~DockStatus.MainDockHover; // Löscht das MainDockHover-Flag
+            currentDockStatus &= ~DockStatus.DraggingToDock;
+            CheckAllConditions();
+        }
 
 
 
@@ -359,68 +362,68 @@ private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
 
 
 
-// private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
-// {
-//     Console.WriteLine("Mouse entered CategoryDockContainer"); // Debug-Ausgabe
-//     // Sicherstellen, dass beide Docks sichtbar bleiben
-//     ShowDock();
-//     CategoryDockContainer.Visibility = Visibility.Visible;
-//     // Timer stoppen
-//     // dockHideTimer.Stop();
-//     // categoryHideTimer.Stop();
-// }
+        // private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
+        // {
+        //     Console.WriteLine("Mouse entered CategoryDockContainer"); // Debug-Ausgabe
+        //     // Sicherstellen, dass beide Docks sichtbar bleiben
+        //     ShowDock();
+        //     CategoryDockContainer.Visibility = Visibility.Visible;
+        //     // Timer stoppen
+        //     // dockHideTimer.Stop();
+        //     // categoryHideTimer.Stop();
+        // }
 
 
-private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
-{
-    currentDockStatus |= DockStatus.CategoryDockHover; // Setzt das CategoryDockHover-Flag
-    currentDockStatus &= ~DockStatus.CategoryElementClicked; // Löscht das CategoryElementClicked-Flag
-    CheckAllConditions();
-}
+        private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
+        {
+            currentDockStatus |= DockStatus.CategoryDockHover; // Setzt das CategoryDockHover-Flag
+            currentDockStatus &= ~DockStatus.CategoryElementClicked; // Löscht das CategoryElementClicked-Flag
+            CheckAllConditions();
+        }
 
 
 
-private void CategoryDockContainer_MouseLeave(object sender, MouseEventArgs e)
-{
-    currentDockStatus &= ~DockStatus.CategoryDockHover; // Löscht das CategoryDockHover-Flag
-    CheckAllConditions();
-}
+        private void CategoryDockContainer_MouseLeave(object sender, MouseEventArgs e)
+        {
+            currentDockStatus &= ~DockStatus.CategoryDockHover; // Löscht das CategoryDockHover-Flag
+            CheckAllConditions();
+        }
 
-private void DockPanel_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-{
-    currentDockStatus |= DockStatus.ContextMenuOpen; // Setzt das ContextMenuOpen-Flag
-    OpenMenuItem.Visibility = Visibility.Collapsed;
-    DeleteMenuItem.Visibility = Visibility.Collapsed;
-    EditMenuItem.Visibility = Visibility.Collapsed;
-    DockContextMenu.IsOpen = true;
-    CheckAllConditions();
-}
+        private void DockPanel_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            currentDockStatus |= DockStatus.ContextMenuOpen; // Setzt das ContextMenuOpen-Flag
+            OpenMenuItem.Visibility = Visibility.Collapsed;
+            DeleteMenuItem.Visibility = Visibility.Collapsed;
+            EditMenuItem.Visibility = Visibility.Collapsed;
+            DockContextMenu.IsOpen = true;
+            CheckAllConditions();
+        }
 
-private void DockContextMenu_Closed(object sender, RoutedEventArgs e)
-{
-    currentDockStatus &= ~DockStatus.ContextMenuOpen; // Löscht das ContextMenuOpen-Flag
-    CheckAllConditions();
-}
+        private void DockContextMenu_Closed(object sender, RoutedEventArgs e)
+        {
+            currentDockStatus &= ~DockStatus.ContextMenuOpen; // Löscht das ContextMenuOpen-Flag
+            CheckAllConditions();
+        }
 
-private void CheckAllConditions()
-{
-    // Ausgabe im Klartext
-    Console.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
+        private void CheckAllConditions()
+        {
+            // Ausgabe im Klartext
+            Console.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
 
-    if (currentDockStatus > 0) // Überprüft, ob irgendein Flag gesetzt ist
-    {
-        Console.WriteLine("Conditions met, showing dock."); // Debug-Ausgabe
-        ShowDock();
-        categoryHideTimer.Stop();
-        dockHideTimer.Stop();
-    }
-    else
-    {
-        Console.WriteLine("Conditions not met, hiding dock."); // Debug-Ausgabe
-        categoryHideTimer.Start();
-        dockHideTimer.Start();
-    }
-}
+            if (currentDockStatus > 0) // Überprüft, ob irgendein Flag gesetzt ist
+            {
+                Console.WriteLine("Conditions met, showing dock."); // Debug-Ausgabe
+                ShowDock();
+                categoryHideTimer.Stop();
+                dockHideTimer.Stop();
+            }
+            else
+            {
+                Console.WriteLine("Conditions not met, hiding dock."); // Debug-Ausgabe
+                categoryHideTimer.Start();
+                dockHideTimer.Start();
+            }
+        }
 
 
 
@@ -609,12 +612,16 @@ private void CheckAllConditions()
         private void DockPanel_DragEnter(object sender, DragEventArgs e)
         {
             Console.WriteLine("DockPanel_DragEnter aufgerufen"); // Debug-Ausgabe
+            currentDockStatus |= DockStatus.DraggingToDock;
+            CheckAllConditions();
 
             if (e.Data.GetDataPresent(DataFormats.Serializable) && DockPanel != null)
             {
                 e.Effects = DragDropEffects.Move;
                 DockPanel.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
                 Console.WriteLine("Element über dem Hauptdock erkannt"); // Debug-Ausgabe
+
+
             }
             else
             {
@@ -623,12 +630,16 @@ private void CheckAllConditions()
             }
         }
 
+
+
         private void DockPanel_DragLeave(object sender, DragEventArgs e)
         {
             Console.WriteLine("DockPanel_DragLeave aufgerufen"); // Debug-Ausgabe
+            currentDockStatus &= ~DockStatus.DraggingToDock;
+            CheckAllConditions();
 
             // Visuelles Feedback zurücksetzen
-            var brush = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFA500");
+            var brush = (SolidColorBrush)new BrushConverter().ConvertFromString("#2D2D2D");
             if (brush != null)
             {
                 DockPanel.Background = brush; // Setze auf Orange zurück
@@ -776,41 +787,41 @@ private void CheckAllConditions()
 
 
 
-public void OpenDockItem(DockItem dockItem)
-{
-    Console.WriteLine($"OpenDockItem aufgerufen"); // Debug-Ausgabe
-    if (!string.IsNullOrEmpty(dockItem.FilePath))
-    {
-        Console.WriteLine($"OpenDockItem aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
-        OpenFile(dockItem.FilePath);
-    }
-    else
-    {
-        Console.WriteLine("OpenDockItem aufgerufen, Kategorie"); // Debug-Ausgabe
-        if (isCategoryDockOpen && currentOpenCategory == dockItem.DisplayName)
+        public void OpenDockItem(DockItem dockItem)
         {
-            // Kategoriedock schließen
-            CategoryDockContainer.Visibility = Visibility.Collapsed;
-            CategoryDockBorder.Visibility = Visibility.Collapsed;
-            currentDockStatus &= ~DockStatus.CategoryElementClicked; // Flag zurücksetzen
-            isCategoryDockOpen = false;
-            Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} geschlossen"); // Debug-Ausgabe
-        }
-        else
-        {
-            // Kategoriedock öffnen
-            ShowCategoryDockPanel(new StackPanel
+            Console.WriteLine($"OpenDockItem aufgerufen"); // Debug-Ausgabe
+            if (!string.IsNullOrEmpty(dockItem.FilePath))
             {
-                Name = dockItem.DisplayName,
-                // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
-            });
-            currentDockStatus |= DockStatus.CategoryElementClicked; // Flag setzen
-            isCategoryDockOpen = true;
-            Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} geöffnet"); // Debug-Ausgabe
+                Console.WriteLine($"OpenDockItem aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
+                OpenFile(dockItem.FilePath);
+            }
+            else
+            {
+                Console.WriteLine("OpenDockItem aufgerufen, Kategorie"); // Debug-Ausgabe
+                if (isCategoryDockOpen && currentOpenCategory == dockItem.DisplayName)
+                {
+                    // Kategoriedock schließen
+                    CategoryDockContainer.Visibility = Visibility.Collapsed;
+                    CategoryDockBorder.Visibility = Visibility.Collapsed;
+                    currentDockStatus &= ~DockStatus.CategoryElementClicked; // Flag zurücksetzen
+                    isCategoryDockOpen = false;
+                    Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} geschlossen"); // Debug-Ausgabe
+                }
+                else
+                {
+                    // Kategoriedock öffnen
+                    ShowCategoryDockPanel(new StackPanel
+                    {
+                        Name = dockItem.DisplayName,
+                        // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
+                    });
+                    currentDockStatus |= DockStatus.CategoryElementClicked; // Flag setzen
+                    isCategoryDockOpen = true;
+                    Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} geöffnet"); // Debug-Ausgabe
+                }
+            }
+            CheckAllConditions();
         }
-    }
-    CheckAllConditions();
-}
 
 
 
@@ -886,29 +897,29 @@ public void OpenDockItem(DockItem dockItem)
 
 
 
-public void ShowCategoryDockPanel(StackPanel categoryDock)
-{
-    currentDockStatus |= DockStatus.CategoryElementClicked; // Setzt das CategoryElementClicked-Flag
-    currentOpenCategory = categoryDock.Name;
-    CategoryDockContainer.Tag = currentOpenCategory;
-    CategoryDockContainer.Children.Clear();
-    CategoryDockContainer.Children.Add(categoryDock);
-    CategoryDockContainer.Visibility = Visibility.Visible;
-    CategoryDockBorder.Visibility = Visibility.Visible;
-    // Programmgesteuerte Mindestbreite setzen
-    // CategoryDockContainer.MinWidth = 350; 
-    var items = SettingsManager.LoadSettings();
-    foreach (var item in items)
-    {
-        if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+        public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
-            dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
+            currentDockStatus |= DockStatus.CategoryElementClicked; // Setzt das CategoryElementClicked-Flag
+            currentOpenCategory = categoryDock.Name;
+            CategoryDockContainer.Tag = currentOpenCategory;
+            CategoryDockContainer.Children.Clear();
+            CategoryDockContainer.Children.Add(categoryDock);
+            CategoryDockContainer.Visibility = Visibility.Visible;
+            CategoryDockBorder.Visibility = Visibility.Visible;
+            // Programmgesteuerte Mindestbreite setzen
+            // CategoryDockContainer.MinWidth = 350; 
+            var items = SettingsManager.LoadSettings();
+            foreach (var item in items)
+            {
+                if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+                {
+                    dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
+                }
+            }
+            MainStackPanel.Margin = new Thickness(0);
+            categoryHideTimer.Start();
+            CheckAllConditions(); // Überprüft alle Bedingungen
         }
-    }
-    MainStackPanel.Margin = new Thickness(0);
-    categoryHideTimer.Start();
-    CheckAllConditions(); // Überprüft alle Bedingungen
-}
 
 
 
