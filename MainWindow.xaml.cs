@@ -230,32 +230,137 @@ namespace MyDockApp
 
 
 
-
-        public void ShowDock()
+public void ShowDock()
+{
+    if (!dockVisible)
+    {
+        dockVisible = true;
+        var slideAnimation = new ThicknessAnimation
         {
-            if (!dockVisible)
-            {
-                dockVisible = true;
-                var slideAnimation = new ThicknessAnimation
-                {
-                    From = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0),  // Startposition der Animation (5 Pixel sichtbar)
-                    To = new Thickness(0, 0, 0, 0),  // Endposition der Animation (sichtbar)
-                    Duration = new Duration(TimeSpan.FromMilliseconds(500)),
-                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },  // Füge eine sanfte Übergangsanimation hinzu
-                    FillBehavior = FillBehavior.HoldEnd
-                };
-                slideAnimation.Completed += (s, e) =>
-                {
-                    DockPanel.Margin = new Thickness(0, 0, 0, 0);
-                    Console.WriteLine("Dock vollständig eingeblendet"); // Debugging
-                };
-                DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
-            }
-            else
-            {
-                // Console.WriteLine("Dock ist bereits sichtbar, keine Animation"); // Debugging
-            }
-        }
+            From = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0),  // Startposition der Animation (5 Pixel sichtbar)
+            To = new Thickness(0, 0, 0, 0),  // Endposition der Animation (sichtbar)
+            Duration = TimeSpan.FromMilliseconds(500),
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },  // Sanfte Übergangsanimation
+            FillBehavior = FillBehavior.HoldEnd
+        };
+        slideAnimation.Completed += (s, e) =>
+        {
+            DockPanel.Margin = new Thickness(0, 0, 0, 0);
+            Console.WriteLine("Dock vollständig eingeblendet"); // Debugging
+        };
+
+        DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
+
+        // Endkappen einblenden
+        ShowEndCaps();
+    }
+}
+
+
+
+// public void HideDock()
+// {
+//     if (dockVisible)
+//     {
+//         dockVisible = false;
+//         var toValue = -DockPanel.ActualHeight + 5;
+//         var slideAnimation = new ThicknessAnimation
+//         {
+//             From = new Thickness(0, 0, 0, 0),  // Startposition der Animation (sichtbar)
+//             To = new Thickness(0, +toValue, 0, 0),  // Endposition der Animation (5 Pixel sichtbar lassen)
+//             Duration = new Duration(TimeSpan.FromMilliseconds(500)),
+//             EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
+//             FillBehavior = FillBehavior.HoldEnd
+//         };
+
+//         slideAnimation.Completed += (s, e) =>
+//         {
+//             DockPanel.Margin = new Thickness(0, +toValue, 0, 0);
+//             Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
+//         };
+
+//         DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
+//     }
+// }
+
+public void HideDock()
+{
+    Console.WriteLine("HideDock aufgerufen!");
+    if (dockVisible)
+    {
+        dockVisible = false;
+        var toValue = -DockPanel.ActualHeight + 5;
+        var slideAnimation = new ThicknessAnimation
+        {
+            From = new Thickness(0, 0, 0, 0),  // Startposition der Animation (sichtbar)
+            To = new Thickness(0, -DockPanel.ActualHeight + toValue, 0, 0),  // Endposition der Animation (5 Pixel sichtbar lassen)
+            Duration = new Duration(TimeSpan.FromMilliseconds(500)),
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },  // Sanfte Übergangsanimation
+            FillBehavior = FillBehavior.HoldEnd
+        };
+
+        slideAnimation.Completed += (s, e) =>
+        {
+            DockPanel.Margin = new Thickness(0, -DockPanel.ActualHeight + toValue, 0, 0);
+            Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
+        };
+
+        DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
+
+        // Endkappen ausblenden
+        HideEndCaps();
+    }
+}
+
+
+
+public void HideEndCaps()
+{
+    var toValue = -DockPanel.ActualHeight + 5;
+    var endCapAnimation = new DoubleAnimation
+    {
+        To = -DockPanel.ActualHeight + toValue,
+        Duration = TimeSpan.FromMilliseconds(500),
+        EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+    };
+
+    if (LeftEndCap.RenderTransform == null)
+    {
+        LeftEndCap.RenderTransform = new TranslateTransform();
+    }
+    if (RightEndCap.RenderTransform == null)
+    {
+        RightEndCap.RenderTransform = new TranslateTransform();
+    }
+
+    LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
+    RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
+}
+
+
+public void ShowEndCaps()
+{
+    var endCapAnimation = new DoubleAnimation
+    {
+        To = 0,
+        Duration = TimeSpan.FromMilliseconds(500),
+        EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+    };
+
+    if (LeftEndCap.RenderTransform == null)
+    {
+        LeftEndCap.RenderTransform = new TranslateTransform();
+    }
+    if (RightEndCap.RenderTransform == null)
+    {
+        RightEndCap.RenderTransform = new TranslateTransform();
+    }
+
+    LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
+    RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
+}
+
+
 
         public void InitializeCategoryDockContainer(StackPanel container)
         {
@@ -358,34 +463,6 @@ namespace MyDockApp
 
 
 
-
-
-
-        public void HideDock()
-        {
-            if (dockVisible)
-            {
-                dockVisible = false;
-                var slideAnimation = new ThicknessAnimation
-                {
-                    From = new Thickness(0, 0, 0, 0),  // Startposition der Animation (sichtbar)
-                    To = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0),  // Endposition der Animation (5 Pixel sichtbar lassen)
-                    Duration = new Duration(TimeSpan.FromMilliseconds(500)),
-                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },  // Füge eine sanfte Übergangsanimation hinzu
-                    FillBehavior = FillBehavior.HoldEnd
-                };
-                slideAnimation.Completed += (s, e) =>
-                {
-                    DockPanel.Margin = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0);
-                    Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
-                };
-                DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
-            }
-            else
-            {
-                // Console.WriteLine("Dock ist bereits unsichtbar, keine Animation"); // Debugging
-            }
-        }
 
 
 
@@ -581,63 +658,63 @@ namespace MyDockApp
 
 
 
-public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
-{
-    if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
-    {
-        var button = e.Data.GetData(DataFormats.Serializable) as Button;
-        if (button != null)
+        public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
-            var parent = VisualTreeHelper.GetParent(button) as Panel;
-            if (parent != null)
+            if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
             {
-                parent.Children.Remove(button);
+                var button = e.Data.GetData(DataFormats.Serializable) as Button;
+                if (button != null)
+                {
+                    var parent = VisualTreeHelper.GetParent(button) as Panel;
+                    if (parent != null)
+                    {
+                        parent.Children.Remove(button);
+                    }
+
+                    var droppedItem = button.Tag as DockItem;
+                    if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
+                    {
+                        // Überprüfung auf Kategorie
+                        if (droppedItem.IsCategory)
+                        {
+                            if (!isCategoryMessageShown)
+                            {
+                                MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
+                                isCategoryMessageShown = true; // Nachricht wurde gezeigt
+                            }
+                            return; // Abbrechen, wenn es eine Kategorie ist
+                        }
+
+                        // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
+                        if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
+                        {
+                            droppedItem.Category = currentOpenCategory;
+
+                            // Füge das Element dem Kategorie-Dock hinzu
+                            if (!CategoryDockContainer.Children.Contains(button))
+                            {
+                                CategoryDockContainer.Children.Add(button);
+                            }
+                            CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
+
+                            // Aktualisiere die interne Struktur oder Daten, falls nötig
+                            UpdateDockItemLocation(button);
+
+                            // Dock-Items speichern
+                            dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
+                        }
+                    }
+                }
+            }
+            else
+            {
+                e.Handled = true; // Stelle sicher, dass das Ereignis verarbeitet wurde
             }
 
-            var droppedItem = button.Tag as DockItem;
-            if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
-            {
-                // Überprüfung auf Kategorie
-                if (droppedItem.IsCategory)
-                {
-                    if (!isCategoryMessageShown)
-                    {
-                        MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
-                        isCategoryMessageShown = true; // Nachricht wurde gezeigt
-                    }
-                    return; // Abbrechen, wenn es eine Kategorie ist
-                }
-
-                // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
-                if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
-                {
-                    droppedItem.Category = currentOpenCategory;
-
-                    // Füge das Element dem Kategorie-Dock hinzu
-                    if (!CategoryDockContainer.Children.Contains(button))
-                    {
-                        CategoryDockContainer.Children.Add(button);
-                    }
-                    CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
-
-                    // Aktualisiere die interne Struktur oder Daten, falls nötig
-                    UpdateDockItemLocation(button);
-
-                    // Dock-Items speichern
-                    dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
-                }
-            }
+            // Visuelles Feedback zurücksetzen
+            CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
+            isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
         }
-    }
-    else
-    {
-        e.Handled = true; // Stelle sicher, dass das Ereignis verarbeitet wurde
-    }
-
-    // Visuelles Feedback zurücksetzen
-    CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
-    isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
-}
 
 
 
@@ -781,30 +858,30 @@ public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
 
 
 
-public void ShowCategoryDockPanel(StackPanel categoryDock)
-{
-    currentOpenCategory = categoryDock.Name;
-    CategoryDockContainer.Tag = currentOpenCategory;
-    CategoryDockContainer.Children.Clear();
-    CategoryDockContainer.Children.Add(categoryDock);
-    CategoryDockContainer.Visibility = Visibility.Visible;
-    CategoryDockBorder.Visibility = Visibility.Visible;
-
-    // Programmgesteuerte Mindestbreite setzen
-    // CategoryDockContainer.MinWidth = 350; 
-
-    var items = SettingsManager.LoadSettings();
-    foreach (var item in items)
-    {
-        if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+        public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
-            dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
-        }
-    }
+            currentOpenCategory = categoryDock.Name;
+            CategoryDockContainer.Tag = currentOpenCategory;
+            CategoryDockContainer.Children.Clear();
+            CategoryDockContainer.Children.Add(categoryDock);
+            CategoryDockContainer.Visibility = Visibility.Visible;
+            CategoryDockBorder.Visibility = Visibility.Visible;
 
-    MainStackPanel.Margin = new Thickness(0);
-    categoryHideTimer.Start();
-}
+            // Programmgesteuerte Mindestbreite setzen
+            // CategoryDockContainer.MinWidth = 350; 
+
+            var items = SettingsManager.LoadSettings();
+            foreach (var item in items)
+            {
+                if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+                {
+                    dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
+                }
+            }
+
+            MainStackPanel.Margin = new Thickness(0);
+            categoryHideTimer.Start();
+        }
 
         public void HideCategoryDockPanel()
         {
@@ -824,103 +901,103 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
 
 
 
-private void Edit_Click(object sender, RoutedEventArgs e)
-{
-    if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
-    {
-        var dockItems = SettingsManager.LoadSettings();
-        var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
-
-        if (settings == null)
+        private void Edit_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-
-        EditPropertiesWindow editWindow = new EditPropertiesWindow
-        {
-            Owner = this,
-            NameTextBox = { Text = settings.DisplayName }
-        };
-
-        if (!settings.IsCategory)
-        {
-            editWindow.PathTextBox.Text = settings.FilePath;
-        }
-
-        bool? dialogResult = editWindow.ShowDialog();
-        if (dialogResult == true)
-        {
-            string newName = editWindow.NameTextBox.Text;
-
-            if (!settings.IsCategory)
+            if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
             {
-                string newPath = editWindow.PathTextBox.Text;
-                if (string.IsNullOrEmpty(newPath))
-                {
-                    MessageBox.Show("Ungültiger Pfad", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-                settings.FilePath = newPath;
-            }
+                var dockItems = SettingsManager.LoadSettings();
+                var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
 
-            if (!string.IsNullOrEmpty(newName))
-            {
-                if (dockItem.IsCategory && dockItems.Any(di => di.IsCategory && di.DisplayName == newName))
+                if (settings == null)
                 {
-                    MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
-                if (dockItem.IsCategory)
+                EditPropertiesWindow editWindow = new EditPropertiesWindow
                 {
-                    var oldCategory = dockItem.DisplayName;
-                    dockItem.DisplayName = newName;
-
-                    foreach (var item in dockItems.Where(di => di.Category == oldCategory))
-                    {
-                        item.Category = newName;
-                    }
-                }
-
-                var textBlock = new TextBlock
-                {
-                    Text = newName,
-                    TextAlignment = TextAlignment.Center,
-                    TextWrapping = TextWrapping.Wrap,
-                    Width = 60,
-                    Margin = new Thickness(5)
+                    Owner = this,
+                    NameTextBox = { Text = settings.DisplayName }
                 };
 
-                var stackPanel = (StackPanel)button.Content;
-                stackPanel.Children.RemoveAt(1);
-                stackPanel.Children.Add(textBlock);
+                if (!settings.IsCategory)
+                {
+                    editWindow.PathTextBox.Text = settings.FilePath;
+                }
 
-                button.Tag = dockItem;
+                bool? dialogResult = editWindow.ShowDialog();
+                if (dialogResult == true)
+                {
+                    string newName = editWindow.NameTextBox.Text;
 
-                SettingsManager.SaveSettings(dockItems);
-                // MessageBox.Show("Kategorie erfolgreich umbenannt und gespeichert.", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (!settings.IsCategory)
+                    {
+                        string newPath = editWindow.PathTextBox.Text;
+                        if (string.IsNullOrEmpty(newPath))
+                        {
+                            MessageBox.Show("Ungültiger Pfad", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        settings.FilePath = newPath;
+                    }
+
+                    if (!string.IsNullOrEmpty(newName))
+                    {
+                        if (dockItem.IsCategory && dockItems.Any(di => di.IsCategory && di.DisplayName == newName))
+                        {
+                            MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            return;
+                        }
+
+                        if (dockItem.IsCategory)
+                        {
+                            var oldCategory = dockItem.DisplayName;
+                            dockItem.DisplayName = newName;
+
+                            foreach (var item in dockItems.Where(di => di.Category == oldCategory))
+                            {
+                                item.Category = newName;
+                            }
+                        }
+
+                        var textBlock = new TextBlock
+                        {
+                            Text = newName,
+                            TextAlignment = TextAlignment.Center,
+                            TextWrapping = TextWrapping.Wrap,
+                            Width = 60,
+                            Margin = new Thickness(5)
+                        };
+
+                        var stackPanel = (StackPanel)button.Content;
+                        stackPanel.Children.RemoveAt(1);
+                        stackPanel.Children.Add(textBlock);
+
+                        button.Tag = dockItem;
+
+                        SettingsManager.SaveSettings(dockItems);
+                        // MessageBox.Show("Kategorie erfolgreich umbenannt und gespeichert.", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        // MessageBox.Show("Ungültiger Name", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    dockManager.SaveDockItems(currentOpenCategory);
+                }
             }
             else
             {
-                // MessageBox.Show("Ungültiger Name", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-              dockManager.SaveDockItems(currentOpenCategory);
         }
-    }
-    else
-    {
-        MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-    }
-}
 
 
-// private DockItem LoadDockSettings(DockItem dockItem)
-// {
-//     // Lade die DockSettings von der zentralen Stelle
-//     // Hier muss der Code hinzugefügt werden, um die Werte aus den DockSettings zu laden
-//     return dockItem; // Placeholder, hier den geladenen DockItem zurückgeben
-// }
+        // private DockItem LoadDockSettings(DockItem dockItem)
+        // {
+        //     // Lade die DockSettings von der zentralen Stelle
+        //     // Hier muss der Code hinzugefügt werden, um die Werte aus den DockSettings zu laden
+        //     return dockItem; // Placeholder, hier den geladenen DockItem zurückgeben
+        // }
 
 
 

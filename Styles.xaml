@@ -6,13 +6,15 @@
     <SolidColorBrush x:Key="AccentColor" Color="#0A84FF"/>
     <SolidColorBrush x:Key="ForegroundColor" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="HighlightColor" Color="#292929"/>
-    <SolidColorBrush x:Key="DebugColor4" Color="#FFFF00"/> <!-- Gelb -->
-    <SolidColorBrush x:Key="DebugColor5" Color="#FFA500"/> <!-- Orange -->
+    <SolidColorBrush x:Key="DebugColor4" Color="#FFFF00"/>
+    <SolidColorBrush x:Key="DebugColor5" Color="#FFA500"/>
     
     <!-- Stile und Templates -->
     <Style x:Key="MainDockStyle" TargetType="StackPanel">
         <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
         <Setter Property="Orientation" Value="Horizontal"/>
+        <Setter Property="Height" Value="80"/>
+        <Setter Property="Margin" Value="10,0"/>
     </Style>
     <Style x:Key="CategoryDockStyle" TargetType="StackPanel">
         <Setter Property="Background" Value="{StaticResource SecondaryColor}"/>
