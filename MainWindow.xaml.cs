@@ -23,6 +23,8 @@ namespace MyDockApp
         private DispatcherTimer categoryHideTimer;
         // private string currentOpenCategory;
         private string currentOpenCategory = "";
+        private bool isCategoryDockOpen = false;
+
         private bool isCategoryMessageShown = false;
 
 
@@ -774,27 +776,46 @@ private void CheckAllConditions()
 
 
 
-
-
-
-        public void OpenDockItem(DockItem dockItem)
+public void OpenDockItem(DockItem dockItem)
+{
+    Console.WriteLine($"OpenDockItem aufgerufen"); // Debug-Ausgabe
+    if (!string.IsNullOrEmpty(dockItem.FilePath))
+    {
+        Console.WriteLine($"OpenDockItem aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
+        OpenFile(dockItem.FilePath);
+    }
+    else
+    {
+        Console.WriteLine("OpenDockItem aufgerufen, Kategorie"); // Debug-Ausgabe
+        if (isCategoryDockOpen && currentOpenCategory == dockItem.DisplayName)
         {
-            if (!string.IsNullOrEmpty(dockItem.FilePath))
-            {
-                Console.WriteLine($"OpenDockItem aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
-                OpenFile(dockItem.FilePath);
-            }
-            else
-            {
-                Console.WriteLine("OpenDockItem aufgerufen, Kategorie"); // Debug-Ausgabe
-                ShowCategoryDockPanel(new StackPanel
-                {
-                    Name = dockItem.DisplayName,
-
-                    // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
-                });
-            }
+            // Kategoriedock schließen
+            CategoryDockContainer.Visibility = Visibility.Collapsed;
+            CategoryDockBorder.Visibility = Visibility.Collapsed;
+            currentDockStatus &= ~DockStatus.CategoryElementClicked; // Flag zurücksetzen
+            isCategoryDockOpen = false;
+            Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} geschlossen"); // Debug-Ausgabe
         }
+        else
+        {
+            // Kategoriedock öffnen
+            ShowCategoryDockPanel(new StackPanel
+            {
+                Name = dockItem.DisplayName,
+                // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
+            });
+            currentDockStatus |= DockStatus.CategoryElementClicked; // Flag setzen
+            isCategoryDockOpen = true;
+            Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} geöffnet"); // Debug-Ausgabe
+        }
+    }
+    CheckAllConditions();
+}
+
+
+
+
+
 
 
 
