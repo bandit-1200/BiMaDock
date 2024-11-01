@@ -445,16 +445,53 @@ public void RemoveDockItem(Button button, string currentCategory)
         {
             // Element aus Hauptdock entfernen
             dockPanel.Children.Remove(button);
+
+            // Auch alle Kindelemente entfernen, die zu dieser Kategorie gehören
+            RemoveCategoryChildren(dockItem.DisplayName);
         }
         else
         {
             // Element aus Kategorie-Dock entfernen
             categoryDockContainer.Children.Remove(button);
         }
+
         // Aktualisiere und speichere die Dock-Items nach dem Löschen
         SaveDockItems(currentCategory);
     }
+     SaveDockItems(currentCategory);
 }
+
+private void RemoveCategoryChildren(string categoryName)
+{
+    // Laden der aktuellen Dock-Items
+    var items = SettingsManager.LoadSettings();
+    
+    // Sammeln der zu entfernenden Elemente
+    var itemsToRemove = new List<DockItem>();
+
+    foreach (var item in items)
+    {
+        if (item.Category == categoryName)
+        {
+            itemsToRemove.Add(item);
+        }
+    }
+
+    // Entfernen der gesammelten Elemente aus der Liste
+    foreach (var item in itemsToRemove)
+    {
+        items.Remove(item);
+    }
+
+    // Speichern der aktualisierten Dock-Items
+    SettingsManager.SaveSettings(items);
+
+    Console.WriteLine($"Alle Kinder der Kategorie '{categoryName}' wurden entfernt und gespeichert."); // Debug-Ausgabe
+}
+
+
+
+
 
 
 public void AddDockItemAt(DockItem item, int index, string currentCategory)
