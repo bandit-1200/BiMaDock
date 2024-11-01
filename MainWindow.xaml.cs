@@ -42,12 +42,12 @@ namespace MyDockApp
 
             // Timer initialisieren
             dockHideTimer = new DispatcherTimer();
-            dockHideTimer.Interval = TimeSpan.FromSeconds(5); // Zeitintervall auf 5 Sekunden setzen
+            dockHideTimer.Interval = TimeSpan.FromSeconds(1); // Zeitintervall auf 5 Sekunden setzen
             dockHideTimer.Tick += (s, e) => { HideDock(); };
 
             // Timer initialisieren
             categoryHideTimer = new DispatcherTimer();
-            categoryHideTimer.Interval = TimeSpan.FromSeconds(3); // Zeitintervall auf 5 Sekunden setzen
+            categoryHideTimer.Interval = TimeSpan.FromSeconds(1); // Zeitintervall auf 5 Sekunden setzen
             categoryHideTimer.Tick += (s, e) => { HideCategoryDockPanel(); };
 
             this.Closing += (s, e) =>
@@ -234,7 +234,7 @@ public void ShowDock()
     if (!dockVisible)
     {
         dockVisible = true;
-        var duration = TimeSpan.FromMilliseconds(500);
+        var duration = TimeSpan.FromMilliseconds(100);
         var slideAnimation = new ThicknessAnimation
         {
             From = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0),
@@ -249,7 +249,7 @@ public void ShowDock()
             Console.WriteLine("Dock vollständig eingeblendet"); // Debugging
         };
 
-        DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
+        
 
         // Endkappen einblenden
         var endCapAnimation = new DoubleAnimation
@@ -267,7 +267,7 @@ public void ShowDock()
         {
             RightEndCap.RenderTransform = new TranslateTransform();
         }
-
+        DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
         LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
         RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
     }
@@ -282,7 +282,7 @@ public void HideDock()
     if (dockVisible)
     {
         dockVisible = false;
-        var duration = TimeSpan.FromMilliseconds(500);
+        var duration = TimeSpan.FromMilliseconds(100);
         var toValue = -DockPanel.ActualHeight + 5;
         var slideAnimation = new ThicknessAnimation
         {
@@ -299,7 +299,7 @@ public void HideDock()
             Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
         };
 
-        DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
+        
 
         // Endkappen ausblenden
         var endCapAnimation = new DoubleAnimation
@@ -317,7 +317,7 @@ public void HideDock()
         {
             RightEndCap.RenderTransform = new TranslateTransform();
         }
-
+        DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
         LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
         RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
     }
