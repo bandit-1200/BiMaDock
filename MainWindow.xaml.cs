@@ -229,18 +229,18 @@ namespace MyDockApp
 
 
 
-
 public void ShowDock()
 {
     if (!dockVisible)
     {
         dockVisible = true;
+        var duration = TimeSpan.FromMilliseconds(500);
         var slideAnimation = new ThicknessAnimation
         {
-            From = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0),  // Startposition der Animation (5 Pixel sichtbar)
-            To = new Thickness(0, 0, 0, 0),  // Endposition der Animation (sichtbar)
-            Duration = TimeSpan.FromMilliseconds(500),
-            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },  // Sanfte Übergangsanimation
+            From = new Thickness(0, -DockPanel.ActualHeight + 5, 0, 0),
+            To = new Thickness(0, 0, 0, 0),
+            Duration = duration,
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
             FillBehavior = FillBehavior.HoldEnd
         };
         slideAnimation.Completed += (s, e) =>
@@ -252,50 +252,44 @@ public void ShowDock()
         DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
 
         // Endkappen einblenden
-        ShowEndCaps();
+        var endCapAnimation = new DoubleAnimation
+        {
+            To = 0,
+            Duration = duration,
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+        };
+
+        if (LeftEndCap.RenderTransform == null)
+        {
+            LeftEndCap.RenderTransform = new TranslateTransform();
+        }
+        if (RightEndCap.RenderTransform == null)
+        {
+            RightEndCap.RenderTransform = new TranslateTransform();
+        }
+
+        LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
+        RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
     }
 }
 
 
 
-// public void HideDock()
-// {
-//     if (dockVisible)
-//     {
-//         dockVisible = false;
-//         var toValue = -DockPanel.ActualHeight + 5;
-//         var slideAnimation = new ThicknessAnimation
-//         {
-//             From = new Thickness(0, 0, 0, 0),  // Startposition der Animation (sichtbar)
-//             To = new Thickness(0, +toValue, 0, 0),  // Endposition der Animation (5 Pixel sichtbar lassen)
-//             Duration = new Duration(TimeSpan.FromMilliseconds(500)),
-//             EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
-//             FillBehavior = FillBehavior.HoldEnd
-//         };
 
-//         slideAnimation.Completed += (s, e) =>
-//         {
-//             DockPanel.Margin = new Thickness(0, +toValue, 0, 0);
-//             Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
-//         };
-
-//         DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
-//     }
-// }
 
 public void HideDock()
 {
-    Console.WriteLine("HideDock aufgerufen!");
     if (dockVisible)
     {
         dockVisible = false;
+        var duration = TimeSpan.FromMilliseconds(500);
         var toValue = -DockPanel.ActualHeight + 5;
         var slideAnimation = new ThicknessAnimation
         {
-            From = new Thickness(0, 0, 0, 0),  // Startposition der Animation (sichtbar)
-            To = new Thickness(0, -DockPanel.ActualHeight + toValue, 0, 0),  // Endposition der Animation (5 Pixel sichtbar lassen)
-            Duration = new Duration(TimeSpan.FromMilliseconds(500)),
-            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },  // Sanfte Übergangsanimation
+            From = new Thickness(0, 0, 0, 0),
+            To = new Thickness(0, -DockPanel.ActualHeight + toValue, 0, 0),
+            Duration = duration,
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
             FillBehavior = FillBehavior.HoldEnd
         };
 
@@ -308,9 +302,30 @@ public void HideDock()
         DockPanel.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
 
         // Endkappen ausblenden
-        HideEndCaps();
+        var endCapAnimation = new DoubleAnimation
+        {
+            To = -DockPanel.ActualHeight + toValue,
+            Duration = duration,
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+        };
+
+        if (LeftEndCap.RenderTransform == null)
+        {
+            LeftEndCap.RenderTransform = new TranslateTransform();
+        }
+        if (RightEndCap.RenderTransform == null)
+        {
+            RightEndCap.RenderTransform = new TranslateTransform();
+        }
+
+        LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
+        RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
     }
 }
+
+
+
+
 
 
 
