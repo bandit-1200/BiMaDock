@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Farben -->
+    <SolidColorBrush x:Key="PrimaryColor" Color="#1E1E1E"/>
+    <SolidColorBrush x:Key="SecondaryColor" Color="#2D2D2D"/>
+    <SolidColorBrush x:Key="AccentColor" Color="#0A84FF"/>
+    <SolidColorBrush x:Key="ForegroundColor" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="HighlightColor" Color="#292929"/>
+    <SolidColorBrush x:Key="DebugColor4" Color="#FFFF00"/> <!-- Gelb -->
+    <SolidColorBrush x:Key="DebugColor5" Color="#FFA500"/> <!-- Orange -->
+    
+    <!-- Stile und Templates -->
+    <Style x:Key="MainDockStyle" TargetType="StackPanel">
+        <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
+        <Setter Property="Orientation" Value="Horizontal"/>
+    </Style>
+    <Style x:Key="CategoryDockStyle" TargetType="StackPanel">
+        <Setter Property="Background" Value="{StaticResource SecondaryColor}"/>
+        <Setter Property="Orientation" Value="Horizontal"/>
+    </Style>
+</ResourceDictionary>
