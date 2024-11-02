@@ -886,26 +886,23 @@ namespace MyDockApp
 
 
         private void Delete_Click(object sender, RoutedEventArgs e)
-
         {
-            Console.WriteLine("Delete_Click aufgerufen");
             if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
             {
-                Console.WriteLine($"Delete_Click aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
+                // Bestätigungsdialog anzeigen
+                MessageBoxResult result = MessageBox.Show($"Möchtest du das Element '{dockItem.DisplayName}' wirklich löschen?", "Löschen bestätigen", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
-                // Hier ermitteln wir die Kategorie, die gelöscht werden soll
-                string currentCategory = dockItem.Category;
+                if (result == MessageBoxResult.Yes)
+                {
+                    // Hier ermitteln wir die Kategorie, die gelöscht werden soll
+                    string currentCategory = dockItem.Category;
 
-                // Übergabe der Kategorie an RemoveDockItem
-                dockManager.RemoveDockItem(button, currentCategory);
-
-                Console.WriteLine("Element gelöscht und Dock aktualisiert"); // Debug-Ausgabe
-            }
-            else
-            {
-                Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem"); // Debug-Ausgabe
+                    // Übergabe der Kategorie an RemoveDockItem
+                    dockManager.RemoveDockItem(button, currentCategory);
+                }
             }
         }
+
 
 
 
