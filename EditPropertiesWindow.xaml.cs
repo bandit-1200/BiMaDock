@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+
 using System.Windows.Media.Imaging;
 
 
@@ -36,87 +38,87 @@ namespace MyDockApp
         }
 
 
-private async Task LoadIconsAsync()
-{
-    Console.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
-
-    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-    string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
-
-    var icons = Directory.GetFiles(iconDirectoryPath);
-    foreach (var iconPath in icons)
-    {
-        try
+        private async Task LoadIconsAsync()
         {
-            await Dispatcher.InvokeAsync(() =>
+            Console.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
+
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+
+            var icons = Directory.GetFiles(iconDirectoryPath);
+            foreach (var iconPath in icons)
             {
-                var image = new Image
+                try
                 {
-                    Source = new BitmapImage(new Uri(iconPath)),
-                    Width = 32,
-                    Height = 32,
-                    Margin = new Thickness(5)
-                };
-                SymbolPanel.Children.Add(image);
-                Console.WriteLine($"LoadIconsAsync: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
-            });
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        var image = new Image
+                        {
+                            Source = new BitmapImage(new Uri(iconPath)),
+                            Width = 32,
+                            Height = 32,
+                            Margin = new Thickness(5)
+                        };
+                        SymbolPanel.Children.Add(image);
+                        Console.WriteLine($"LoadIconsAsync: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"LoadIconsAsync: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}"); // Debugging Ausgabe bei Fehler
+                }
+            }
+
+            Console.WriteLine("LoadIconsAsync: abgeschlossen."); // Debugging Ausgabe
+            Console.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
         }
-        catch (Exception ex)
+
+
+        public void InitializeIcons()
         {
-            Console.WriteLine($"LoadIconsAsync: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}"); // Debugging Ausgabe bei Fehler
+            Console.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
+            CreateAppDataIconDirectory();
+            CopyDefaultIcons();
+            _ = LoadIconsAsync();
+            Console.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
         }
-    }
-
-    Console.WriteLine("LoadIconsAsync: abgeschlossen."); // Debugging Ausgabe
-    Console.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
-}
-
-
-public void InitializeIcons()
-{
-    Console.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
-    CreateAppDataIconDirectory();
-    CopyDefaultIcons();
-    _ = LoadIconsAsync();
-    Console.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
-}
 
 
 
 
-private void CopyDefaultIcons()
-{
-    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-    string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
-
-    // Der relative Pfad zu den Ressourcen
-    string relativeResourcePath = @"..\..\..\Resources\Icons";
-    string resourceDirectoryPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativeResourcePath));
-
-    // Debugging Ausgabe, um den Pfad zu überprüfen
-    Console.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
-
-    var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
-
-    foreach (var iconPath in defaultIcons)
-    {
-        string fileName = Path.GetFileName(iconPath);
-        string destinationPath = Path.Combine(iconDirectoryPath, fileName);
-
-        // Debugging Ausgabe, um Pfad und Dateinamen zu überprüfen
-        Console.WriteLine($"CopyDefaultIcons: Überprüfe Datei: {fileName}");
-
-        if (!File.Exists(destinationPath))
+        private void CopyDefaultIcons()
         {
-            File.Copy(iconPath, destinationPath);
-            Console.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt."); // Debugging Ausgabe
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+
+            // Der relative Pfad zu den Ressourcen
+            string relativeResourcePath = @"..\..\..\Resources\Icons";
+            string resourceDirectoryPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativeResourcePath));
+
+            // Debugging Ausgabe, um den Pfad zu überprüfen
+            Console.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
+
+            var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
+
+            foreach (var iconPath in defaultIcons)
+            {
+                string fileName = Path.GetFileName(iconPath);
+                string destinationPath = Path.Combine(iconDirectoryPath, fileName);
+
+                // Debugging Ausgabe, um Pfad und Dateinamen zu überprüfen
+                Console.WriteLine($"CopyDefaultIcons: Überprüfe Datei: {fileName}");
+
+                if (!File.Exists(destinationPath))
+                {
+                    File.Copy(iconPath, destinationPath);
+                    Console.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt."); // Debugging Ausgabe
+                }
+                else
+                {
+                    Console.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis."); // Debugging Ausgabe
+                }
+            }
         }
-        else
-        {
-            Console.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis."); // Debugging Ausgabe
-        }
-    }
-}
 
 
 
@@ -209,5 +211,44 @@ private void CopyDefaultIcons()
             // Abbrechen der Änderungen
             this.DialogResult = false; // Schließen des Fensters ohne Erfolg
         }
+
+
+
+        private void Button_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                string originalColor = btn.Background.ToString();
+                btn.Tag = originalColor;  // Speichern der ursprünglichen Farbe im Tag-Attribut
+                btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5A5A5A")); // Dezente Hover-Farbe
+                btn.Foreground = new SolidColorBrush(Colors.Black); // Schriftfarbe ändern
+            }
+        }
+
+        private void Button_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string originalColor)
+            {
+                btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(originalColor)); // Ursprüngliche Farbe wiederherstellen
+                btn.Foreground = new SolidColorBrush(Colors.White); // Schriftfarbe zurücksetzen
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }
