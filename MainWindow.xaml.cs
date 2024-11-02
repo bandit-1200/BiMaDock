@@ -45,7 +45,7 @@ namespace MyDockApp
 
         }
 
-        private DockStatus currentDockStatus = DockStatus.None;
+        public DockStatus currentDockStatus = DockStatus.None;
 
         public MainWindow()
         {
@@ -377,7 +377,7 @@ namespace MyDockApp
         private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
         {
             currentDockStatus |= DockStatus.CategoryDockHover; // Setzt das CategoryDockHover-Flag
-            currentDockStatus &= ~DockStatus.CategoryElementClicked; // Löscht das CategoryElementClicked-Flag
+            // currentDockStatus &= ~DockStatus.CategoryElementClicked; // Löscht das CategoryElementClicked-Flag
             CheckAllConditions();
         }
 
@@ -405,7 +405,7 @@ namespace MyDockApp
             CheckAllConditions();
         }
 
-        private void CheckAllConditions()
+        public void CheckAllConditions()
         {
             // Ausgabe im Klartext
             Console.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext

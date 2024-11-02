@@ -412,6 +412,9 @@ public void DockPanel_Drop(object sender, DragEventArgs e)
         isDropInProgress = false; 
         var primaryColor = (SolidColorBrush)new BrushConverter().ConvertFromString("#1E1E1E"); // Die ursprüngliche PrimaryColor direkt setzen
         dockPanel.Background = primaryColor;
+            mainWindow.currentDockStatus &= ~MainWindow.DockStatus.DraggingToDock;
+            mainWindow.currentDockStatus |= MainWindow.DockStatus.MainDockHover;
+            mainWindow.CheckAllConditions();
     }
 
     mainWindow.SetDragging(false);
