@@ -1,6 +1,7 @@
 using System.Windows; // Für Window
 using System.Windows.Controls; // Für Controls wie Button, TextBox etc.
 using System.Windows.Input; // Für RoutedEventArgs
+using System.Windows.Media;
 
 namespace MyDockApp
 {
@@ -45,5 +46,35 @@ namespace MyDockApp
             this.DialogResult = false;
             this.Close(); // Füge diese Zeile hinzu, um das Dialogfenster zu schließen
         }
+
+
+private void Button_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+{
+    if (sender is Button btn)
+    {
+        string originalColor = btn.Background.ToString();
+        btn.Tag = originalColor;  // Speichern der ursprünglichen Farbe im Tag-Attribut
+        btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5A5A5A")); // Dezente Hover-Farbe
+        btn.Foreground = new SolidColorBrush(Colors.Black); // Schriftfarbe ändern
+    }
+}
+
+private void Button_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+{
+    if (sender is Button btn && btn.Tag is string originalColor)
+    {
+        btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(originalColor)); // Ursprüngliche Farbe wiederherstellen
+        btn.Foreground = new SolidColorBrush(Colors.White); // Schriftfarbe zurücksetzen
+    }
+}
+
+
+
+
+
+
+
+
+
     }
 }
