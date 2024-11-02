@@ -37,6 +37,13 @@ namespace MyDockApp
 
             this.Answer = inputCategoryName;
             this.DialogResult = true;
+            this.Close(); // Füge diese Zeile hinzu, um das Dialogfenster zu schließen
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = false;
+            this.Close(); // Füge diese Zeile hinzu, um das Dialogfenster zu schließen
         }
     }
 }

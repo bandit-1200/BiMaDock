@@ -19,6 +19,6 @@
     <Style x:Key="CategoryDockStyle" TargetType="StackPanel">
         <Setter Property="Background" Value="{StaticResource SecondaryColor}"/>
         <Setter Property="Orientation" Value="Horizontal"/>
-        <Setter Property="MinWidth" Value="60"/> 
+        <Setter Property="MinWidth" Value="80"/> 
     </Style>
 </ResourceDictionary>
