@@ -29,12 +29,16 @@ public static class IconHelper
 
     public static BitmapSource GetIcon(string filePath)
     {
+        if (Path.GetExtension(filePath).ToLower() == ".png")
+        {
+            return new BitmapImage(new Uri(filePath));
+        }
+
         SHFILEINFO shinfo = new SHFILEINFO();
         int result = SHGetFileInfo(filePath, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SMALLICON);
 
         if (result == 0 || shinfo.hIcon == IntPtr.Zero)
         {
-            // Rückgabe eines leeren BitmapSource, um Nullverweis zu vermeiden
             return Imaging.CreateBitmapSourceFromHBitmap(new Bitmap(1, 1).GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
         }
 
@@ -45,6 +49,5 @@ public static class IconHelper
             return bitmapSource;
         }
     }
-
 
 }
