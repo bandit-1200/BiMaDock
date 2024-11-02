@@ -885,23 +885,24 @@ namespace MyDockApp
 
 
 
-        private void Delete_Click(object sender, RoutedEventArgs e)
+private void Delete_Click(object sender, RoutedEventArgs e)
+{
+    if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+    {
+        var customMessageBox = new CustomMessageBox($"Möchtest du das Element '{dockItem.DisplayName}' wirklich löschen?");
+        customMessageBox.ShowDialog();
+
+        if (customMessageBox.Result)
         {
-            if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
-            {
-                // Bestätigungsdialog anzeigen
-                MessageBoxResult result = MessageBox.Show($"Möchtest du das Element '{dockItem.DisplayName}' wirklich löschen?", "Löschen bestätigen", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            // Hier ermitteln wir die Kategorie, die gelöscht werden soll
+            string currentCategory = dockItem.Category;
 
-                if (result == MessageBoxResult.Yes)
-                {
-                    // Hier ermitteln wir die Kategorie, die gelöscht werden soll
-                    string currentCategory = dockItem.Category;
-
-                    // Übergabe der Kategorie an RemoveDockItem
-                    dockManager.RemoveDockItem(button, currentCategory);
-                }
-            }
+            // Übergabe der Kategorie an RemoveDockItem
+            dockManager.RemoveDockItem(button, currentCategory);
         }
+    }
+}
+
 
 
 

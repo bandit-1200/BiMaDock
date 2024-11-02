@@ -1,0 +1,64 @@
+<Window x:Class="MyDockApp.CustomMessageBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Bestätigungsdialog" Height="250" Width="500"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E1E"
+        BorderBrush="#444444"
+        BorderThickness="1"
+        ResizeMode="NoResize">
+    <Window.Effect>
+        <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.5" Color="Black"/>
+    </Window.Effect>
+    <Grid>
+        <Border Background="#2D2D2D" CornerRadius="15" Padding="20">
+            <StackPanel>
+                <TextBlock Name="MessageTextBlock" Text="Möchten Sie diese Aktion wirklich durchführen?" 
+                           TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Left"
+                           Foreground="White" FontSize="16" FontWeight="Bold" Margin="20,0,0,20" Width="460"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Ja" Width="120" Height="40" Margin="0,0,15,0" Padding="15,10" Background="#0078D4" 
+                            Foreground="White" BorderBrush="#444444" BorderThickness="1" Click="YesButton_Click" 
+                            MouseEnter="Button_MouseEnter" MouseLeave="Button_MouseLeave">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                                    CornerRadius="10">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Content="Nein" Width="120" Height="40" Padding="15,10" Background="#2D2D2D" BorderBrush="#444444" 
+                            Foreground="White" BorderThickness="1" Click="NoButton_Click" 
+                            MouseEnter="Button_MouseEnter" MouseLeave="Button_MouseLeave">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                                    CornerRadius="10">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
