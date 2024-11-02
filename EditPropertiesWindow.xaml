@@ -38,6 +38,21 @@
                             </Style>
                         </Button.Style>
                     </Button>
+                    <Button Content="Hochladen" Click="UploadIcon_Click" Padding="10,5" Background="#2D2D2D" BorderBrush="#444444" Foreground="White" BorderThickness="1">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Control.Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                     <Button Content="Abbrechen" Click="CancelButton_Click" Padding="10,5" Background="#2D2D2D" BorderBrush="#444444" Foreground="White" BorderThickness="1">
                         <Button.Style>
                             <Style TargetType="Button">

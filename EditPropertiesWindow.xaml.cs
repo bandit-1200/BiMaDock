@@ -1,70 +1,201 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using Newtonsoft.Json;
-
 
 
 namespace MyDockApp
 {
     public partial class EditPropertiesWindow : Window
     {
-        private const string Icons8ApiKey = "YOUR_ICONS8_API_KEY";
-        private const string Icons8ApiUrl = "https://api.icons8.com/api/iconsets/v5/search-icons";
-
         public EditPropertiesWindow()
         {
             InitializeComponent();
-            _ = LoadIconsAsync();
+            InitializeIcons(); // Stelle sicher, dass die Symbole initialisiert werden
         }
 
-        private async Task LoadIconsAsync()
+
+        private void CreateAppDataIconDirectory()
         {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var response = await client.GetAsync($"{Icons8ApiUrl}?api_key={Icons8ApiKey}&term=windows");
-            response.EnsureSuccessStatusCode();
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
 
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("API Response: " + jsonResponse); // Debug-Ausgabe der API-Antwort
-
-            var icons = JsonConvert.DeserializeObject<Icons8Response>(jsonResponse);
-            if (icons != null && icons.Icons != null)
+            if (!Directory.Exists(iconDirectoryPath))
             {
-                foreach (var icon in icons.Icons)
-                {
-                    Console.WriteLine("Icon URL: " + icon.Url); // Debug-Ausgabe der Icon-URLs
-                    var image = new Image
-                    {
-                        Source = new BitmapImage(new Uri(icon.Url)),
-                        Width = 32,
-                        Height = 32,
-                        Margin = new Thickness(5)
-                    };
-                    SymbolPanel.Children.Add(image);
-                }
+                Directory.CreateDirectory(iconDirectoryPath);
+                Console.WriteLine("CreateAppDataIconDirectory: Verzeichnis erstellt."); // Debugging Ausgabe
             }
             else
             {
-                Console.WriteLine("Keine Icons gefunden."); // Debug-Ausgabe, falls keine Icons gefunden wurden
+                Console.WriteLine("CreateAppDataIconDirectory: Verzeichnis existiert bereits."); // Debugging Ausgabe
             }
         }
 
 
-        private class Icons8Response
+private async Task LoadIconsAsync()
+{
+    Console.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
+
+    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+    string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+
+    var icons = Directory.GetFiles(iconDirectoryPath);
+    foreach (var iconPath in icons)
+    {
+        try
         {
-            public List<Icon>? Icons { get; set; }
-
-            public class Icon
+            await Dispatcher.InvokeAsync(() =>
             {
-                public string Url { get; set; } = string.Empty;
-            }
+                var image = new Image
+                {
+                    Source = new BitmapImage(new Uri(iconPath)),
+                    Width = 32,
+                    Height = 32,
+                    Margin = new Thickness(5)
+                };
+                SymbolPanel.Children.Add(image);
+                Console.WriteLine($"LoadIconsAsync: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LoadIconsAsync: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}"); // Debugging Ausgabe bei Fehler
+        }
+    }
+
+    Console.WriteLine("LoadIconsAsync: abgeschlossen."); // Debugging Ausgabe
+    Console.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
+}
+
+
+public void InitializeIcons()
+{
+    Console.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
+    CreateAppDataIconDirectory();
+    CopyDefaultIcons();
+    _ = LoadIconsAsync();
+    Console.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
+}
+
+
+
+
+private void CopyDefaultIcons()
+{
+    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+    string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+
+    // Der relative Pfad zu den Ressourcen
+    string relativeResourcePath = @"..\..\..\Resources\Icons";
+    string resourceDirectoryPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativeResourcePath));
+
+    // Debugging Ausgabe, um den Pfad zu überprüfen
+    Console.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
+
+    var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
+
+    foreach (var iconPath in defaultIcons)
+    {
+        string fileName = Path.GetFileName(iconPath);
+        string destinationPath = Path.Combine(iconDirectoryPath, fileName);
+
+        // Debugging Ausgabe, um Pfad und Dateinamen zu überprüfen
+        Console.WriteLine($"CopyDefaultIcons: Überprüfe Datei: {fileName}");
+
+        if (!File.Exists(destinationPath))
+        {
+            File.Copy(iconPath, destinationPath);
+            Console.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt."); // Debugging Ausgabe
+        }
+        else
+        {
+            Console.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis."); // Debugging Ausgabe
+        }
+    }
+}
+
+
+
+        private void UploadIcon_Click(object sender, RoutedEventArgs e)
+        {
+            UploadIcon();
+            DisplayIcons();
         }
 
+
+        private void UploadIcon()
+        {
+            Console.WriteLine("UploadIcon: gestartet."); // Debugging Ausgabe
+
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+
+            // FileDialog zum Hochladen von Bildern öffnen
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Image Files|*.png;*.ico",
+                Title = "Wähle ein Icon zum Hochladen"
+            };
+
+            bool? result = openFileDialog.ShowDialog();
+            if (result == true)
+            {
+                string sourceFilePath = openFileDialog.FileName;
+                string fileExtension = Path.GetExtension(sourceFilePath).ToLower();
+
+                if (fileExtension == ".png" || fileExtension == ".ico")
+                {
+                    string fileName = Path.GetFileName(sourceFilePath);
+                    string destinationPath = Path.Combine(iconDirectoryPath, fileName);
+
+                    if (!File.Exists(destinationPath))
+                    {
+                        File.Copy(sourceFilePath, destinationPath);
+                        Console.WriteLine($"UploadIcon: {fileName} erfolgreich hochgeladen und hinzugefügt."); // Debugging Ausgabe bei Erfolg
+                    }
+                    else
+                    {
+                        Console.WriteLine($"UploadIcon: {fileName} existiert bereits im Verzeichnis."); // Debugging Ausgabe, wenn Datei bereits existiert
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"UploadIcon: {sourceFilePath} hat ein nicht unterstütztes Format."); // Debugging Ausgabe bei nicht unterstütztem Format
+                }
+            }
+
+            Console.WriteLine("UploadIcon: abgeschlossen."); // Debugging Ausgabe
+        }
+
+
+        private void DisplayIcons()
+        {
+            Console.WriteLine("DisplayIcons: gestartet."); // Debugging Ausgabe
+
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+
+            var icons = Directory.GetFiles(iconDirectoryPath);
+            foreach (var iconPath in icons)
+            {
+                var image = new Image
+                {
+                    Source = new BitmapImage(new Uri(iconPath)),
+                    Width = 64,
+                    Height = 64,
+                    Margin = new Thickness(5)
+                };
+                SymbolPanel.Children.Add(image);
+                Console.WriteLine($"DisplayIcons: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
+            }
+
+            Console.WriteLine("DisplayIcons: abgeschlossen."); // Debugging Ausgabe
+            Console.WriteLine($"DisplayIcons: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
+        }
 
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
