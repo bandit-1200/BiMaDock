@@ -632,20 +632,21 @@ namespace MyDockApp
 
 
 
-        private void DockPanel_DragLeave(object sender, DragEventArgs e)
-        {
-            Console.WriteLine("DockPanel_DragLeave aufgerufen"); // Debug-Ausgabe
-            currentDockStatus &= ~DockStatus.DraggingToDock;
-            CheckAllConditions();
+private void DockPanel_DragLeave(object sender, DragEventArgs e)
+{
+    Console.WriteLine("DockPanel_DragLeave aufgerufen"); // Debug-Ausgabe
+    currentDockStatus &= ~DockStatus.DraggingToDock;
+    CheckAllConditions();
 
-            // Visuelles Feedback zurücksetzen
-            var brush = (SolidColorBrush)new BrushConverter().ConvertFromString("#2D2D2D");
-            if (brush != null)
-            {
-                DockPanel.Background = brush; // Setze auf Orange zurück
-                Console.WriteLine("Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
-            }
-        }
+    // Visuelles Feedback zurücksetzen
+    var brush = (SolidColorBrush)FindResource("PrimaryColor");
+    if (brush != null)
+    {
+        DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
+        Console.WriteLine("Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
+    }
+}
+
 
 
 
