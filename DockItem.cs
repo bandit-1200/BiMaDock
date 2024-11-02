@@ -6,4 +6,6 @@ public class DockItem
     public string Category { get; set; } = string.Empty; // Standardwert setzen
     public bool IsCategory { get; set; } = false; // Standardwert setzen
     public int Position { get; set; } = 0; // Standardwert setzen
+    public string IconSource { get; set; } = string.Empty; // IconSource-Eigenschaft hinzufügen
+
 }
