@@ -17,7 +17,7 @@
                 <TextBlock Text="Pfad:" FontSize="16" FontWeight="Bold" Margin="0,0,0,10" Foreground="White"/>
                 <TextBox Name="PathTextBox" Margin="0,0,0,20" IsEnabled="False" BorderBrush="#444444" BorderThickness="1" Padding="10" Background="#3C3C3C" Foreground="White" FontSize="14"/>
                 <TextBlock Text="Symbol:" FontSize="16" FontWeight="Bold" Margin="0,0,0,10" Foreground="White"/>
-                <ScrollViewer Name="ScrollViewerSymbolPanel" Height="120" Margin="0,0,0,20" BorderBrush="#444444" BorderThickness="1" Padding="10" Background="#3C3C3C" VerticalScrollBarVisibility="Auto">
+                <ScrollViewer Name="ScrollViewerSymbolPanel" Height="164" Margin="0,0,0,20" BorderBrush="#444444" BorderThickness="1" Padding="10" Background="#3C3C3C" VerticalScrollBarVisibility="Auto">
                     <WrapPanel Name="SymbolPanel" Orientation="Horizontal" Background="#2D2D2D" Width="Auto">
                         <!-- Beispiel-Symbole -->
                     </WrapPanel>

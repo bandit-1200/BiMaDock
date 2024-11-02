@@ -55,8 +55,8 @@ namespace MyDockApp
                         var image = new Image
                         {
                             Source = new BitmapImage(new Uri(iconPath)),
-                            Width = 32,
-                            Height = 32,
+                            Width = 64,
+                            Height = 64,
                             Margin = new Thickness(5)
                         };
                         SymbolPanel.Children.Add(image);
@@ -180,6 +180,8 @@ namespace MyDockApp
 
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+            // Leeren der Symbolbox
+            SymbolPanel.Children.Clear();
 
             var icons = Directory.GetFiles(iconDirectoryPath);
             foreach (var iconPath in icons)
