@@ -204,7 +204,7 @@ namespace MyDockApp
         private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
         {
             currentDockStatus &= ~DockStatus.MainDockHover; // Löscht das MainDockHover-Flag
-            currentDockStatus &= ~DockStatus.DraggingToDock;
+            // currentDockStatus &= ~DockStatus.DraggingToDock;
             CheckAllConditions();
         }
 
@@ -679,64 +679,83 @@ private void DockPanel_DragLeave(object sender, DragEventArgs e)
 
 
 
-        public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
+public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
+{
+    if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
+    {
+        var button = e.Data.GetData(DataFormats.Serializable) as Button;
+        if (button != null)
         {
-            if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
+            var parent = VisualTreeHelper.GetParent(button) as Panel;
+            if (parent != null)
             {
-                var button = e.Data.GetData(DataFormats.Serializable) as Button;
-                if (button != null)
+                parent.Children.Remove(button);
+            }
+
+            var droppedItem = button.Tag as DockItem;
+            if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
+            {
+                // Überprüfung auf Kategorie
+                if (droppedItem.IsCategory)
                 {
-                    var parent = VisualTreeHelper.GetParent(button) as Panel;
-                    if (parent != null)
+                    if (!isCategoryMessageShown)
                     {
-                        parent.Children.Remove(button);
+                        MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
+                        isCategoryMessageShown = true; // Nachricht wurde gezeigt
                     }
+                    return; // Abbrechen, wenn es eine Kategorie ist
+                }
 
-                    var droppedItem = button.Tag as DockItem;
-                    if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
+                // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
+                if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
+                {
+                    droppedItem.Category = currentOpenCategory;
+
+                    // Position innerhalb des Kategorie-Docks bestimmen
+                    Point dropPosition = e.GetPosition(CategoryDockContainer);
+                    double dropCenterX = dropPosition.X;
+                    int newIndex = 0;
+                    bool inserted = false;
+                    for (int i = 0; i < CategoryDockContainer.Children.Count; i++)
                     {
-                        // Überprüfung auf Kategorie
-                        if (droppedItem.IsCategory)
+                        if (CategoryDockContainer.Children[i] is Button existingButton)
                         {
-                            if (!isCategoryMessageShown)
+                            Point elementPosition = existingButton.TranslatePoint(new Point(0, 0), CategoryDockContainer);
+                            double elementCenterX = elementPosition.X + (existingButton.ActualWidth / 2);
+                            if (dropCenterX < elementCenterX)
                             {
-                                MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
-                                isCategoryMessageShown = true; // Nachricht wurde gezeigt
+                                CategoryDockContainer.Children.Insert(i, button);
+                                inserted = true;
+                                break;
                             }
-                            return; // Abbrechen, wenn es eine Kategorie ist
                         }
-
-                        // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
-                        if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
-                        {
-                            droppedItem.Category = currentOpenCategory;
-
-                            // Füge das Element dem Kategorie-Dock hinzu
-                            if (!CategoryDockContainer.Children.Contains(button))
-                            {
-                                CategoryDockContainer.Children.Add(button);
-                            }
-                            CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
-
-                            // Aktualisiere die interne Struktur oder Daten, falls nötig
-                            UpdateDockItemLocation(button);
-
-                            // Dock-Items speichern
-                            dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
-                        }
+                        newIndex++;
                     }
+                    if (!inserted)
+                    {
+                        CategoryDockContainer.Children.Add(button);
+                    }
+                    
+                    CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
+
+                    // Aktualisiere die interne Struktur oder Daten, falls nötig
+                    UpdateDockItemLocation(button);
+
+                    // Dock-Items speichern
+                    dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
                 }
             }
-            else
-            {
-                e.Handled = true; // Stelle sicher, dass das Ereignis verarbeitet wurde
-            }
-
-            // Visuelles Feedback zurücksetzen
-            CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
-            isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
         }
+    }
+    else
+    {
+        e.Handled = true; // Stelle sicher, dass das Ereignis verarbeitet wurde
+    }
 
+    // Visuelles Feedback zurücksetzen
+    CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
+    isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
+}
 
 
         public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
