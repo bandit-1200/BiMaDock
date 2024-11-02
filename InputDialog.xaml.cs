@@ -19,6 +19,17 @@ namespace MyDockApp
             InitializeComponent();
             this.Title = title;
             this.QuestionTextBlock.Text = question;
+
+            // Key-Event hinzufügen
+            this.KeyDown += InputDialog_KeyDown;
+        }
+
+        private void InputDialog_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                OkButton_Click(this, new RoutedEventArgs());
+            }
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
@@ -47,34 +58,24 @@ namespace MyDockApp
             this.Close(); // Füge diese Zeile hinzu, um das Dialogfenster zu schließen
         }
 
+        private void Button_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                string originalColor = btn.Background.ToString();
+                btn.Tag = originalColor;  // Speichern der ursprünglichen Farbe im Tag-Attribut
+                btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5A5A5A")); // Dezente Hover-Farbe
+                btn.Foreground = new SolidColorBrush(Colors.Black); // Schriftfarbe ändern
+            }
+        }
 
-private void Button_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-{
-    if (sender is Button btn)
-    {
-        string originalColor = btn.Background.ToString();
-        btn.Tag = originalColor;  // Speichern der ursprünglichen Farbe im Tag-Attribut
-        btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5A5A5A")); // Dezente Hover-Farbe
-        btn.Foreground = new SolidColorBrush(Colors.Black); // Schriftfarbe ändern
-    }
-}
-
-private void Button_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-{
-    if (sender is Button btn && btn.Tag is string originalColor)
-    {
-        btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(originalColor)); // Ursprüngliche Farbe wiederherstellen
-        btn.Foreground = new SolidColorBrush(Colors.White); // Schriftfarbe zurücksetzen
-    }
-}
-
-
-
-
-
-
-
-
-
+        private void Button_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string originalColor)
+            {
+                btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(originalColor)); // Ursprüngliche Farbe wiederherstellen
+                btn.Foreground = new SolidColorBrush(Colors.White); // Schriftfarbe zurücksetzen
+            }
+        }
     }
 }
