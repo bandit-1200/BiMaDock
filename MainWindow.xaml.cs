@@ -111,9 +111,11 @@ namespace MyDockApp
                 DeleteMenuItem.Visibility = Visibility.Collapsed;
                 EditMenuItem.Visibility = Visibility.Collapsed;
                 DockContextMenu.IsOpen = true;
-                if (!DockContextMenu.IsOpen)
+                if (DockContextMenu.IsOpen)
                 {
-                    ShowDock(); // Dock sichtbar halten
+                    // ShowDock(); // Dock sichtbar halten
+                    currentDockStatus |= DockStatus.ContextMenuOpen;
+                    CheckAllConditions();
                 }
             };
 
@@ -206,6 +208,13 @@ namespace MyDockApp
             currentDockStatus &= ~DockStatus.MainDockHover; // Löscht das MainDockHover-Flag
             // currentDockStatus &= ~DockStatus.DraggingToDock;
             CheckAllConditions();
+
+            if (!DockContextMenu.IsOpen)
+            {
+                // ShowDock(); // Dock sichtbar halten
+                currentDockStatus &= ~DockStatus.ContextMenuOpen;
+                CheckAllConditions();
+            }
         }
 
 
@@ -632,20 +641,20 @@ namespace MyDockApp
 
 
 
-private void DockPanel_DragLeave(object sender, DragEventArgs e)
-{
-    Console.WriteLine("DockPanel_DragLeave aufgerufen"); // Debug-Ausgabe
-    currentDockStatus &= ~DockStatus.DraggingToDock;
-    CheckAllConditions();
+        private void DockPanel_DragLeave(object sender, DragEventArgs e)
+        {
+            Console.WriteLine("DockPanel_DragLeave aufgerufen"); // Debug-Ausgabe
+            currentDockStatus &= ~DockStatus.DraggingToDock;
+            CheckAllConditions();
 
-    // Visuelles Feedback zurücksetzen
-    var brush = (SolidColorBrush)FindResource("PrimaryColor");
-    if (brush != null)
-    {
-        DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
-        Console.WriteLine("Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
-    }
-}
+            // Visuelles Feedback zurücksetzen
+            var brush = (SolidColorBrush)FindResource("PrimaryColor");
+            if (brush != null)
+            {
+                DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
+                Console.WriteLine("Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
+            }
+        }
 
 
 
@@ -679,83 +688,83 @@ private void DockPanel_DragLeave(object sender, DragEventArgs e)
 
 
 
-public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
-{
-    if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
-    {
-        var button = e.Data.GetData(DataFormats.Serializable) as Button;
-        if (button != null)
+        public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
-            var parent = VisualTreeHelper.GetParent(button) as Panel;
-            if (parent != null)
+            if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
             {
-                parent.Children.Remove(button);
-            }
-
-            var droppedItem = button.Tag as DockItem;
-            if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
-            {
-                // Überprüfung auf Kategorie
-                if (droppedItem.IsCategory)
+                var button = e.Data.GetData(DataFormats.Serializable) as Button;
+                if (button != null)
                 {
-                    if (!isCategoryMessageShown)
+                    var parent = VisualTreeHelper.GetParent(button) as Panel;
+                    if (parent != null)
                     {
-                        MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
-                        isCategoryMessageShown = true; // Nachricht wurde gezeigt
+                        parent.Children.Remove(button);
                     }
-                    return; // Abbrechen, wenn es eine Kategorie ist
-                }
 
-                // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
-                if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
-                {
-                    droppedItem.Category = currentOpenCategory;
-
-                    // Position innerhalb des Kategorie-Docks bestimmen
-                    Point dropPosition = e.GetPosition(CategoryDockContainer);
-                    double dropCenterX = dropPosition.X;
-                    int newIndex = 0;
-                    bool inserted = false;
-                    for (int i = 0; i < CategoryDockContainer.Children.Count; i++)
+                    var droppedItem = button.Tag as DockItem;
+                    if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
                     {
-                        if (CategoryDockContainer.Children[i] is Button existingButton)
+                        // Überprüfung auf Kategorie
+                        if (droppedItem.IsCategory)
                         {
-                            Point elementPosition = existingButton.TranslatePoint(new Point(0, 0), CategoryDockContainer);
-                            double elementCenterX = elementPosition.X + (existingButton.ActualWidth / 2);
-                            if (dropCenterX < elementCenterX)
+                            if (!isCategoryMessageShown)
                             {
-                                CategoryDockContainer.Children.Insert(i, button);
-                                inserted = true;
-                                break;
+                                MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
+                                isCategoryMessageShown = true; // Nachricht wurde gezeigt
                             }
+                            return; // Abbrechen, wenn es eine Kategorie ist
                         }
-                        newIndex++;
-                    }
-                    if (!inserted)
-                    {
-                        CategoryDockContainer.Children.Add(button);
-                    }
-                    
-                    CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
 
-                    // Aktualisiere die interne Struktur oder Daten, falls nötig
-                    UpdateDockItemLocation(button);
+                        // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
+                        if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
+                        {
+                            droppedItem.Category = currentOpenCategory;
 
-                    // Dock-Items speichern
-                    dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
+                            // Position innerhalb des Kategorie-Docks bestimmen
+                            Point dropPosition = e.GetPosition(CategoryDockContainer);
+                            double dropCenterX = dropPosition.X;
+                            int newIndex = 0;
+                            bool inserted = false;
+                            for (int i = 0; i < CategoryDockContainer.Children.Count; i++)
+                            {
+                                if (CategoryDockContainer.Children[i] is Button existingButton)
+                                {
+                                    Point elementPosition = existingButton.TranslatePoint(new Point(0, 0), CategoryDockContainer);
+                                    double elementCenterX = elementPosition.X + (existingButton.ActualWidth / 2);
+                                    if (dropCenterX < elementCenterX)
+                                    {
+                                        CategoryDockContainer.Children.Insert(i, button);
+                                        inserted = true;
+                                        break;
+                                    }
+                                }
+                                newIndex++;
+                            }
+                            if (!inserted)
+                            {
+                                CategoryDockContainer.Children.Add(button);
+                            }
+
+                            CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
+
+                            // Aktualisiere die interne Struktur oder Daten, falls nötig
+                            UpdateDockItemLocation(button);
+
+                            // Dock-Items speichern
+                            dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
+                        }
+                    }
                 }
             }
-        }
-    }
-    else
-    {
-        e.Handled = true; // Stelle sicher, dass das Ereignis verarbeitet wurde
-    }
+            else
+            {
+                e.Handled = true; // Stelle sicher, dass das Ereignis verarbeitet wurde
+            }
 
-    // Visuelles Feedback zurücksetzen
-    CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
-    isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
-}
+            // Visuelles Feedback zurücksetzen
+            CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
+            isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
+        }
 
 
         public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)

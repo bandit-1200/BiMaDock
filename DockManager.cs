@@ -413,20 +413,20 @@ public class DockManager
                 }
             }
         }
-finally
-{
-    isDropInProgress = false;
-    SolidColorBrush? primaryColor = (SolidColorBrush?)new BrushConverter().ConvertFromString("#1E1E1E"); // Die ursprüngliche PrimaryColor direkt setzen
+        finally
+        {
+            isDropInProgress = false;
+            SolidColorBrush? primaryColor = (SolidColorBrush?)new BrushConverter().ConvertFromString("#1E1E1E"); // Die ursprüngliche PrimaryColor direkt setzen
 
-    if (primaryColor != null)
-    {
-        dockPanel.Background = primaryColor;
-    }
+            if (primaryColor != null)
+            {
+                dockPanel.Background = primaryColor;
+            }
 
-    mainWindow.currentDockStatus &= ~MainWindow.DockStatus.DraggingToDock;
-    mainWindow.currentDockStatus |= MainWindow.DockStatus.MainDockHover;
-    mainWindow.CheckAllConditions();
-}
+            mainWindow.currentDockStatus &= ~MainWindow.DockStatus.DraggingToDock;
+            mainWindow.currentDockStatus |= MainWindow.DockStatus.MainDockHover;
+            mainWindow.CheckAllConditions();
+        }
 
 
         mainWindow.SetDragging(false);
@@ -562,6 +562,10 @@ finally
             // Kontextmenü über dem spezifischen Button-Element öffnen
             mainWindow.DockContextMenu.PlacementTarget = button;
             mainWindow.DockContextMenu.IsOpen = true;
+
+            mainWindow.currentDockStatus |= MainWindow.DockStatus.ContextMenuOpen;
+            mainWindow.CheckAllConditions();
+
         };
         // Event-Handler für Dragging
         button.PreviewMouseLeftButtonDown += (s, e) =>
