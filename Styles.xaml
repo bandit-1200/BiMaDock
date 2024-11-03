@@ -8,7 +8,7 @@
     <SolidColorBrush x:Key="HighlightColor" Color="#292929"/>
     <SolidColorBrush x:Key="DebugColor4" Color="#2D2D2D"/>
     <SolidColorBrush x:Key="DebugColor5" Color="#FFA500"/>
-    
+
     <!-- Stile und Templates -->
     <Style x:Key="MainDockStyle" TargetType="StackPanel">
         <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
@@ -16,9 +16,16 @@
         <Setter Property="Height" Value="80"/>
         <Setter Property="Margin" Value="0"/>
     </Style>
+
     <Style x:Key="CategoryDockStyle" TargetType="StackPanel">
         <Setter Property="Background" Value="{StaticResource SecondaryColor}"/>
         <Setter Property="Orientation" Value="Horizontal"/>
-        <Setter Property="MinWidth" Value="80"/> 
+        <Setter Property="MinWidth" Value="80"/>
+    </Style>
+
+    <!-- Separator-Stil -->
+    <Style TargetType="Separator">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Margin" Value="10,5,10,5"/>
     </Style>
 </ResourceDictionary>

@@ -690,6 +690,7 @@ public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
                         MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
                         isCategoryMessageShown = true; // Nachricht wurde gezeigt
                     }
+                    isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
                     return; // Abbrechen, wenn es eine Kategorie ist
                 }
 
@@ -761,7 +762,6 @@ public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
 
     // Visuelles Feedback zurücksetzen
     CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
-    isCategoryMessageShown = false; // Nachricht-Flag zurücksetzen
 }
 
 
