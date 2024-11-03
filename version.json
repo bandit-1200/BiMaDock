@@ -1,0 +1,16 @@
+{
+    "version": "1.0",
+    "publicReleaseRefSpec": [
+      "^refs/heads/main$",
+      "^refs/heads/dev$"
+    ],
+    "nugetPackageVersion": {
+      "semVer": 2
+    },
+    "cloudBuild": {
+      "buildNumber": {
+        "enabled": true
+      }
+    }
+  }
+  
