@@ -3,7 +3,7 @@ using System.Windows.Controls; // Für Controls wie Button, TextBox etc.
 using System.Windows.Input; // Für RoutedEventArgs
 using System.Windows.Media;
 
-namespace MyDockApp
+namespace BiMaDock
 {
     public partial class InputDialog : Window
     {

@@ -1,4 +1,4 @@
-<Window x:Class="MyDockApp.InputDialog"
+<Window x:Class="BiMaDock.InputDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Kategorie erstellen" Height="250" Width="400"

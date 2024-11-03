@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
-using MyDockApp;
+using BiMaDock;
 using System.Windows.Input;
 using System.Windows.Media; // Für SolidColorBrush und Colors
 

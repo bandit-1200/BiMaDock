@@ -8,7 +8,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading; // Für den DispatcherTimer
 
 
-namespace MyDockApp
+namespace BiMaDock
 {
     public partial class MainWindow : Window
     {

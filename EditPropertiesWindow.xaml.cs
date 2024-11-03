@@ -12,7 +12,7 @@ using System.Windows.Input; // Dieser Namespace enthält die Cursors-Klasse
 using System.Windows.Media.Imaging;
 
 
-namespace MyDockApp
+namespace BiMaDock
 {
     public partial class EditPropertiesWindow : Window
     {

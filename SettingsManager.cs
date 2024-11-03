@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 public static class SettingsManager
 {
-    private static string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MyDockApp");
+    private static string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BiMaDock");
     private static string settingsFilePath = Path.Combine(appDataPath, "docksettings.json");
 
     public static void SaveSettings(List<DockItem> items)
