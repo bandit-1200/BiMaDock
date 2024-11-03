@@ -968,98 +968,93 @@ public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
 
 
 
-
-
-        private void Edit_Click(object sender, RoutedEventArgs e)
+private void Edit_Click(object sender, RoutedEventArgs e)
+{
+    if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+    {
+        // Alle Dock-Items laden
+        var dockItems = SettingsManager.LoadSettings();
+        
+        // Prüfen, ob das aktuelle Item eine Kategorie ist
+        var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
+        if (settings == null)
         {
-            if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+            MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        // Edit-Dialog initialisieren
+        EditPropertiesWindow editWindow = new EditPropertiesWindow
+        {
+            Owner = this,
+            NameTextBox = { Text = settings.DisplayName }
+        };
+
+        bool? dialogResult = editWindow.ShowDialog();
+        if (dialogResult == true)
+        {
+            string newName = editWindow.NameTextBox.Text.Trim();
+
+            // Neuen Namen validieren
+            if (string.IsNullOrEmpty(newName))
             {
-                var dockItems = SettingsManager.LoadSettings();
-                var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
+                MessageBox.Show("Name darf nicht leer sein.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            
+            // Prüfen, ob der neue Name bereits für eine andere Kategorie verwendet wird
+            if (dockItems.Any(di => di.IsCategory && di.DisplayName == newName))
+            {
+                MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
-                if (settings == null)
+            // Falls es eine Kategorie ist, den Namen ändern und untergeordnete Elemente aktualisieren
+            if (settings.IsCategory)
+            {
+                string oldCategory = settings.DisplayName;
+                settings.DisplayName = newName;
+
+                // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören
+                foreach (var item in dockItems)
                 {
-                    MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                    if (!item.IsCategory && item.Category == oldCategory)
+                    {
+                        item.Category = newName;
+                    }
                 }
 
-                EditPropertiesWindow editWindow = new EditPropertiesWindow
+                // Aktualisiere den Button-Text
+                var textBlock = new TextBlock
                 {
-                    Owner = this,
-                    NameTextBox = { Text = settings.DisplayName }
+                    Text = newName,
+                    TextAlignment = TextAlignment.Center,
+                    TextWrapping = TextWrapping.Wrap,
+                    Width = 60,
+                    Margin = new Thickness(5)
                 };
+                
+                var stackPanel = (StackPanel)button.Content;
+                stackPanel.Children.RemoveAt(1);
+                stackPanel.Children.Add(textBlock);
 
-                if (!settings.IsCategory)
-                {
-                    editWindow.PathTextBox.Text = settings.FilePath;
-                }
+                button.Tag = dockItem;
 
-                bool? dialogResult = editWindow.ShowDialog();
-                if (dialogResult == true)
-                {
-                    string newName = editWindow.NameTextBox.Text;
-
-                    if (!settings.IsCategory)
-                    {
-                        string newPath = editWindow.PathTextBox.Text;
-                        if (string.IsNullOrEmpty(newPath))
-                        {
-                            MessageBox.Show("Ungültiger Pfad", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
-                        settings.FilePath = newPath;
-                    }
-
-                    if (!string.IsNullOrEmpty(newName))
-                    {
-                        if (dockItem.IsCategory && dockItems.Any(di => di.IsCategory && di.DisplayName == newName))
-                        {
-                            MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            return;
-                        }
-
-                        if (dockItem.IsCategory)
-                        {
-                            var oldCategory = dockItem.DisplayName;
-                            dockItem.DisplayName = newName;
-
-                            foreach (var item in dockItems.Where(di => di.Category == oldCategory))
-                            {
-                                item.Category = newName;
-                            }
-                        }
-
-                        var textBlock = new TextBlock
-                        {
-                            Text = newName,
-                            TextAlignment = TextAlignment.Center,
-                            TextWrapping = TextWrapping.Wrap,
-                            Width = 60,
-                            Margin = new Thickness(5)
-                        };
-
-                        var stackPanel = (StackPanel)button.Content;
-                        stackPanel.Children.RemoveAt(1);
-                        stackPanel.Children.Add(textBlock);
-
-                        button.Tag = dockItem;
-
-                        SettingsManager.SaveSettings(dockItems);
-                        // MessageBox.Show("Kategorie erfolgreich umbenannt und gespeichert.", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        // MessageBox.Show("Ungültiger Name", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    dockManager.SaveDockItems(currentOpenCategory);
-                }
+                // Speichern der aktualisierten Einstellungen
+                SettingsManager.SaveSettings(dockItems);
+                dockManager.LoadDockItems();
             }
             else
             {
-                MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Dieses Element ist keine Kategorie.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+    }
+    else
+    {
+        MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+}
 
         // private DockItem LoadDockSettings(DockItem dockItem)
         // {

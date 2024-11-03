@@ -203,7 +203,6 @@ public void LoadDockItems()
     Console.WriteLine("Dock-Elemente geladen."); // Debugging am Ende des Aufrufs
 }
 
-
 public void SaveDockItems(string currentCategory)
 {
     if (CategoryDockContainer == null)
@@ -215,6 +214,7 @@ public void SaveDockItems(string currentCategory)
     var categoryItems = new List<DockItem>();
     int mainDockIndex = 0;
 
+    // Hauptdock-Elemente speichern
     foreach (UIElement element in dockPanel.Children)
     {
         if (element is Button button && button.Tag is DockItem dockItem)
@@ -228,6 +228,7 @@ public void SaveDockItems(string currentCategory)
         }
     }
 
+    // Kategorie-Dock-Elemente speichern
     foreach (UIElement element in CategoryDockContainer.Children)
     {
         if (element is Button button && button.Tag is DockItem dockItem)
@@ -247,9 +248,7 @@ public void SaveDockItems(string currentCategory)
     items.AddRange(categoryItems);
     var existingItems = SettingsManager.LoadSettings();
 
-    // Entfernen aller vorhandenen Elemente der aktuellen Kategorie
-    existingItems.RemoveAll(item => item.Category == currentCategory || item.DisplayName == currentCategory);
-
+    // Vermeiden von doppelten Einträgen und sicherstellen, dass bestehende Elemente korrekt gespeichert werden
     foreach (var item in existingItems)
     {
         if (item.Category != currentCategory)
@@ -263,7 +262,6 @@ public void SaveDockItems(string currentCategory)
 
     SettingsManager.SaveSettings(items);
 }
-
 
 
 
@@ -362,6 +360,7 @@ public void AddCategoryItem(string categoryName)
                     }
                     // Aktualisiere und speichere die Dock-Items nach dem Verschieben
                     SaveDockItems(droppedItem.Category);
+                    
                 }
             }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
