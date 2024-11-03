@@ -146,7 +146,8 @@ namespace BiMaDock
         // Methode zum Öffnen des Einstellungsfensters
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
-            // Hier wird das Einstellungsfenster geöffnet
+            SettingsWindow settingsWindow = new SettingsWindow();
+            settingsWindow.ShowDialog(); // Modal anzeigen
         }
 
 
