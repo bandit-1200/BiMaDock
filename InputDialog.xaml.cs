@@ -19,6 +19,7 @@ namespace MyDockApp
             InitializeComponent();
             this.Title = title;
             this.QuestionTextBlock.Text = question;
+            Loaded += (s, e) => CategoryNameTextBox.Focus(); // Fokus auf das Textfeld setzen
 
             // Key-Event hinzufügen
             this.KeyDown += InputDialog_KeyDown;
