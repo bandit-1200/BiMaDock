@@ -143,6 +143,14 @@ namespace MyDockApp
         }
         // Weitere Initialisierung
 
+        // Methode zum Öffnen des Einstellungsfensters
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            // Hier wird das Einstellungsfenster geöffnet
+        }
+
+
+
         private void Open_Click(object sender, RoutedEventArgs e)
         {
             dockManager.Open_Click(sender, e);
@@ -672,97 +680,97 @@ namespace MyDockApp
 
 
 
-public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
-{
-    if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
-    {
-        var button = e.Data.GetData(DataFormats.Serializable) as Button;
-        if (button != null)
+        public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
-            var droppedItem = button.Tag as DockItem;
-            if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
+            if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
             {
-                // Überprüfung auf Kategorie
-                if (droppedItem.IsCategory)
+                var button = e.Data.GetData(DataFormats.Serializable) as Button;
+                if (button != null)
                 {
-                    if (!isCategoryMessageShown)
+                    var droppedItem = button.Tag as DockItem;
+                    if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
                     {
-                        MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
-                        isCategoryMessageShown = true; // Nachricht wurde gezeigt
-                    }
-                    isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
-                    return; // Abbrechen, wenn es eine Kategorie ist
-                }
-
-                // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
-                if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
-                {
-                    // Entferne das Element nicht, wenn es vom Hauptdock kommt und keine Kategorie hat
-                    if (!string.IsNullOrEmpty(droppedItem.Category))
-                    {
-                        var parent = VisualTreeHelper.GetParent(button) as Panel;
-                        if (parent != null)
+                        // Überprüfung auf Kategorie
+                        if (droppedItem.IsCategory)
                         {
-                            parent.Children.Remove(button);
-                        }
-                    }
-
-                    droppedItem.Category = currentOpenCategory;
-
-                    // Logische Trennung durchführen, bevor das Element hinzugefügt wird
-                    if (button.Parent != null)
-                    {
-                        var logicalParent = LogicalTreeHelper.GetParent(button) as Panel;
-                        if (logicalParent != null)
-                        {
-                            logicalParent.Children.Remove(button);
-                        }
-                    }
-
-                    // Position innerhalb des Kategorie-Docks bestimmen
-                    Point dropPosition = e.GetPosition(CategoryDockContainer);
-                    double dropCenterX = dropPosition.X;
-                    int newIndex = 0;
-                    bool inserted = false;
-                    for (int i = 0; i < CategoryDockContainer.Children.Count; i++)
-                    {
-                        if (CategoryDockContainer.Children[i] is Button existingButton)
-                        {
-                            Point elementPosition = existingButton.TranslatePoint(new Point(0, 0), CategoryDockContainer);
-                            double elementCenterX = elementPosition.X + (existingButton.ActualWidth / 2);
-                            if (dropCenterX < elementCenterX)
+                            if (!isCategoryMessageShown)
                             {
-                                CategoryDockContainer.Children.Insert(i, button);
-                                inserted = true;
-                                break;
+                                MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
+                                isCategoryMessageShown = true; // Nachricht wurde gezeigt
                             }
+                            isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
+                            return; // Abbrechen, wenn es eine Kategorie ist
                         }
-                        newIndex++;
+
+                        // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
+                        if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
+                        {
+                            // Entferne das Element nicht, wenn es vom Hauptdock kommt und keine Kategorie hat
+                            if (!string.IsNullOrEmpty(droppedItem.Category))
+                            {
+                                var parent = VisualTreeHelper.GetParent(button) as Panel;
+                                if (parent != null)
+                                {
+                                    parent.Children.Remove(button);
+                                }
+                            }
+
+                            droppedItem.Category = currentOpenCategory;
+
+                            // Logische Trennung durchführen, bevor das Element hinzugefügt wird
+                            if (button.Parent != null)
+                            {
+                                var logicalParent = LogicalTreeHelper.GetParent(button) as Panel;
+                                if (logicalParent != null)
+                                {
+                                    logicalParent.Children.Remove(button);
+                                }
+                            }
+
+                            // Position innerhalb des Kategorie-Docks bestimmen
+                            Point dropPosition = e.GetPosition(CategoryDockContainer);
+                            double dropCenterX = dropPosition.X;
+                            int newIndex = 0;
+                            bool inserted = false;
+                            for (int i = 0; i < CategoryDockContainer.Children.Count; i++)
+                            {
+                                if (CategoryDockContainer.Children[i] is Button existingButton)
+                                {
+                                    Point elementPosition = existingButton.TranslatePoint(new Point(0, 0), CategoryDockContainer);
+                                    double elementCenterX = elementPosition.X + (existingButton.ActualWidth / 2);
+                                    if (dropCenterX < elementCenterX)
+                                    {
+                                        CategoryDockContainer.Children.Insert(i, button);
+                                        inserted = true;
+                                        break;
+                                    }
+                                }
+                                newIndex++;
+                            }
+                            if (!inserted)
+                            {
+                                CategoryDockContainer.Children.Add(button);
+                            }
+
+                            CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
+
+                            // Aktualisiere die interne Struktur oder Daten, falls nötig
+                            UpdateDockItemLocation(button);
+
+                            // Dock-Items speichern
+                            dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
+                        }
                     }
-                    if (!inserted)
-                    {
-                        CategoryDockContainer.Children.Add(button);
-                    }
-
-                    CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
-
-                    // Aktualisiere die interne Struktur oder Daten, falls nötig
-                    UpdateDockItemLocation(button);
-
-                    // Dock-Items speichern
-                    dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
                 }
             }
-        }
-    }
-    else
-    {
-        e.Handled = true; // Stelle sicher, dass das Ereignis verarbeitet wurde
-    }
+            else
+            {
+                e.Handled = true; // Stelle sicher, dass das Ereignis verarbeitet wurde
+            }
 
-    // Visuelles Feedback zurücksetzen
-    CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
-}
+            // Visuelles Feedback zurücksetzen
+            CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
+        }
 
 
 
@@ -968,107 +976,107 @@ public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
 
 
 
-private void Edit_Click(object sender, RoutedEventArgs e)
-{
-    if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
-    {
-        // Alle Dock-Items laden
-        var dockItems = SettingsManager.LoadSettings();
-
-        // Prüfen, ob das aktuelle Item eine Kategorie ist
-        var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
-        if (settings == null)
+        private void Edit_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-
-        // Edit-Dialog initialisieren
-        EditPropertiesWindow editWindow = new EditPropertiesWindow
-        {
-            Owner = this,
-            NameTextBox = { Text = settings.DisplayName },
-            IconSourceTextBox = { Text = settings.IconSource } // Hinzufügen des Bildpfads
-        };
-
-        bool? dialogResult = editWindow.ShowDialog();
-        if (dialogResult == true)
-        {
-            string newName = editWindow.NameTextBox.Text.Trim();
-            string newIconPath = editWindow.IconSourceTextBox.Text.Trim(); // Neues Bildpfad
-
-            // Neuen Namen validieren
-            if (string.IsNullOrEmpty(newName))
+            if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
             {
-                MessageBox.Show("Name darf nicht leer sein.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+                // Alle Dock-Items laden
+                var dockItems = SettingsManager.LoadSettings();
 
-            // Prüfen, ob der neue Name bereits für eine andere Kategorie verwendet wird
-            if (dockItems.Any(di => di.IsCategory && di.DisplayName == newName && di.Id != settings.Id)) // Sicherstellen, dass es nicht dasselbe ist
-            {
-                MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            // Prüfen, ob der Kategoriename geändert wurde
-            bool nameChanged = settings.DisplayName != newName;
-
-            // Falls es eine Kategorie ist
-            if (settings.IsCategory)
-            {
-                if (nameChanged)
+                // Prüfen, ob das aktuelle Item eine Kategorie ist
+                var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
+                if (settings == null)
                 {
-                    string oldCategory = settings.DisplayName;
-                    settings.DisplayName = newName;
+                    MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
-                    // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören
-                    foreach (var item in dockItems)
+                // Edit-Dialog initialisieren
+                EditPropertiesWindow editWindow = new EditPropertiesWindow
+                {
+                    Owner = this,
+                    NameTextBox = { Text = settings.DisplayName },
+                    IconSourceTextBox = { Text = settings.IconSource } // Hinzufügen des Bildpfads
+                };
+
+                bool? dialogResult = editWindow.ShowDialog();
+                if (dialogResult == true)
+                {
+                    string newName = editWindow.NameTextBox.Text.Trim();
+                    string newIconPath = editWindow.IconSourceTextBox.Text.Trim(); // Neues Bildpfad
+
+                    // Neuen Namen validieren
+                    if (string.IsNullOrEmpty(newName))
                     {
-                        if (!item.IsCategory && item.Category == oldCategory)
-                        {
-                            item.Category = newName;
-                        }
+                        MessageBox.Show("Name darf nicht leer sein.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
                     }
 
-                    // Aktualisiere den Button-Text
-                    var textBlock = new TextBlock
+                    // Prüfen, ob der neue Name bereits für eine andere Kategorie verwendet wird
+                    if (dockItems.Any(di => di.IsCategory && di.DisplayName == newName && di.Id != settings.Id)) // Sicherstellen, dass es nicht dasselbe ist
                     {
-                        Text = newName,
-                        TextAlignment = TextAlignment.Center,
-                        TextWrapping = TextWrapping.Wrap,
-                        Width = 60,
-                        Margin = new Thickness(5)
-                    };
+                        MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
 
-                    var stackPanel = (StackPanel)button.Content;
-                    stackPanel.Children.RemoveAt(1);
-                    stackPanel.Children.Add(textBlock);
+                    // Prüfen, ob der Kategoriename geändert wurde
+                    bool nameChanged = settings.DisplayName != newName;
+
+                    // Falls es eine Kategorie ist
+                    if (settings.IsCategory)
+                    {
+                        if (nameChanged)
+                        {
+                            string oldCategory = settings.DisplayName;
+                            settings.DisplayName = newName;
+
+                            // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören
+                            foreach (var item in dockItems)
+                            {
+                                if (!item.IsCategory && item.Category == oldCategory)
+                                {
+                                    item.Category = newName;
+                                }
+                            }
+
+                            // Aktualisiere den Button-Text
+                            var textBlock = new TextBlock
+                            {
+                                Text = newName,
+                                TextAlignment = TextAlignment.Center,
+                                TextWrapping = TextWrapping.Wrap,
+                                Width = 60,
+                                Margin = new Thickness(5)
+                            };
+
+                            var stackPanel = (StackPanel)button.Content;
+                            stackPanel.Children.RemoveAt(1);
+                            stackPanel.Children.Add(textBlock);
+                        }
+
+                        // Wenn der Name nicht geändert wurde, nur das Symbol aktualisieren
+                        if (!string.IsNullOrEmpty(newIconPath))
+                        {
+                            settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
+                        }
+
+                        button.Tag = dockItem;
+
+                        // Speichern der aktualisierten Einstellungen
+                        SettingsManager.SaveSettings(dockItems);
+                        dockManager.LoadDockItems();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Dieses Element ist keine Kategorie.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
-
-                // Wenn der Name nicht geändert wurde, nur das Symbol aktualisieren
-                if (!string.IsNullOrEmpty(newIconPath))
-                {
-                    settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
-                }
-
-                button.Tag = dockItem;
-
-                // Speichern der aktualisierten Einstellungen
-                SettingsManager.SaveSettings(dockItems);
-                dockManager.LoadDockItems();
             }
             else
             {
-                MessageBox.Show("Dieses Element ist keine Kategorie.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-    }
-    else
-    {
-        MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-    }
-}
 
 
 
