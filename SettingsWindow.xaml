@@ -1,6 +1,7 @@
 <Window x:Class="BiMaDock.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         Title="Einstellungen" Width="400" Height="500"
         Background="#1E1E1E"
         WindowStartupLocation="CenterScreen"
@@ -17,12 +18,12 @@
                 <TextBlock Text="Farben anpassen" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="White"/>
         
                 <TextBlock Text="Primärfarbe:" Foreground="White"/>
-                <Button Name="PrimaryColorButton" Content="Farbe auswählen" Background="#3C3C3C" Foreground="White" Click="PrimaryColorButton_Click" Margin="0,0,0,10" Height="40" Width="150"/>
-        
+                <xctk:ColorPicker Name="PrimaryColorPicker" SelectedColorChanged="PrimaryColorPicker_SelectedColorChanged" Margin="0,0,0,10"/>
+
                 <TextBlock Text="Sekundärfarbe:" Foreground="White"/>
-                <Button Name="SecondaryColorButton" Content="Farbe auswählen" Background="#3C3C3C" Foreground="White" Click="SecondaryColorButton_Click" Margin="0,0,0,20" Height="40" Width="150"/>
+                <xctk:ColorPicker Name="SecondaryColorPicker" SelectedColorChanged="SecondaryColorPicker_SelectedColorChanged" Margin="0,0,0,20"/>
         
-                <TextBlock Text="Animationseinstellungen" FontSize="20" FontWeight="Bold" Margin="0,20,0,10" Foreground="White"/>
+                <TextBlock Text="Animationsgeschwindigkeit" FontSize="20" FontWeight="Bold" Margin="0,20,0,10" Foreground="White"/>
                 <TextBlock Text="Animationsgeschwindigkeit:" Foreground="White"/>
                 <Slider Name="AnimationSpeedSlider" Minimum="0" Maximum="2" Value="1" TickFrequency="0.1" IsSnapToTickEnabled="True" Margin="0,0,0,20"/>
         

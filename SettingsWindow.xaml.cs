@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Media;
 
 namespace BiMaDock
 {
@@ -7,17 +8,24 @@ namespace BiMaDock
         public SettingsWindow()
         {
             InitializeComponent();
-            WindowStartupLocation = WindowStartupLocation.CenterScreen; // Fenster in der Mitte des Bildschirms starten
         }
 
-        private void PrimaryColorButton_Click(object sender, RoutedEventArgs e)
+        private void PrimaryColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
-            // Leere Methode
+            if (e.NewValue.HasValue)
+            {
+                var color = e.NewValue.Value;
+                PrimaryColorPicker.Background = new SolidColorBrush(color);
+            }
         }
 
-        private void SecondaryColorButton_Click(object sender, RoutedEventArgs e)
+        private void SecondaryColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
-            // Leere Methode
+            if (e.NewValue.HasValue)
+            {
+                var color = e.NewValue.Value;
+                SecondaryColorPicker.Background = new SolidColorBrush(color);
+            }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -27,7 +35,7 @@ namespace BiMaDock
 
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
-            Close(); // Fenster schließen
+            Close();
         }
     }
 }
