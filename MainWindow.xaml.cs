@@ -1005,41 +1005,52 @@ private void Edit_Click(object sender, RoutedEventArgs e)
             }
 
             // Prüfen, ob der neue Name bereits für eine andere Kategorie verwendet wird
-            if (dockItems.Any(di => di.IsCategory && di.DisplayName == newName))
+            if (dockItems.Any(di => di.IsCategory && di.DisplayName == newName && di.Id != settings.Id)) // Sicherstellen, dass es nicht dasselbe ist
             {
                 MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // Falls es eine Kategorie ist, den Namen ändern und untergeordnete Elemente aktualisieren
+            // Prüfen, ob der Kategoriename geändert wurde
+            bool nameChanged = settings.DisplayName != newName;
+
+            // Falls es eine Kategorie ist
             if (settings.IsCategory)
             {
-                string oldCategory = settings.DisplayName;
-                settings.DisplayName = newName;
-                settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
-
-                // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören
-                foreach (var item in dockItems)
+                if (nameChanged)
                 {
-                    if (!item.IsCategory && item.Category == oldCategory)
+                    string oldCategory = settings.DisplayName;
+                    settings.DisplayName = newName;
+
+                    // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören
+                    foreach (var item in dockItems)
                     {
-                        item.Category = newName;
+                        if (!item.IsCategory && item.Category == oldCategory)
+                        {
+                            item.Category = newName;
+                        }
                     }
+
+                    // Aktualisiere den Button-Text
+                    var textBlock = new TextBlock
+                    {
+                        Text = newName,
+                        TextAlignment = TextAlignment.Center,
+                        TextWrapping = TextWrapping.Wrap,
+                        Width = 60,
+                        Margin = new Thickness(5)
+                    };
+
+                    var stackPanel = (StackPanel)button.Content;
+                    stackPanel.Children.RemoveAt(1);
+                    stackPanel.Children.Add(textBlock);
                 }
 
-                // Aktualisiere den Button-Text
-                var textBlock = new TextBlock
+                // Wenn der Name nicht geändert wurde, nur das Symbol aktualisieren
+                if (!string.IsNullOrEmpty(newIconPath))
                 {
-                    Text = newName,
-                    TextAlignment = TextAlignment.Center,
-                    TextWrapping = TextWrapping.Wrap,
-                    Width = 60,
-                    Margin = new Thickness(5)
-                };
-
-                var stackPanel = (StackPanel)button.Content;
-                stackPanel.Children.RemoveAt(1);
-                stackPanel.Children.Add(textBlock);
+                    settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
+                }
 
                 button.Tag = dockItem;
 
@@ -1058,12 +1069,13 @@ private void Edit_Click(object sender, RoutedEventArgs e)
         MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 }
-    // private DockItem LoadDockSettings(DockItem dockItem)
-        // {
-        //     // Lade die DockSettings von der zentralen Stelle
-        //     // Hier muss der Code hinzugefügt werden, um die Werte aus den DockSettings zu laden
-        //     return dockItem; // Placeholder, hier den geladenen DockItem zurückgeben
-        // }
+
+
+
+
+
+
+
 
 
 
