@@ -3,24 +3,34 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Einstellungen" Width="400" Height="500"
         Background="#1E1E1E"
-        WindowStartupLocation="CenterScreen"> <!-- Fenster in der Mitte des Bildschirms starten -->
+        WindowStartupLocation="CenterScreen"
+        BorderBrush="#444444"
+        BorderThickness="1">
 
-    <StackPanel Margin="20">
-        <TextBlock Text="Farben anpassen" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="White"/>
+    <Window.Effect>
+        <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.5" Color="Black"/>
+    </Window.Effect>
 
-        <TextBlock Text="Primärfarbe:" Foreground="White"/>
-        <Button Name="PrimaryColorButton" Content="Farbe auswählen" Background="#3C3C3C" Foreground="White" Click="PrimaryColorButton_Click" Margin="0,0,0,10" Height="40" Width="150"/>
-
-        <TextBlock Text="Sekundärfarbe:" Foreground="White"/>
-        <Button Name="SecondaryColorButton" Content="Farbe auswählen" Background="#3C3C3C" Foreground="White" Click="SecondaryColorButton_Click" Margin="0,0,0,20" Height="40" Width="150"/>
-
-        <TextBlock Text="Animationseinstellungen" FontSize="20" FontWeight="Bold" Margin="0,20,0,10" Foreground="White"/>
-        <TextBlock Text="Animationsgeschwindigkeit:" Foreground="White"/>
-        <Slider Name="AnimationSpeedSlider" Minimum="0" Maximum="2" Value="1" TickFrequency="0.1" IsSnapToTickEnabled="True" Margin="0,0,0,20"/>
-
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Speichern" Background="#0078D7" Foreground="White" Click="SaveButton_Click" Height="40" Width="100" Margin="0,0,10,0"/>
-            <Button Content="Beenden" Background="#FF1E1E1E" Foreground="White" Click="ExitButton_Click" Height="40" Width="100"/> <!-- Exit-Button -->
-        </StackPanel>
-    </StackPanel>
+    <Grid>
+        <Border Background="#2D2D2D" CornerRadius="15" Padding="20">
+            <StackPanel Margin="20">
+                <TextBlock Text="Farben anpassen" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="White"/>
+        
+                <TextBlock Text="Primärfarbe:" Foreground="White"/>
+                <Button Name="PrimaryColorButton" Content="Farbe auswählen" Background="#3C3C3C" Foreground="White" Click="PrimaryColorButton_Click" Margin="0,0,0,10" Height="40" Width="150"/>
+        
+                <TextBlock Text="Sekundärfarbe:" Foreground="White"/>
+                <Button Name="SecondaryColorButton" Content="Farbe auswählen" Background="#3C3C3C" Foreground="White" Click="SecondaryColorButton_Click" Margin="0,0,0,20" Height="40" Width="150"/>
+        
+                <TextBlock Text="Animationseinstellungen" FontSize="20" FontWeight="Bold" Margin="0,20,0,10" Foreground="White"/>
+                <TextBlock Text="Animationsgeschwindigkeit:" Foreground="White"/>
+                <Slider Name="AnimationSpeedSlider" Minimum="0" Maximum="2" Value="1" TickFrequency="0.1" IsSnapToTickEnabled="True" Margin="0,0,0,20"/>
+        
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Speichern" Background="#0078D4" Foreground="White" Click="SaveButton_Click" Height="40" Width="100" Margin="0,0,10,0"/>
+                    <Button Content="Beenden" Background="#2D2D2D" Foreground="White" Click="ExitButton_Click" Height="40" Width="100"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
 </Window>
