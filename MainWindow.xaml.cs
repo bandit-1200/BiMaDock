@@ -974,7 +974,7 @@ private void Edit_Click(object sender, RoutedEventArgs e)
     {
         // Alle Dock-Items laden
         var dockItems = SettingsManager.LoadSettings();
-        
+
         // Prüfen, ob das aktuelle Item eine Kategorie ist
         var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
         if (settings == null)
@@ -987,13 +987,15 @@ private void Edit_Click(object sender, RoutedEventArgs e)
         EditPropertiesWindow editWindow = new EditPropertiesWindow
         {
             Owner = this,
-            NameTextBox = { Text = settings.DisplayName }
+            NameTextBox = { Text = settings.DisplayName },
+            IconSourceTextBox = { Text = settings.IconSource } // Hinzufügen des Bildpfads
         };
 
         bool? dialogResult = editWindow.ShowDialog();
         if (dialogResult == true)
         {
             string newName = editWindow.NameTextBox.Text.Trim();
+            string newIconPath = editWindow.IconSourceTextBox.Text.Trim(); // Neues Bildpfad
 
             // Neuen Namen validieren
             if (string.IsNullOrEmpty(newName))
@@ -1001,7 +1003,7 @@ private void Edit_Click(object sender, RoutedEventArgs e)
                 MessageBox.Show("Name darf nicht leer sein.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            
+
             // Prüfen, ob der neue Name bereits für eine andere Kategorie verwendet wird
             if (dockItems.Any(di => di.IsCategory && di.DisplayName == newName))
             {
@@ -1014,6 +1016,7 @@ private void Edit_Click(object sender, RoutedEventArgs e)
             {
                 string oldCategory = settings.DisplayName;
                 settings.DisplayName = newName;
+                settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
 
                 // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören
                 foreach (var item in dockItems)
@@ -1033,7 +1036,7 @@ private void Edit_Click(object sender, RoutedEventArgs e)
                     Width = 60,
                     Margin = new Thickness(5)
                 };
-                
+
                 var stackPanel = (StackPanel)button.Content;
                 stackPanel.Children.RemoveAt(1);
                 stackPanel.Children.Add(textBlock);
@@ -1055,8 +1058,7 @@ private void Edit_Click(object sender, RoutedEventArgs e)
         MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 }
-
-        // private DockItem LoadDockSettings(DockItem dockItem)
+    // private DockItem LoadDockSettings(DockItem dockItem)
         // {
         //     // Lade die DockSettings von der zentralen Stelle
         //     // Hier muss der Code hinzugefügt werden, um die Werte aus den DockSettings zu laden
