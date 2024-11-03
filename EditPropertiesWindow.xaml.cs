@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Input; // Dieser Namespace enthält die Cursors-Klasse
+
 
 using System.Windows.Media.Imaging;
 
@@ -38,41 +40,45 @@ namespace MyDockApp
         }
 
 
-        private async Task LoadIconsAsync()
+private async Task LoadIconsAsync()
+{
+    Console.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
+
+    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+    string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+
+    var icons = Directory.GetFiles(iconDirectoryPath);
+    foreach (var iconPath in icons)
+    {
+        try
         {
-            Console.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
-
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
-
-            var icons = Directory.GetFiles(iconDirectoryPath);
-            foreach (var iconPath in icons)
+            await Dispatcher.InvokeAsync(() =>
             {
-                try
+                var image = new Image
                 {
-                    await Dispatcher.InvokeAsync(() =>
-                    {
-                        var image = new Image
-                        {
-                            Source = new BitmapImage(new Uri(iconPath)),
-                            Width = 64,
-                            Height = 64,
-                            Margin = new Thickness(5)
-                        };
-                        SymbolPanel.Children.Add(image);
-                        Console.WriteLine($"LoadIconsAsync: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"LoadIconsAsync: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}"); // Debugging Ausgabe bei Fehler
-                }
-            }
+                    Source = new BitmapImage(new Uri(iconPath)),
+                    Width = 64,
+                    Height = 64,
+                    Margin = new Thickness(5),
+                    Cursor = Cursors.Hand // Zeiger ändern, um anklickbar zu zeigen
+                };
+                
+                // Ereignis hinzufügen
+                image.MouseDown += Icon_Click; 
 
-            Console.WriteLine("LoadIconsAsync: abgeschlossen."); // Debugging Ausgabe
-            Console.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
+                SymbolPanel.Children.Add(image);
+                Console.WriteLine($"LoadIconsAsync: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
+            });
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LoadIconsAsync: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}"); // Debugging Ausgabe bei Fehler
+        }
+    }
 
+    Console.WriteLine("LoadIconsAsync: abgeschlossen."); // Debugging Ausgabe
+    Console.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
+}
 
         public void InitializeIcons()
         {
@@ -237,6 +243,38 @@ namespace MyDockApp
         }
 
 
+private void Icon_Click(object sender, RoutedEventArgs e)
+{
+    Console.WriteLine("Icon_Click: Methode aufgerufen");
+
+    if (sender is Image image && image.Source is BitmapImage bitmap)
+    {
+        Console.WriteLine("Icon_Click: Bildquelle gefunden - " + bitmap.UriSource.AbsolutePath);
+
+        var iconSourceTextBox = this.FindName("IconSourceTextBox") as TextBox;
+        var selectedIconImage = this.FindName("SelectedIconImage") as Image;
+
+        if (iconSourceTextBox != null)
+        {
+            // IconSource im Kategorie-Element speichern
+            iconSourceTextBox.Text = bitmap.UriSource.AbsolutePath;
+            Console.WriteLine("Icon_Click: IconSourceTextBox aktualisiert - " + iconSourceTextBox.Text);
+        }
+
+        if (selectedIconImage != null)
+        {
+            // Anzeigen des ausgewählten Symbols
+            selectedIconImage.Source = bitmap;
+            Console.WriteLine("Icon_Click: SelectedIconImage aktualisiert - " + selectedIconImage.Source);
+        }
+    }
+    else
+    {
+        Console.WriteLine("Icon_Click: Kein gültiges Bild gefunden");
+    }
+
+    Console.WriteLine("Icon_Click: Methode beendet");
+}
 
 
 
