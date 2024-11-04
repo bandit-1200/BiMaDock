@@ -1,12 +1,13 @@
-name: Build and Release
+name: Build Installer
 
-on:
+on: 
   push:
     branches:
       - main
 
 jobs:
   build:
+    name: Build the Inno Setup Installer
     runs-on: windows-latest
 
     steps:
@@ -21,27 +22,29 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build project
-        run: dotnet publish ./BiMaDock.csproj -c Release -r win-x64 --self-contained
+        run: dotnet publish './BiMaDock.csproj' -c Release -r win-x64 --self-contained
 
-      - name: Setup Inno Setup
-        run: choco install innosetup
-        shell: powershell
+      - name: Compile .ISS to .EXE Installer
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: 'C:\Users\runneradmin\Documents\code\BiMaDock\setup.iss'
+          options: '/O+'
 
-      - name: Verify and Run Inno Setup
-        run: |
-          $innosetupPath = '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"'
-          if (Test-Path $innosetupPath) {
-            Write-Output "Inno Setup found at $innosetupPath"
-            & $innosetupPath '"C:\Users\runneradmin\Documents\code\BiMaDock\setup.iss"'
-          } else {
-            Write-Output "Inno Setup not found at $innosetupPath"
-          }
-        shell: powershell
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: '"C:\Users\runneradmin\Documents\code\BiMaDock\setup\BiMaDockSetup.exe"'
           asset_name: BiMaDockSetup.exe
           asset_content_type: application/octet-stream
