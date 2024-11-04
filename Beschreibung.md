@@ -21,6 +21,23 @@ git tag -l | ForEach-Object { git tag -d $_ }
 git tag -l | ForEach-Object { git push origin --delete $_ }
 
 
+
+
+
+git checkout main
+git add .
+git commit -m "Merge changes from dev to main"
+git push origin main
+git tag -a v1.0.9 -m "Release v1.0.9"
+git push origin v1.0.9
+
+
+
+
+
+
+
+
 Mit diesen Schritten kannst du die Versionsnummer manuell erhöhen und den Build-Prozess auslösen. 🚀😊
 
 #### build per Script : auführen
