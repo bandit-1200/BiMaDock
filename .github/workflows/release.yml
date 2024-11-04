@@ -27,7 +27,7 @@ jobs:
       - name: Compile .ISS to .EXE Installer
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
-          path: 'C:\Users\runneradmin\Documents\code\BiMaDock\setup.iss'
+          path: '"C:\Users\marco\Documents\code\BiMaDock\BiMaDock.iss"'
           options: '/O+'
 
       - name: Create GitHub Release
