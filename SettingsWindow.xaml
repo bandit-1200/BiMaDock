@@ -31,6 +31,7 @@
                     <Button Content="Speichern" Background="#0078D4" Foreground="White" Click="SaveButton_Click" Height="40" Width="100" Margin="0,0,10,0"/>
                     <Button Content="Beenden" Background="#2D2D2D" Foreground="White" Click="ExitButton_Click" Height="40" Width="100"/>
                 </StackPanel>
+                <Button Content="Version anzeigen" Background="#0078D4" Foreground="White" Click="ShowVersionButton_Click" Height="40" Width="150" Margin="0,20,0,0" HorizontalAlignment="Center"/>
             </StackPanel>
         </Border>
     </Grid>

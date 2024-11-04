@@ -25,7 +25,7 @@ namespace BiMaDock
 
         private void CreateAppDataIconDirectory()
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
 
             if (!Directory.Exists(iconDirectoryPath))
@@ -44,7 +44,7 @@ private async Task LoadIconsAsync()
 {
     Console.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
 
-    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
 
     var icons = Directory.GetFiles(iconDirectoryPath);
@@ -94,7 +94,7 @@ private async Task LoadIconsAsync()
 
         private void CopyDefaultIcons()
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
 
             // Der relative Pfad zu den Ressourcen
@@ -139,7 +139,7 @@ private async Task LoadIconsAsync()
         {
             Console.WriteLine("UploadIcon: gestartet."); // Debugging Ausgabe
 
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
 
             // FileDialog zum Hochladen von Bildern öffnen
@@ -184,7 +184,7 @@ private async Task LoadIconsAsync()
         {
             Console.WriteLine("DisplayIcons: gestartet."); // Debugging Ausgabe
 
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
             // Leeren der Symbolbox
             SymbolPanel.Children.Clear();
