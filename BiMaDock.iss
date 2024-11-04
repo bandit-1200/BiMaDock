@@ -7,8 +7,8 @@ OutputDir=D:\a\BiMaDock\BiMaDock\publish
 OutputBaseFilename=BiMaDockSetup
 Compression=lzma
 SolidCompression=yes
-SetupIconFile="C:\Users\marco\Documents\code\BiMaDock\Resources\Icons\BiMaDock_V3.ico" ; Pfad zu deinem Icon
-AppPublisher="Marco Bilz" ; Setze hier den Herausgeber
+SetupIconFile=C:\Users\marco\Documents\code\BiMaDock\Resources\Icons\BiMaDock_V3.ico
+AppPublisher="Marco Bilz"
 
 [Files]
 Source: "D:\a\BiMaDock\BiMaDock\bin\Release\net8.0-windows\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
