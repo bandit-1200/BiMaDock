@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build the Inno Setup Installer
+    name: Build and Release the Inno Setup Installer
     runs-on: windows-latest
 
     steps:
@@ -27,9 +27,8 @@ jobs:
       - name: Build project
         run: dotnet publish './BiMaDock.csproj' -c Release -r win-x64 --self-contained
 
-      - name: Verify published files
-        run: |
-          Get-ChildItem -Path 'C:\Users\runneradmin\Documents\code\BiMaDock\bin\Release\net8.0-windows\win-x64\publish' -Recurse
+      - name: List all files in bin directory
+        run: Get-ChildItem -Path 'C:\Users\runneradmin\Documents\code\BiMaDock\bin' -Recurse
         shell: powershell
 
       - name: Compile .ISS to .EXE Installer
