@@ -55,5 +55,3 @@ jobs:
           asset_path: './setup/BiMaDockSetup.exe'
           asset_name: BiMaDockSetup.exe
           asset_content_type: application/octet-stream
-
-          
