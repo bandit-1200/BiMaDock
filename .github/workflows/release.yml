@@ -24,14 +24,9 @@ jobs:
       - name: Build project
         run: dotnet publish './BiMaDock.csproj' -c Release -r win-x64 --self-contained
 
-      - name: Verify files exist
+      - name: Verify published files
         run: |
-          if (Test-Path 'C:\Users\marco\Documents\code\BiMaDock\bin\Release\net8.0-windows\win-x64') {
-            Write-Output "Files exist"
-            Get-ChildItem 'C:\Users\marco\Documents\code\BiMaDock\bin\Release\net8.0-windows\win-x64'
-          } else {
-            Write-Error "Files not found"
-          }
+          Get-ChildItem -Path 'C:\Users\runneradmin\Documents\code\BiMaDock\bin\Release\net8.0-windows\win-x64\publish' -Recurse
         shell: powershell
 
       - name: Compile .ISS to .EXE Installer
