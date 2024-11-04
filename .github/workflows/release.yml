@@ -27,7 +27,7 @@ jobs:
       - name: Compile .ISS to .EXE Installer
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
-          path: './BiMaDock.iss'
+          path: '"C:\Users\marco\Documents\code\BiMaDock\BiMaDock.iss"'
           options: '/O+'
 
       - name: Create GitHub Release
@@ -45,6 +45,6 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: './BiMaDockSetup.exe'
+          asset_path: '"C:\Users\runneradmin\Documents\code\BiMaDock\setup\BiMaDockSetup.exe"'
           asset_name: BiMaDockSetup.exe
           asset_content_type: application/octet-stream
