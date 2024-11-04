@@ -1,4 +1,4 @@
-name: Build Installer
+name: Build and Release
 
 on: 
   push:
@@ -16,10 +16,13 @@ jobs:
         with:
           fetch-depth: 0  # Erzwinge einen vollständigen Klon
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
 
       - name: Build project
         run: dotnet publish './BiMaDock.csproj' -c Release -r win-x64 --self-contained
