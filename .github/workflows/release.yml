@@ -27,19 +27,15 @@ jobs:
         run: choco install innosetup
         shell: powershell
 
-      - name: Verify Inno Setup Path
+      - name: Verify and Run Inno Setup
         run: |
-          if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
-            Write-Output "Inno Setup found"
+          $innosetupPath = '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"'
+          if (Test-Path $innosetupPath) {
+            Write-Output "Inno Setup found at $innosetupPath"
+            & $innosetupPath '"C:\Users\runneradmin\Documents\code\BiMaDock\setup.iss"'
           } else {
-            Write-Error "Inno Setup not found"
+            Write-Output "Inno Setup not found at $innosetupPath"
           }
-        shell: powershell
-
-      - name: Create installer
-        run: |
-          $innosetupPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          & $innosetupPath "C:\Users\runneradmin\Documents\code\BiMaDock\setup.iss"
         shell: powershell
 
       - name: Upload Release Asset
