@@ -21,7 +21,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build project
-        run: dotnet publish './BiMaDock.csproj' -c Release -r win-x64 --self-contained
+        run: dotnet publish ./BiMaDock.csproj -c Release -r win-x64 --self-contained
 
       - name: Setup Inno Setup
         run: choco install innosetup
@@ -38,21 +38,10 @@ jobs:
           }
         shell: powershell
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ github.event.release.upload_url }}
           asset_path: '"C:\Users\runneradmin\Documents\code\BiMaDock\setup\BiMaDockSetup.exe"'
           asset_name: BiMaDockSetup.exe
           asset_content_type: application/octet-stream
