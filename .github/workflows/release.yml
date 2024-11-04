@@ -28,8 +28,14 @@ jobs:
         shell: powershell
 
       - name: Create installer
-        run: '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "C:\Users\marco\Documents\code\BiMaDock\setup.iss"'
-        shell: cmd
+        run: |
+          $innosetupPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (Test-Path $innosetupPath) {
+            & $innosetupPath "C:\Users\marco\Documents\code\BiMaDock\setup.iss"
+          } else {
+            Write-Error "Inno Setup not found"
+          }
+        shell: powershell
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
