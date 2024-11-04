@@ -21,26 +21,31 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build project
-        run: dotnet publish ./BiMaDock.csproj -c Release -r win-x64 --self-contained
+        run: dotnet publish ./BiMaDock/BiMaDock.csproj -c Release -r win-x64 --self-contained
 
       - name: Setup Inno Setup
         run: choco install innosetup
         shell: powershell
 
-      - name: Create installer
+      - name: Verify Inno Setup Path
         run: |
-          $innosetupPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          if (Test-Path $innosetupPath) {
-            & $innosetupPath "C:\Users\marco\Documents\code\BiMaDock\setup.iss"
+          if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
+            Write-Output "Inno Setup found"
           } else {
             Write-Error "Inno Setup not found"
           }
+        shell: powershell
+
+      - name: Create installer
+        run: |
+          $innosetupPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          & $innosetupPath "C:\Users\runneradmin\Documents\code\BiMaDock\setup.iss"
         shell: powershell
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: '"C:\Users\marco\Documents\code\BiMaDock\setup\BiMaDockSetup.exe"'
+          asset_path: '"C:\Users\runneradmin\Documents\code\BiMaDock\setup\BiMaDockSetup.exe"'
           asset_name: BiMaDockSetup.exe
           asset_content_type: application/octet-stream
