@@ -11,6 +11,15 @@ namespace BiMaDock
         public SettingsWindow()
         {
             InitializeComponent();
+            ShowVersionInConsole();
+        }
+
+        private void ShowVersionInConsole()
+        {
+            string informationalVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            string clearVersion = informationalVersion?.Split('+')[0];
+            System.Console.WriteLine($"Detaillierte Version: {informationalVersion}");
+            System.Console.WriteLine($"Klare Version: {clearVersion}");
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -59,8 +68,9 @@ namespace BiMaDock
 
         private void ShowVersionButton_Click(object sender, RoutedEventArgs e)
         {
-            string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            MessageBox.Show($"Version: {version}");
+            string informationalVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            string clearVersion = informationalVersion?.Split('+')[0];
+            MessageBox.Show($"Detaillierte Version: {informationalVersion}\nKlare Version: {clearVersion}");
         }
 
         private void ExitButton_Click(object sender, RoutedEventArgs e)
