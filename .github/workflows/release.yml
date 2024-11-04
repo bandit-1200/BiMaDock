@@ -48,3 +48,4 @@ jobs:
           asset_path: '"C:\Users\runneradmin\Documents\code\BiMaDock\setup\BiMaDockSetup.exe"'
           asset_name: BiMaDockSetup.exe
           asset_content_type: application/octet-stream
+        
