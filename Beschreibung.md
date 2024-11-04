@@ -22,3 +22,6 @@ git tag -l | ForEach-Object { git push origin --delete $_ }
 
 
 Mit diesen Schritten kannst du die Versionsnummer manuell erhöhen und den Build-Prozess auslösen. 🚀😊
+
+#### build per Script : auführen
+.\createNewVersion.bat

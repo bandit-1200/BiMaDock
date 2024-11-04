@@ -30,7 +30,7 @@ jobs:
     - name: Create Windows installer
       run: |
         "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "./BiMaDock.iss"
-    
+
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -41,14 +41,13 @@ jobs:
         release_name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
-    
-    - name: Set output for upload URL
-      run: echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
 
     - name: Upload Release
       uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       with:
-        upload_url: ${{ env.UPLOAD_URL }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./publish/YourAppSetup.exe
         asset_name: YourAppSetup.exe
         asset_content_type: application/octet-stream
