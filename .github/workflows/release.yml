@@ -26,8 +26,9 @@ jobs:
 
       - name: Verify files exist
         run: |
-          if (Test-Path 'C:\Users\marco\Documents\code\BiMaDock\bin\Release\net8.0-windows\win-x64\*') {
+          if (Test-Path 'C:\Users\marco\Documents\code\BiMaDock\bin\Release\net8.0-windows\win-x64') {
             Write-Output "Files exist"
+            Get-ChildItem 'C:\Users\marco\Documents\code\BiMaDock\bin\Release\net8.0-windows\win-x64'
           } else {
             Write-Error "Files not found"
           }
