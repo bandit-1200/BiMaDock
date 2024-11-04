@@ -26,7 +26,7 @@ namespace BiMaDock
             };
 
             string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalLocalApplicationData);
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string directoryPath = Path.Combine(appDataPath, "BiMaDock");
 
             if (!string.IsNullOrWhiteSpace(directoryPath))
