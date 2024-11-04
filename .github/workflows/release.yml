@@ -27,7 +27,7 @@ jobs:
       run: dotnet build --configuration Release
 
     - name: Publish project
-      run: dotnet publish ./BiMaDock.csproj --configuration Release --output ./publish
+      run: dotnet publish ./BiMaDock.csproj --configuration Release --output ./publish --runtime win-x64
 
     - name: Create Windows installer
       run: |
