@@ -7,7 +7,7 @@ OutputDir=D:\a\BiMaDock\BiMaDock\publish
 OutputBaseFilename=BiMaDockSetup
 Compression=lzma
 SolidCompression=yes
-AppPublisher="Marco Bilz"
+AppPublisher=Marco Bilz  ; Herausgeber
 
 [Files]
 Source: "D:\a\BiMaDock\BiMaDock\bin\Release\net8.0-windows\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -25,4 +25,4 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Filename: "{app}\BiMaDock.exe"; Description: "Start BiMaDock"; Flags: nowait postinstall skipifsilent
 
 [Messages]
-BevelMessage="Willkommen bei der Installation von BiMaDock!"
+BevelMessage=Willkommen bei der Installation von BiMaDock!
