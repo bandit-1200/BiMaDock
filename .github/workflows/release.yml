@@ -27,7 +27,7 @@ jobs:
       run: dotnet build --configuration Release
 
     - name: Publish project
-      run: dotnet publish --configuration Release --output ./publish
+      run: dotnet publish --configuration Release --no-build --output ./publish
 
     - name: Create Windows installer
       run: |
