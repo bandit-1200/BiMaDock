@@ -56,3 +56,4 @@ jobs:
           asset_name: BiMaDockSetup.exe
           asset_content_type: application/octet-stream
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          
