@@ -11,6 +11,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
+<<<<<<< HEAD
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -20,6 +21,15 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+=======
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '8.0.x'
+>>>>>>> dev
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
@@ -31,6 +41,7 @@ jobs:
         run: Get-ChildItem -Path './bin/Release/net8.0-windows/win-x64' -Recurse
         shell: powershell
 
+<<<<<<< HEAD
       - name: Compile .ISS to .EXE Installer
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
@@ -57,3 +68,29 @@ jobs:
           asset_path: './setup/BiMaDockSetup.exe'
           asset_name: BiMaDockSetup.exe
           asset_content_type: application/octet-stream
+=======
+    - name: Create Windows installer
+      run: |
+        "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "./BiMaDock.iss"
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./publish/YourAppSetup.exe
+        asset_name: YourAppSetup.exe
+        asset_content_type: application/octet-stream
+>>>>>>> dev
