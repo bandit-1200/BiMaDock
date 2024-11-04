@@ -61,6 +61,8 @@ $RECYCLE.BIN/
 *.user
 *.userosscache
 *.sln.docstates
+Beschreibung.md
+*.bat
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
