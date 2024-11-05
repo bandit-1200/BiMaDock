@@ -10,16 +10,13 @@ SolidCompression=yes
 AppPublisher=Marco Bilz
 
 [Files]
-; Hauptanwendungsdateien
 Source: "D:\a\BiMaDock\BiMaDock\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-
-; .NET Framework 4.8 Installer zum temporären Verzeichnis hinzufügen
-Source: "C:\Pfad\zu\dotNetFx48.exe"; DestDir: "{tmp}"; Flags: ignoreversion
+Source: "C:\Users\marco\Documents\code\BiMaDock\Resources\NDP48-x86-x64-AllOS-ENU.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 [Icons]
-Name: "{group}\BiMaDock"; Filename: "{app}\BiMaDock.exe"; IconFilename: "{app}\Resources\Icons\BiMaDock_V3.ico"
-Name: "{group}\{cm:UninstallProgram,BiMaDock}"; Filename: "{uninstallexe}"; IconFilename: "{app}\Resources\Icons\BiMaDock_V3.ico"
-Name: "{userdesktop}\BiMaDock"; Filename: "{app}\BiMaDock.exe"; IconFilename: "{app}\Resources\Icons\BiMaDock_V3.ico"; Tasks: desktopicon
+Name: "{group}\BiMaDock"; Filename: "{app}\BiMaDock.exe"
+Name: "{group}\{cm:UninstallProgram,BiMaDock}"; Filename: "{uninstallexe}"
+Name: "{userdesktop}\BiMaDock"; Filename: "{app}\BiMaDock.exe"; Tasks: desktopicon
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -40,5 +37,4 @@ begin
 end;
 
 [Run]
-; Führt die Installation von .NET Framework 4.8 aus, falls nicht vorhanden
-Filename: "{tmp}\dotNetFx48.exe"; Parameters: "/q"; StatusMsg: "Installing .NET Framework 4.8..."; Check: NeedsDotNet48
+Filename: "{tmp}\NDP48-x86-x64-AllOS-ENU.exe"; Parameters: "/quiet /norestart"; StatusMsg: "Installing .NET Framework 4.8..."; Check: NeedsDotNet48
