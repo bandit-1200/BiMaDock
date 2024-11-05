@@ -63,6 +63,7 @@ $RECYCLE.BIN/
 *.sln.docstates
 Beschreibung.md
 *.bat
+BiMaDock_local.iss
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt

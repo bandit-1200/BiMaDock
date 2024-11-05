@@ -8,6 +8,7 @@ OutputBaseFilename=BiMaDockSetup
 Compression=lzma
 SolidCompression=yes
 AppPublisher=Marco Bilz
+PrivilegesRequired=lowest
 
 [Files]
 Source: "D:\a\BiMaDock\BiMaDock\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -26,6 +27,3 @@ Filename: "{app}\BiMaDock.exe"; Description: "Start BiMaDock"; Flags: nowait pos
 
 [Registry]
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "BiMaDock"; ValueData: """{app}\BiMaDock.exe"""; Flags: uninsdeletevalue
-
-[Messages]
-BevelMessage=Willkommen bei der Installation von BiMaDock!
