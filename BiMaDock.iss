@@ -7,11 +7,11 @@ OutputDir=D:\a\BiMaDock\BiMaDock\publish
 OutputBaseFilename=BiMaDockSetup
 Compression=lzma
 SolidCompression=yes
-SetupIconFile={app}\BiMaDock.exe  ; Verwendet das eingebettete Symbol der EXE-Datei
+SetupIconFile=D:\a\BiMaDock\BiMaDock\publish\BiMaDock.exe  ; Verwendet das eingebettete Symbol der EXE-Datei
 AppPublisher=Marco Bilz
 
 [Files]
-Source: "D:\a\BiMaDock\BiMaDock\bin\Release\net8.0-windows\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\BiMaDock\BiMaDock\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\BiMaDock"; Filename: "{app}\BiMaDock.exe"
