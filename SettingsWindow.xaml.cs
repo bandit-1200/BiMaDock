@@ -16,8 +16,16 @@ namespace BiMaDock
 
         private void ShowVersionInConsole()
         {
-            string informationalVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-            string clearVersion = informationalVersion?.Split('+')[0];
+            // InformationalVersion abrufen
+            var informationalVersionAttribute = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                
+            string informationalVersion = informationalVersionAttribute != null 
+                ? informationalVersionAttribute.InformationalVersion 
+                : "Unbekannte Version";  // Fallback, wenn null
+
+            string clearVersion = informationalVersion.Split('+')[0];  // Unabhängig von null
+
             System.Console.WriteLine($"Detaillierte Version: {informationalVersion}");
             System.Console.WriteLine($"Klare Version: {clearVersion}");
         }
@@ -31,7 +39,7 @@ namespace BiMaDock
             {
                 PrimaryColor = primaryColor.ToString(),
                 SecondaryColor = secondaryColor.ToString(),
-                AnimationSpeed = AnimationSpeedSlider.Value
+                AnimationSpeed = AnimationSpeedSlider?.Value ?? 1.0
             };
 
             string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
@@ -68,8 +76,14 @@ namespace BiMaDock
 
         private void ShowVersionButton_Click(object sender, RoutedEventArgs e)
         {
-            string informationalVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-            string clearVersion = informationalVersion?.Split('+')[0];
+            var informationalVersionAttribute = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+
+            string informationalVersion = informationalVersionAttribute != null 
+                ? informationalVersionAttribute.InformationalVersion 
+                : "Unbekannte Version";  // Fallback, wenn null
+
+            string clearVersion = informationalVersion.Split('+')[0];
             MessageBox.Show($"Detaillierte Version: {informationalVersion}\nKlare Version: {clearVersion}");
         }
 
