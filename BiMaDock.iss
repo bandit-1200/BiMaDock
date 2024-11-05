@@ -11,7 +11,6 @@ AppPublisher=Marco Bilz
 
 [Files]
 Source: "D:\a\BiMaDock\BiMaDock\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\marco\Documents\code\BiMaDock\Resources\NDP48-x86-x64-AllOS-ENU.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 [Icons]
 Name: "{group}\BiMaDock"; Filename: "{app}\BiMaDock.exe"
@@ -36,5 +35,35 @@ begin
   Result := not IsDotNetDetected('v4.8');
 end;
 
-[Run]
-Filename: "{tmp}\NDP48-x86-x64-AllOS-ENU.exe"; Parameters: "/quiet /norestart"; StatusMsg: "Installing .NET Framework 4.8..."; Check: NeedsDotNet48
+procedure DownloadFile(URL, DestFile: string);
+var
+  WinInet: Variant;
+  FileStream: TFileStream;
+begin
+  WinInet := CreateOleObject('WinHttp.WinHttpRequest.5.1');
+  WinInet.Open('GET', URL, False);
+  WinInet.Send;
+  
+  FileStream := TFileStream.Create(DestFile, fmCreate);
+  try
+    FileStream.WriteBuffer(WinInet.ResponseBody[1], Length(WinInet.ResponseBody));
+  finally
+    FileStream.Free;
+  end;
+end;
+
+procedure InstallDotNet48;
+begin
+  DownloadFile('https://download.microsoft.com/download/2/D/8/2D8F6DD1-3AD0-4D57-A9E9-1D2B654CE396/NDP48-x86-x64-AllOS-ENU.exe', ExpandConstant('{tmp}\NDP48-x86-x64-AllOS-ENU.exe'));
+  Exec(ExpandConstant('{tmp}\NDP48-x86-x64-AllOS-ENU.exe'), '/quiet /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
+end;
+
+function InitializeSetup: Boolean;
+begin
+  if NeedsDotNet48 then
+  begin
+    MsgBox('Die .NET Framework 4.8-Komponente wird installiert.', mbInformation, MB_OK);
+    InstallDotNet48;
+  end;
+  Result := True;
+end;
