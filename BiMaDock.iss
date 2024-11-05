@@ -7,7 +7,7 @@ OutputDir=D:\a\BiMaDock\BiMaDock\publish
 OutputBaseFilename=BiMaDockSetup
 Compression=lzma
 SolidCompression=yes
-SetupIconFile={app}\BiMaDock.exe
+SetupIconFile={app}\BiMaDockSetup.exe
 AppPublisher=Marco Bilz
 
 [Files]
