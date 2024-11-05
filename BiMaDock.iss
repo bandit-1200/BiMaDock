@@ -30,9 +30,13 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 BevelMessage=Willkommen bei der Installation von BiMaDock!
 
 [Code]
-function NeedsDotNet48: Boolean;
+function IsDotNet48Installed: Boolean;
+var
+  Success: Boolean;
+  InstallFlag: Cardinal;
 begin
-  Result := not IsDotNetDetected('v4.8');
+  Success := RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', InstallFlag);
+  Result := Success and (InstallFlag >= 528040); // 528040 entspricht .NET Framework 4.8
 end;
 
 procedure DownloadFile(URL, DestFile: string);
@@ -60,7 +64,7 @@ end;
 
 function InitializeSetup: Boolean;
 begin
-  if NeedsDotNet48 then
+  if not IsDotNet48Installed then
   begin
     MsgBox('Die .NET Framework 4.8-Komponente wird installiert.', mbInformation, MB_OK);
     InstallDotNet48;
