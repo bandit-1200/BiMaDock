@@ -40,45 +40,45 @@ namespace BiMaDock
         }
 
 
-private async Task LoadIconsAsync()
-{
-    Console.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
-
-    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-    string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
-
-    var icons = Directory.GetFiles(iconDirectoryPath);
-    foreach (var iconPath in icons)
-    {
-        try
+        private async Task LoadIconsAsync()
         {
-            await Dispatcher.InvokeAsync(() =>
+            Console.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
+
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+
+            var icons = Directory.GetFiles(iconDirectoryPath);
+            foreach (var iconPath in icons)
             {
-                var image = new Image
+                try
                 {
-                    Source = new BitmapImage(new Uri(iconPath)),
-                    Width = 64,
-                    Height = 64,
-                    Margin = new Thickness(5),
-                    Cursor = Cursors.Hand // Zeiger ändern, um anklickbar zu zeigen
-                };
-                
-                // Ereignis hinzufügen
-                image.MouseDown += Icon_Click; 
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        var image = new Image
+                        {
+                            Source = new BitmapImage(new Uri(iconPath)),
+                            Width = 64,
+                            Height = 64,
+                            Margin = new Thickness(5),
+                            Cursor = Cursors.Hand // Zeiger ändern, um anklickbar zu zeigen
+                        };
 
-                SymbolPanel.Children.Add(image);
-                Console.WriteLine($"LoadIconsAsync: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
-            });
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"LoadIconsAsync: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}"); // Debugging Ausgabe bei Fehler
-        }
-    }
+                        // Ereignis hinzufügen
+                        image.MouseDown += Icon_Click;
 
-    Console.WriteLine("LoadIconsAsync: abgeschlossen."); // Debugging Ausgabe
-    Console.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
-}
+                        SymbolPanel.Children.Add(image);
+                        Console.WriteLine($"LoadIconsAsync: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"LoadIconsAsync: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}"); // Debugging Ausgabe bei Fehler
+                }
+            }
+
+            Console.WriteLine("LoadIconsAsync: abgeschlossen."); // Debugging Ausgabe
+            Console.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
+        }
 
         public void InitializeIcons()
         {
@@ -95,7 +95,10 @@ private async Task LoadIconsAsync()
         private void CopyDefaultIcons()
         {
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+
+            // Sicherstellen, dass das Verzeichnis existiert
+            Directory.CreateDirectory(iconDirectoryPath);
 
             // Der relative Pfad zu den Ressourcen
             string relativeResourcePath = @"..\..\..\Resources\Icons";
@@ -140,7 +143,10 @@ private async Task LoadIconsAsync()
             Console.WriteLine("UploadIcon: gestartet."); // Debugging Ausgabe
 
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+
+            // Sicherstellen, dass das Verzeichnis existiert
+            Directory.CreateDirectory(iconDirectoryPath);
 
             // FileDialog zum Hochladen von Bildern öffnen
             var openFileDialog = new Microsoft.Win32.OpenFileDialog
@@ -179,13 +185,16 @@ private async Task LoadIconsAsync()
             Console.WriteLine("UploadIcon: abgeschlossen."); // Debugging Ausgabe
         }
 
-
         private void DisplayIcons()
         {
             Console.WriteLine("DisplayIcons: gestartet."); // Debugging Ausgabe
 
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "MyApp", "Icons");
+            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+
+            // Sicherstellen, dass das Verzeichnis existiert
+            Directory.CreateDirectory(iconDirectoryPath);
+
             // Leeren der Symbolbox
             SymbolPanel.Children.Clear();
 
@@ -243,38 +252,38 @@ private async Task LoadIconsAsync()
         }
 
 
-private void Icon_Click(object sender, RoutedEventArgs e)
-{
-    Console.WriteLine("Icon_Click: Methode aufgerufen");
-
-    if (sender is Image image && image.Source is BitmapImage bitmap)
-    {
-        Console.WriteLine("Icon_Click: Bildquelle gefunden - " + bitmap.UriSource.AbsolutePath);
-
-        var iconSourceTextBox = this.FindName("IconSourceTextBox") as TextBox;
-        var selectedIconImage = this.FindName("SelectedIconImage") as Image;
-
-        if (iconSourceTextBox != null)
+        private void Icon_Click(object sender, RoutedEventArgs e)
         {
-            // IconSource im Kategorie-Element speichern
-            iconSourceTextBox.Text = bitmap.UriSource.AbsolutePath;
-            Console.WriteLine("Icon_Click: IconSourceTextBox aktualisiert - " + iconSourceTextBox.Text);
-        }
+            Console.WriteLine("Icon_Click: Methode aufgerufen");
 
-        if (selectedIconImage != null)
-        {
-            // Anzeigen des ausgewählten Symbols
-            selectedIconImage.Source = bitmap;
-            Console.WriteLine("Icon_Click: SelectedIconImage aktualisiert - " + selectedIconImage.Source);
-        }
-    }
-    else
-    {
-        Console.WriteLine("Icon_Click: Kein gültiges Bild gefunden");
-    }
+            if (sender is Image image && image.Source is BitmapImage bitmap)
+            {
+                Console.WriteLine("Icon_Click: Bildquelle gefunden - " + bitmap.UriSource.AbsolutePath);
 
-    Console.WriteLine("Icon_Click: Methode beendet");
-}
+                var iconSourceTextBox = this.FindName("IconSourceTextBox") as TextBox;
+                var selectedIconImage = this.FindName("SelectedIconImage") as Image;
+
+                if (iconSourceTextBox != null)
+                {
+                    // IconSource im Kategorie-Element speichern
+                    iconSourceTextBox.Text = bitmap.UriSource.AbsolutePath;
+                    Console.WriteLine("Icon_Click: IconSourceTextBox aktualisiert - " + iconSourceTextBox.Text);
+                }
+
+                if (selectedIconImage != null)
+                {
+                    // Anzeigen des ausgewählten Symbols
+                    selectedIconImage.Source = bitmap;
+                    Console.WriteLine("Icon_Click: SelectedIconImage aktualisiert - " + selectedIconImage.Source);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Icon_Click: Kein gültiges Bild gefunden");
+            }
+
+            Console.WriteLine("Icon_Click: Methode beendet");
+        }
 
 
 
