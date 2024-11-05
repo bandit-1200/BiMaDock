@@ -1,6 +1,6 @@
 [Setup]
 AppName=BiMaDock
-AppVersion=1.0
+AppVersion=1.0.1-beta
 DefaultDirName={commonpf}\BiMaDock
 DefaultGroupName=BiMaDock
 OutputDir=D:\a\BiMaDock\BiMaDock\publish
@@ -28,3 +28,12 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 
 [Messages]
 BevelMessage=Willkommen bei der Installation von BiMaDock!
+
+[Code]
+function NeedsDotNet48: Boolean;
+begin
+  Result := not IsDotNetDetected('v4.8');
+end;
+
+[Run]
+Filename: "{tmp}\dotNetFx48.exe"; Parameters: "/q"; StatusMsg: "Installing .NET Framework 4.8..."; Check: NeedsDotNet48
