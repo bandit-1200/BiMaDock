@@ -11,6 +11,7 @@ AppPublisher=Marco Bilz
 
 [Files]
 Source: "D:\a\BiMaDock\BiMaDock\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\Pfad\zu\deinem\dotNetFx48.exe"; DestDir: "{tmp}"; Flags: dontcopy
 
 [Icons]
 Name: "{group}\BiMaDock"; Filename: "{app}\BiMaDock.exe"
@@ -22,6 +23,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Run]
 Filename: "{app}\BiMaDock.exe"; Description: "Start BiMaDock"; Flags: nowait postinstall skipifsilent
+Filename: "{tmp}\dotNetFx48.exe"; Parameters: "/q"; StatusMsg: "Installing .NET Framework 4.8..."; Check: NeedsDotNet48
 
 [Registry]
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "BiMaDock"; ValueData: """{app}\BiMaDock.exe"""; Flags: uninsdeletevalue
@@ -30,10 +32,14 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 BevelMessage=Willkommen bei der Installation von BiMaDock!
 
 [Code]
-function NeedsDotNet48: Boolean;
+function IsDotNetDetected(version: string): Boolean;
+var
+  install: Integer;
 begin
-  Result := not IsDotNetDetected('v4.8');
+  Result := RegQueryDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\' + version + '\Full', 'Install', install) and (install = 1);
 end;
 
-[Run]
-Filename: "{tmp}\dotNetFx48.exe"; Parameters: "/q"; StatusMsg: "Installing .NET Framework 4.8..."; Check: NeedsDotNet48
+function NeedsDotNet48: Boolean;
+begin
+  Result := not IsDotNetDetected('v4\Full');
+end;
