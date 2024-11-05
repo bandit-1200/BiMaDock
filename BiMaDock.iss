@@ -7,7 +7,7 @@ OutputDir=D:\a\BiMaDock\BiMaDock\publish
 OutputBaseFilename=BiMaDockSetup
 Compression=lzma
 SolidCompression=yes
-SetupIconFile=D:\a\BiMaDock\BiMaDock\publish\BiMaDock.exe  ; Verwendet das eingebettete Symbol der EXE-Datei
+SetupIconFile={app}\BiMaDock.exe  ; Verwendet das eingebettete Symbol der EXE-Datei
 AppPublisher=Marco Bilz
 
 [Files]
@@ -23,6 +23,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Run]
 Filename: "{app}\BiMaDock.exe"; Description: "Start BiMaDock"; Flags: nowait postinstall skipifsilent
+
+[Registry]
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "BiMaDock"; ValueData: """{app}\BiMaDock.exe"""; Flags: uninsdeletevalue
 
 [Messages]
 BevelMessage=Willkommen bei der Installation von BiMaDock!
