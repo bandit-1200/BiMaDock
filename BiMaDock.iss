@@ -7,16 +7,16 @@ OutputDir=D:\a\BiMaDock\BiMaDock\publish
 OutputBaseFilename=BiMaDockSetup
 Compression=lzma
 SolidCompression=yes
-AppPublisher=Marco Bilz  ; Herausgeber
+SetupIconFile={app}\BiMaDock.exe  ; Verwendet das eingebettete Symbol der EXE-Datei
+AppPublisher=Marco Bilz
 
 [Files]
 Source: "D:\a\BiMaDock\BiMaDock\bin\Release\net8.0-windows\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\marco\Documents\code\BiMaDock\Resources\Icons\BiMaDock_V3.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\BiMaDock"; Filename: "{app}\BiMaDock.exe"; IconFilename: "{app}\BiMaDock_V3.ico"
-Name: "{group}\{cm:UninstallProgram,BiMaDock}"; Filename: "{uninstallexe}"; IconFilename: "{app}\BiMaDock_V3.ico"
-Name: "{userdesktop}\BiMaDock"; Filename: "{app}\BiMaDock.exe"; IconFilename: "{app}\BiMaDock_V3.ico"; Tasks: desktopicon
+Name: "{group}\BiMaDock"; Filename: "{app}\BiMaDock.exe"
+Name: "{group}\{cm:UninstallProgram,BiMaDock}"; Filename: "{uninstallexe}"
+Name: "{userdesktop}\BiMaDock"; Filename: "{app}\BiMaDock.exe"; Tasks: desktopicon
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
