@@ -12,8 +12,7 @@ PrivilegesRequired=lowest
 
 [Files]
 Source: "D:\a\BiMaDock\BiMaDock\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\marco\Documents\code\BiMaDock\Resources\Icons\*"; DestDir: "{localappdata}\BiMaDock\Icons"; Flags: ignoreversion recursesubdirs createallsubdirs
-
+Source: "D:\a\BiMaDock\Resources\Icons\*"; DestDir: "{localappdata}\BiMaDock\Icons"; Flags: ignoreversion recursesubdirs createallsubdirs
 [Icons]
 Name: "{group}\BiMaDock"; Filename: "{app}\BiMaDock.exe"
 Name: "{group}\{cm:UninstallProgram,BiMaDock}"; Filename: "{uninstallexe}"
