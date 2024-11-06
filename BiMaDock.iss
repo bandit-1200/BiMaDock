@@ -12,7 +12,7 @@ AppPublisher=Marco Bilz
 
 [Files]
 Source: "D:\a\BiMaDock\BiMaDock\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{src}\Resources\Icons\*"; DestDir: "{app}\Icons"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\BiMaDock\BiMaDock\Resources\Icons\*"; DestDir: "{app}\Icons"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\BiMaDock"; Filename: "{app}\BiMaDock.exe"
