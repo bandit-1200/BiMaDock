@@ -42,7 +42,7 @@ jobs:
         draft: false
         prerelease: false
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Verwendung des GITHUB_TOKEN
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Verwendung des GITHUB_TOKEN
 
     - name: Upload Release
       uses: actions/upload-release-asset@v1  # Hier kannst du ggf. auch die neueste Version verwenden
@@ -52,4 +52,4 @@ jobs:
         asset_name: BiMaDockSetup.exe
         asset_content_type: application/octet-stream
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Verwendung des GITHUB_TOKEN
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Verwendung des GITHUB_TOKEN
