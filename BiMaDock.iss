@@ -8,7 +8,6 @@ OutputBaseFilename=BiMaDockSetup
 Compression=lzma
 SolidCompression=yes
 AppPublisher=Marco Bilz
-PrivilegesRequired=requireAdministrator
 
 
 [Files]
