@@ -3,7 +3,7 @@ name: Release
 on: 
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*.*.*'  # Dieser Trigger wird ausgelöst, wenn ein Tag mit v*.*.* gepusht wird.
 
 jobs:
   build:
@@ -35,21 +35,21 @@ jobs:
 
     - name: Create GitHub Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      uses: actions/create-release@v1.0.0  # Neuste stabile Version
       with:
         tag_name: ${{ github.ref_name }}
         release_name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Verwendung des GITHUB_TOKEN
 
     - name: Upload Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      uses: actions/upload-release-asset@v1  # Hier kannst du ggf. auch die neueste Version verwenden
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./publish/BiMaDockSetup.exe
         asset_name: BiMaDockSetup.exe
         asset_content_type: application/octet-stream
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Verwendung des GITHUB_TOKEN
