@@ -12,6 +12,7 @@ namespace BiMaDock
         {
             InitializeComponent();
             ShowVersionInConsole();
+            AutoStartCheckBox.IsChecked = IsInStartup();
         }
 
         private void ShowVersionInConsole()
@@ -19,9 +20,9 @@ namespace BiMaDock
             // InformationalVersion abrufen
             var informationalVersionAttribute = Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-                
-            string informationalVersion = informationalVersionAttribute != null 
-                ? informationalVersionAttribute.InformationalVersion 
+
+            string informationalVersion = informationalVersionAttribute != null
+                ? informationalVersionAttribute.InformationalVersion
                 : "Unbekannte Version";  // Fallback, wenn null
 
             string clearVersion = informationalVersion.Split('+')[0];  // Unabhängig von null
@@ -79,8 +80,8 @@ namespace BiMaDock
             var informationalVersionAttribute = Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-            string informationalVersion = informationalVersionAttribute != null 
-                ? informationalVersionAttribute.InformationalVersion 
+            string informationalVersion = informationalVersionAttribute != null
+                ? informationalVersionAttribute.InformationalVersion
                 : "Unbekannte Version";  // Fallback, wenn null
 
             string clearVersion = informationalVersion.Split('+')[0];
@@ -90,6 +91,60 @@ namespace BiMaDock
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void AddToStartup(bool isChecked)
+        {
+            string appName = "BiMaDock";
+            string appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+
+            using (Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+            {
+                if (key == null)
+                {
+                    MessageBox.Show("Fehler beim Zugriff auf die Registry.");
+                    return;
+                }
+
+                if (isChecked)
+                {
+                    key.SetValue(appName, appPath);
+                    MessageBox.Show($"{appName} wurde zum Autostart hinzugefügt.");
+                }
+                else
+                {
+                    key.DeleteValue(appName, false);
+                    MessageBox.Show($"{appName} wurde vom Autostart entfernt.");
+                }
+            }
+        }
+
+
+
+        private bool IsInStartup()
+        {
+            string appName = "BiMaDock";
+            using (Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+            {
+                if (key == null)
+                {
+                    return false;
+                }
+
+                return key.GetValue(appName) != null;
+            }
+        }
+
+
+
+        private void AutoStartCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            AddToStartup(true);
+        }
+
+        private void AutoStartCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            AddToStartup(false);
         }
     }
 }
