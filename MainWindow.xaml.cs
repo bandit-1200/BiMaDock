@@ -616,30 +616,30 @@ namespace BiMaDock
 
         private void DockPanel_DragEnter(object sender, DragEventArgs e)
         {
-            Console.WriteLine("DockPanel_DragEnter aufgerufen"); // Debug-Ausgabe
+            Console.WriteLine("DockPanel_DragEnter: Aufgerufen"); // Debug-Ausgabe
             currentDockStatus |= DockStatus.DraggingToDock;
             CheckAllConditions();
 
-            if (e.Data.GetDataPresent(DataFormats.Serializable) && DockPanel != null)
+            // Prüfen auf Serializable und FileDrop
+            if ((e.Data.GetDataPresent(DataFormats.Serializable) || e.Data.GetDataPresent(DataFormats.FileDrop)) && DockPanel != null)
             {
                 e.Effects = DragDropEffects.Move;
                 DockPanel.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
-                Console.WriteLine("Element über dem Hauptdock erkannt"); // Debug-Ausgabe
-
-
+                Console.WriteLine("DockPanel_DragEnter: Element über dem Hauptdock erkannt"); // Debug-Ausgabe
             }
             else
             {
                 e.Effects = DragDropEffects.None;
-                Console.WriteLine("Kein Element erkannt oder DockPanel ist null"); // Debug-Ausgabe
+                Console.WriteLine("DockPanel_DragEnter: Kein Element erkannt oder DockPanel ist null"); // Debug-Ausgabe
             }
         }
 
 
 
+
         private void DockPanel_DragLeave(object sender, DragEventArgs e)
         {
-            Console.WriteLine("DockPanel_DragLeave aufgerufen"); // Debug-Ausgabe
+            Console.WriteLine("DockPanel_DragLeave: Aufgerufen"); // Debug-Ausgabe
             currentDockStatus &= ~DockStatus.DraggingToDock;
             CheckAllConditions();
 
@@ -648,7 +648,7 @@ namespace BiMaDock
             if (brush != null)
             {
                 DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
-                Console.WriteLine("Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
+                Console.WriteLine("DockPanel_DragLeave: Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
             }
         }
 
