@@ -50,6 +50,12 @@
                             <MenuItem Header="Kategorie erstellen" Click="AddCategory_Click"/>
                             <Separator/>
                             <MenuItem Header="Einstellungen" Click="OpenSettings_Click"/> <!-- Neuer Eintrag für Einstellungen -->
+                            <Separator/>
+                            <MenuItem Header="Autostart">
+                                <MenuItem.Icon>
+                                    <CheckBox x:Name="AutostartCheckBox" Checked="AutostartCheckBox_Checked" Unchecked="AutostartCheckBox_Unchecked"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
                         </ContextMenu>
                     </StackPanel.ContextMenu>
                 </StackPanel>
