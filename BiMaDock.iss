@@ -8,7 +8,8 @@ OutputBaseFilename=BiMaDockSetup
 Compression=lzma
 SolidCompression=yes
 AppPublisher=Marco Bilz
-PrivilegesRequired=admin  ; Adminrechte anfragen
+PrivilegesRequired=requireAdministrator
+
 
 [Files]
 Source: "D:\a\BiMaDock\BiMaDock\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
