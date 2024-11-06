@@ -258,8 +258,12 @@ namespace BiMaDock
                     Source = new BitmapImage(new Uri(iconPath)),
                     Width = 64,
                     Height = 64,
-                    Margin = new Thickness(5)
+                    Margin = new Thickness(5),
+                    Cursor = Cursors.Hand // Zeiger ändern, um anklickbar zu zeigen
                 };
+
+                // Ereignis hinzufügen
+                image.MouseDown += Icon_Click;
                 SymbolPanel.Children.Add(image);
                 Console.WriteLine($"DisplayIcons: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
             }
