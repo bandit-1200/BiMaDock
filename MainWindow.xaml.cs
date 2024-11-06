@@ -334,49 +334,38 @@ namespace BiMaDock
 
 
 
-        private void CheckMousePosition(object sender, MouseEventArgs e)
+private void CheckMousePosition(object sender, MouseEventArgs e)
+{
+    if (DockPanel != null && e != null) // Sicherstellen, dass DockPanel und e nicht null sind
+    {
+        var mousePos = Mouse.GetPosition(DockPanel);
+        var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Docks
+
+        if (dockBounds.Contains(mousePos))  // Überprüfen, ob die Maus sich innerhalb der Grenzen des Docks befindet
         {
-            if (DockPanel != null && e != null) // Sicherstellen, dass DockPanel und e nicht null sind
-            {
-                var mousePos = Mouse.GetPosition(DockPanel);
-                var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Docks
+            Console.WriteLine("Mouse over DockPanel");  // Debug-Ausgabe
 
-                if (dockBounds.Contains(mousePos))  // Überprüfen, ob die Maus sich innerhalb der Grenzen des Docks befindet
-                {
-                    Console.WriteLine("Mouse over DockPanel");  // Debug-Ausgabe
+            // Timer neu starten, wenn die Maus über dem Dock ist
+            // dockHideTimer.Stop();
+            // dockHideTimer.Start();
 
-                    // Timer neu starten, wenn die Maus über dem Dock ist
-                    // dockHideTimer.Stop();
-                    // dockHideTimer.Start();
-
-                    // categoryHideTimer.Stop();
-                    // categoryHideTimer.Start();
-                }
-                else
-                {
-                    Console.WriteLine("Mouse not over DockPanel");  // Debug-Ausgabe
-                                                                    // HideDock();
-
-                }
-            }
-            else
-            {
-                Console.WriteLine("Fehler: DockPanel oder EventArgs sind null.");  // Debug-Ausgabe
-            }
+            // categoryHideTimer.Stop();
+            // categoryHideTimer.Start();
         }
+        else
+        {
+            Console.WriteLine("Mouse not over DockPanel");  // Debug-Ausgabe
+                                                            // HideDock();
+
+        }
+    }
+    else
+    {
+        Console.WriteLine("Fehler: DockPanel oder EventArgs sind null.");  // Debug-Ausgabe
+    }
+}
 
 
-
-        // private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
-        // {
-        //     Console.WriteLine("Mouse entered CategoryDockContainer"); // Debug-Ausgabe
-        //     // Sicherstellen, dass beide Docks sichtbar bleiben
-        //     ShowDock();
-        //     CategoryDockContainer.Visibility = Visibility.Visible;
-        //     // Timer stoppen
-        //     // dockHideTimer.Stop();
-        //     // categoryHideTimer.Stop();
-        // }
 
 
         private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
