@@ -106,12 +106,12 @@ private void DockPanel_MouseMove(object sender, MouseEventArgs e)
                     isOverElement = true;
                     if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
                     {
-                        ButtonAnimations.AnimateButton(button); // Methode aus der neuen Klasse aufrufen
+                        ButtonAnimations.AnimateButtonByChoice(button, 0); // Methode aus der neuen Klasse aufrufen
                         animationPlayed[button] = true;
                     }
                     else if (button != previousButton)
                     {
-                        ButtonAnimations.AnimateButton(button); // Methode aus der neuen Klasse aufrufen
+                        ButtonAnimations.AnimateButtonByChoice(button, 0); // Methode aus der neuen Klasse aufrufen
                     }
                     previousButton = button;
                     break;
