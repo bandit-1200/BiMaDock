@@ -71,146 +71,145 @@ public class DockManager
 
     private Button? previousButton = null;
 
-    private void DockPanel_MouseMove(object sender, MouseEventArgs e)
+private void DockPanel_MouseMove(object sender, MouseEventArgs e)
+{
+    Point mousePosition = e.GetPosition(dockPanel);
+    LogMousePositionAndElements(mousePosition);
+
+    if (dragStartPoint.HasValue && draggedButton != null)
     {
-        Point mousePosition = e.GetPosition(dockPanel);
-        LogMousePositionAndElements(mousePosition);
+        Point position = e.GetPosition(dockPanel);
+        Vector diff = dragStartPoint.Value - position;
 
-        if (dragStartPoint.HasValue && draggedButton != null)
+        if (e.LeftButton == MouseButtonState.Pressed &&
+            (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+             Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
         {
-            Point position = e.GetPosition(dockPanel);
-            Vector diff = dragStartPoint.Value - position;
-
-            if (e.LeftButton == MouseButtonState.Pressed &&
-                (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                 Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
-            {
-                DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
-                dragStartPoint = null;
-                draggedButton = null;
-            }
-        }
-        else
-        {
-            bool isOverElement = false;
-            UIElement? previousElement = null;
-            UIElement? nextElement = null;
-
-            for (int i = 0; i < dockPanel.Children.Count; i++)
-            {
-                if (dockPanel.Children[i] is Button button)
-                {
-                    Rect elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
-                    if (elementRect.Contains(mousePosition))
-                    {
-                        isOverElement = true;
-                        if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
-                        {
-                            AnimateButton(button);
-                            animationPlayed[button] = true;
-                        }
-                        else if (button != previousButton)
-                        {
-                            AnimateButton(button);
-                        }
-                        previousButton = button;
-                        break;
-                    }
-                    else
-                    {
-                        previousElement = (i > 0) ? dockPanel.Children[i - 1] : null;
-                        nextElement = dockPanel.Children[i];
-                    }
-                }
-            }
-
-            if (!isOverElement)
-            {
-                previousButton = null;
-                if (previousElement is Button prevButton && nextElement is Button nextButton)
-                {
-                    Console.WriteLine($"Maus zwischen Elementen: {prevButton.Tag} und {nextButton.Tag}");
-                }
-                else if (nextElement is Button onlyNextButton)
-                {
-                    Console.WriteLine($"Maus vor dem ersten Element: {onlyNextButton.Tag}");
-                }
-                else if (previousElement is Button onlyPrevButton)
-                {
-                    Console.WriteLine($"Maus nach dem letzten Element: {onlyPrevButton.Tag}");
-                }
-                else
-                {
-                    Console.WriteLine("Maus über Dock ohne Element");
-                }
-            }
+            DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
+            dragStartPoint = null;
+            draggedButton = null;
         }
     }
-
-
-
-    private void LogMousePositionAndElements(Point mousePosition)
+    else
     {
-        Console.WriteLine($"Aktuelle Mausposition: {mousePosition}");
+        bool isOverElement = false;
+        UIElement? previousElement = null;
+        UIElement? nextElement = null;
 
-        foreach (var child in dockPanel.Children)
+        for (int i = 0; i < dockPanel.Children.Count; i++)
         {
-            if (child is Button button && button.Tag is DockItem dockItem)
+            if (dockPanel.Children[i] is Button button)
             {
-                var elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
-                Console.WriteLine($"Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}, Size = {elementRect.Size}");
-
+                Rect elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
                 if (elementRect.Contains(mousePosition))
                 {
-                    Console.WriteLine($"Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
-
+                    isOverElement = true;
                     if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
                     {
-                        AnimateButton(button);  // Animation hinzufügen
+                        ButtonAnimations.AnimateButton(button); // Methode aus der neuen Klasse aufrufen
                         animationPlayed[button] = true;
                     }
                     else if (button != previousButton)
                     {
-                        AnimateButton(button);
+                        ButtonAnimations.AnimateButton(button); // Methode aus der neuen Klasse aufrufen
                     }
                     previousButton = button;
+                    break;
                 }
+                else
+                {
+                    previousElement = (i > 0) ? dockPanel.Children[i - 1] : null;
+                    nextElement = dockPanel.Children[i];
+                }
+            }
+        }
+
+        if (!isOverElement)
+        {
+            previousButton = null;
+            if (previousElement is Button prevButton && nextElement is Button nextButton)
+            {
+                Console.WriteLine($"Maus zwischen Elementen: {prevButton.Tag} und {nextButton.Tag}");
+            }
+            else if (nextElement is Button onlyNextButton)
+            {
+                Console.WriteLine($"Maus vor dem ersten Element: {onlyNextButton.Tag}");
+            }
+            else if (previousElement is Button onlyPrevButton)
+            {
+                Console.WriteLine($"Maus nach dem letzten Element: {onlyPrevButton.Tag}");
             }
             else
             {
-                Console.WriteLine("Kein DockItem an diesem Button gefunden");
+                Console.WriteLine("Maus über Dock ohne Element");
             }
         }
     }
+}
 
 
-    private void AnimateButton(Button button)
+// Vorherige Methoden
+private void LogMousePositionAndElements(Point mousePosition)
+{
+    Console.WriteLine($"Aktuelle Mausposition: {mousePosition}");
+
+    foreach (var child in dockPanel.Children)
     {
-        var scaleTransform = new ScaleTransform(1.0, 1.0);
-        button.RenderTransformOrigin = new Point(0.5, 0.5);
-        button.RenderTransform = scaleTransform;
-
-        var scaleXAnimation = new DoubleAnimation
+        if (child is Button button && button.Tag is DockItem dockItem)
         {
-            From = 1.0,
-            To = 1.2,
-            Duration = new Duration(TimeSpan.FromSeconds(0.3)),
-            AutoReverse = true,
-            RepeatBehavior = new RepeatBehavior(2)  // Animation 2-mal abspielen
-        };
+            var elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
+            Console.WriteLine($"Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}, Size = {elementRect.Size}");
 
-        var scaleYAnimation = new DoubleAnimation
+            if (elementRect.Contains(mousePosition))
+            {
+                Console.WriteLine($"Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
+
+                if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
+                {
+                    ButtonAnimations.AnimateButton(button);  // Animation aufrufen
+                    animationPlayed[button] = true;
+                }
+                else if (button != previousButton)
+                {
+                    ButtonAnimations.AnimateButton(button);
+                }
+                previousButton = button;
+            }
+        }
+        else
         {
-            From = 1.0,
-            To = 1.2,
-            Duration = new Duration(TimeSpan.FromSeconds(0.3)),
-            AutoReverse = true,
-            RepeatBehavior = new RepeatBehavior(2)  // Animation 2-mal abspielen
-        };
-
-        scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
-        scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
+            Console.WriteLine("Kein DockItem an diesem Button gefunden");
+        }
     }
+}
+
+    // private void AnimateButton(Button button)
+    // {
+    //     var scaleTransform = new ScaleTransform(1.0, 1.0);
+    //     button.RenderTransformOrigin = new Point(0.5, 0.5);
+    //     button.RenderTransform = scaleTransform;
+
+    //     var scaleXAnimation = new DoubleAnimation
+    //     {
+    //         From = 1.0,
+    //         To = 1.2,
+    //         Duration = new Duration(TimeSpan.FromSeconds(0.3)),
+    //         AutoReverse = true,
+    //         RepeatBehavior = new RepeatBehavior(2)  // Animation 2-mal abspielen
+    //     };
+
+    //     var scaleYAnimation = new DoubleAnimation
+    //     {
+    //         From = 1.0,
+    //         To = 1.2,
+    //         Duration = new Duration(TimeSpan.FromSeconds(0.3)),
+    //         AutoReverse = true,
+    //         RepeatBehavior = new RepeatBehavior(2)  // Animation 2-mal abspielen
+    //     };
+
+    //     scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
+    //     scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
+    // }
 
 
 
