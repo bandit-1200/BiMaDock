@@ -32,31 +32,31 @@ namespace BiMaDock
             System.Console.WriteLine($"Klare Version: {clearVersion}");
         }
 
-        private void LoadSettings()
+private void LoadSettings()
+{
+    if (File.Exists(settingsFilePath))
+    {
+        string json = File.ReadAllText(settingsFilePath);
+        var settings = JsonConvert.DeserializeObject<dynamic>(json);
+
+        if (settings != null)
         {
-            if (File.Exists(settingsFilePath))
+            if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
             {
-                string json = File.ReadAllText(settingsFilePath);
-                dynamic settings = JsonConvert.DeserializeObject(json);
-
-                if (settings != null)
-                {
-                    if (ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
-                    {
-                        PrimaryColorPicker.SelectedColor = primaryColor;
-                        PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
-                    }
-
-                    if (ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
-                    {
-                        SecondaryColorPicker.SelectedColor = secondaryColor;
-                        SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
-                    }
-
-                    AnimationSpeedSlider.Value = settings.AnimationSpeed;
-                }
+                PrimaryColorPicker.SelectedColor = primaryColor;
+                PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
             }
+
+            if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
+            {
+                SecondaryColorPicker.SelectedColor = secondaryColor;
+                SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
+            }
+
+            AnimationSpeedSlider.Value = settings.AnimationSpeed;
         }
+    }
+}
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
