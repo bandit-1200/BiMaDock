@@ -43,10 +43,6 @@
     </Style>
 </Window.Resources>
 
-
-
-
-
     <Window.Effect>
         <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.5" Color="Black"/>
     </Window.Effect>
@@ -95,17 +91,9 @@
 
                     <!-- Tab für Animationen -->
                     <TabItem Header="Animationen">
-                        <TabControl Margin="10" Background="#1A1A1A" BorderBrush="#444444">
-                            <!-- Beispiel für eine spezifische Animation -->
-                            <TabItem Header="Fade Animation">
-                                <StackPanel Margin="20">
-                                    <TextBlock Text="Einstellungen für Fade Animation" FontSize="16" FontWeight="Bold" Margin="0,0,0,10" Foreground="White" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Dauer (in Sekunden):" Foreground="White"/>
-                                    <Slider Name="FadeDurationSlider" Minimum="0" Maximum="10" Value="1" TickFrequency="0.1" IsSnapToTickEnabled="True" Margin="0,5,0,20"/>
-                                </StackPanel>
-                            </TabItem>
-                            <!-- Weitere spezifische Animationen können hier hinzugefügt werden -->
-                        </TabControl>
+                        <StackPanel Name="AnimationSettingsPanel" Margin="20">
+                            <!-- Platzhalter für dynamische Steuerelemente der Animationseinstellungen -->
+                        </StackPanel>
                     </TabItem>
                 </TabControl>
 
