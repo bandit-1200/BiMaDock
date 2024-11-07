@@ -39,13 +39,14 @@ namespace BiMaDock
             public int EffectIndex { get; set; }
         }
         private ComboBox? animationEffectComboBox;
-        private Slider? durationSlider;
         private Slider? scaleFactorSlider;
         private Slider? angleSlider;
         private Slider? translateXSlider;
         private Slider? translateYSlider;
         private CheckBox? autoReverseCheckBox;
-
+        private Slider? scaleDurationSlider;
+        private Slider? rotateDurationSlider;
+        private Slider? translateDurationSlider;
 
 
 
@@ -135,7 +136,7 @@ namespace BiMaDock
             AnimationSettingsPanel.Children.Add(durationTextBlock);
 
             // Initialisiere und speichere die Referenz auf den globalen Slider für die Dauer
-            durationSlider = new Slider
+            scaleDurationSlider = new Slider
             {
                 Minimum = 0.1,
                 Maximum = 3.0,
@@ -144,21 +145,21 @@ namespace BiMaDock
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
             };
-            AnimationSettingsPanel.Children.Add(durationSlider);
+            AnimationSettingsPanel.Children.Add(scaleDurationSlider);
 
             // TextBlock zur Anzeige des aktuellen Werts des Sliders
             TextBlock durationValueTextBlock = new TextBlock
             {
-                Text = $"Aktuelle Dauer: {durationSlider.Value} s",
+                Text = $"Aktuelle Dauer: {scaleDurationSlider.Value} s",
                 Foreground = Brushes.White,
                 Margin = new Thickness(0, 0, 0, 20)
             };
             AnimationSettingsPanel.Children.Add(durationValueTextBlock);
 
             // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-            durationSlider.ValueChanged += (s, e) =>
+            scaleDurationSlider.ValueChanged += (s, e) =>
             {
-                durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
+                durationValueTextBlock.Text = $"Aktuelle Dauer: {scaleDurationSlider.Value} s";
             };
 
             // Slider für den Skalierungsfaktor
@@ -221,7 +222,7 @@ namespace BiMaDock
             AnimationSettingsPanel.Children.Add(durationTextBlock);
 
             // Initialisiere und speichere die Referenz auf den globalen Slider für die Dauer
-            durationSlider = new Slider
+            rotateDurationSlider = new Slider
             {
                 Minimum = 0.1,
                 Maximum = 3.0,
@@ -230,21 +231,21 @@ namespace BiMaDock
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
             };
-            AnimationSettingsPanel.Children.Add(durationSlider);
+            AnimationSettingsPanel.Children.Add(rotateDurationSlider);
 
             // TextBlock zur Anzeige des aktuellen Werts des Sliders
             TextBlock durationValueTextBlock = new TextBlock
             {
-                Text = $"Aktuelle Dauer: {durationSlider.Value} s",
+                Text = $"Aktuelle Dauer: {rotateDurationSlider.Value} s",
                 Foreground = Brushes.White,
                 Margin = new Thickness(0, 0, 0, 20)
             };
             AnimationSettingsPanel.Children.Add(durationValueTextBlock);
 
             // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-            durationSlider.ValueChanged += (s, e) =>
+            rotateDurationSlider.ValueChanged += (s, e) =>
             {
-                durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
+                durationValueTextBlock.Text = $"Aktuelle Dauer: {rotateDurationSlider.Value} s";
             };
 
             // Slider für den Rotationswinkel
@@ -422,7 +423,7 @@ namespace BiMaDock
             AnimationSettingsPanel.Children.Add(durationTextBlock);
 
             // Initialisiere und speichere die Referenz auf den globalen Slider für die Dauer
-            durationSlider = new Slider
+            translateDurationSlider = new Slider
             {
                 Minimum = 0.1,
                 Maximum = 3.0,
@@ -431,21 +432,21 @@ namespace BiMaDock
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
             };
-            AnimationSettingsPanel.Children.Add(durationSlider);
+            AnimationSettingsPanel.Children.Add(translateDurationSlider);
 
             // TextBlock zur Anzeige des aktuellen Werts des Sliders
             TextBlock durationValueTextBlock = new TextBlock
             {
-                Text = $"Aktuelle Dauer: {durationSlider.Value} s",
+                Text = $"Aktuelle Dauer: {translateDurationSlider.Value} s",
                 Foreground = Brushes.White,
                 Margin = new Thickness(0, 0, 0, 20)
             };
             AnimationSettingsPanel.Children.Add(durationValueTextBlock);
 
             // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-            durationSlider.ValueChanged += (s, e) =>
+            translateDurationSlider.ValueChanged += (s, e) =>
             {
-                durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
+                durationValueTextBlock.Text = $"Aktuelle Dauer: {translateDurationSlider.Value} s";
             };
 
             // Slider für die X-Achsen-Translation
@@ -574,68 +575,86 @@ namespace BiMaDock
                 }
             }
         }
-private void SaveButton_Click(object sender, RoutedEventArgs e)
-{
-    var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
-    var secondaryColor = SecondaryColorPicker.SelectedColor ?? Colors.Transparent;
-
-    // Standardwerte setzen, falls keine Änderungen vorgenommen wurden
-    var scaleSettings = new ScaleSettings
-    {
-        Duration = durationSlider?.Value ?? 0.3,
-        ScaleFactor = scaleFactorSlider?.Value ?? 1.2,
-        AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
-        EffectIndex = 1
-    };
-
-    var rotateSettings = new RotateSettings
-    {
-        Duration = durationSlider?.Value ?? 0.3,
-        Angle = angleSlider?.Value ?? 180.0,
-        AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
-        EffectIndex = 2
-    };
-
-    var translateSettings = new TranslateSettings
-    {
-        Duration = durationSlider?.Value ?? 0.3,
-        TranslateX = translateXSlider?.Value ?? 0.0,
-        TranslateY = translateYSlider?.Value ?? 0.0,
-        AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
-        EffectIndex = 3
-    };
-
-    if (animationEffectComboBox != null && animationEffectComboBox.SelectedItem != null)
-    {
-        var selectedEffectIndex = animationEffectComboBox.SelectedIndex;
-        Console.WriteLine($"SelectedEffectIndex in SaveButton_Click: {selectedEffectIndex}");
-
-        var settings = new
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            PrimaryColor = primaryColor.ToString(),
-            SecondaryColor = secondaryColor.ToString(),
-            SelectedEffectIndex = selectedEffectIndex,
-            Scale = scaleSettings,
-            Rotate = rotateSettings,
-            Translate = translateSettings
-        };
+            var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
+            var secondaryColor = SecondaryColorPicker.SelectedColor ?? Colors.Transparent;
 
-        string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
-        string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        string directoryPath = Path.Combine(appDataPath, "BiMaDock");
+            // Überprüfen und Setzen der Dauer für jede Animation
+            var scaleDuration = scaleDurationSlider?.Value ?? 0.3;
+            if (scaleDurationSlider != null && scaleDurationSlider.Value != 0.3)
+            {
+                scaleDuration = scaleDurationSlider.Value;
+            }
 
-        Directory.CreateDirectory(directoryPath);
-        File.WriteAllText(Path.Combine(directoryPath, "StyleSettings.json"), json);
+            var rotateDuration = rotateDurationSlider?.Value ?? 0.3;
+            if (rotateDurationSlider != null && rotateDurationSlider.Value != 0.3)
+            {
+                rotateDuration = rotateDurationSlider.Value;
+            }
 
-        // Schließen des Fensters
-        Close();
-    }
-    else
-    {
-        MessageBox.Show("AnimationEffectComboBox oder dessen SelectedItem ist null.");
-    }
-}
+            var translateDuration = translateDurationSlider?.Value ?? 0.3;
+            if (translateDurationSlider != null && translateDurationSlider.Value != 0.3)
+            {
+                translateDuration = translateDurationSlider.Value;
+            }
 
+            // Standardwerte setzen, falls keine Änderungen vorgenommen wurden
+            var scaleSettings = new ScaleSettings
+            {
+                Duration = scaleDuration,
+                ScaleFactor = scaleFactorSlider?.Value ?? 1.2,
+                AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
+                EffectIndex = 1
+            };
+
+            var rotateSettings = new RotateSettings
+            {
+                Duration = rotateDuration,
+                Angle = angleSlider?.Value ?? 180.0,
+                AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
+                EffectIndex = 2
+            };
+
+            var translateSettings = new TranslateSettings
+            {
+                Duration = translateDuration,
+                TranslateX = translateXSlider?.Value ?? 0.0,
+                TranslateY = translateYSlider?.Value ?? 0.0,
+                AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
+                EffectIndex = 3
+            };
+
+            if (animationEffectComboBox != null && animationEffectComboBox.SelectedItem != null)
+            {
+                var selectedEffectIndex = animationEffectComboBox.SelectedIndex;
+                Console.WriteLine($"SelectedEffectIndex in SaveButton_Click: {selectedEffectIndex}");
+
+                var settings = new
+                {
+                    PrimaryColor = primaryColor.ToString(),
+                    SecondaryColor = secondaryColor.ToString(),
+                    SelectedEffectIndex = selectedEffectIndex,
+                    Scale = scaleSettings,
+                    Rotate = rotateSettings,
+                    Translate = translateSettings
+                };
+
+                string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+                string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string directoryPath = Path.Combine(appDataPath, "BiMaDock");
+
+                Directory.CreateDirectory(directoryPath);
+                File.WriteAllText(Path.Combine(directoryPath, "StyleSettings.json"), json);
+
+                // Schließen des Fensters
+                Close();
+            }
+            else
+            {
+                MessageBox.Show("AnimationEffectComboBox oder dessen SelectedItem ist null.");
+            }
+        }
 
 
 
