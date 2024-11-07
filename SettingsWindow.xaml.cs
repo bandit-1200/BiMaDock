@@ -17,15 +17,11 @@ namespace BiMaDock
 
         private void ShowVersionInConsole()
         {
-            // InformationalVersion abrufen
             var informationalVersionAttribute = Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-            string informationalVersion = informationalVersionAttribute != null
-                ? informationalVersionAttribute.InformationalVersion
-                : "Unbekannte Version";  // Fallback, wenn null
-
-            string clearVersion = informationalVersion.Split('+')[0];  // Unabhängig von null
+            string informationalVersion = informationalVersionAttribute?.InformationalVersion ?? "Unbekannte Version";
+            string clearVersion = informationalVersion.Split('+')[0];
 
             System.Console.WriteLine($"Detaillierte Version: {informationalVersion}");
             System.Console.WriteLine($"Klare Version: {clearVersion}");
@@ -47,13 +43,8 @@ namespace BiMaDock
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string directoryPath = Path.Combine(appDataPath, "BiMaDock");
 
-            if (!string.IsNullOrWhiteSpace(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
-
-            string filePath = Path.Combine(directoryPath, "StyleSettings.json");
-            File.WriteAllText(filePath, json);
+            Directory.CreateDirectory(directoryPath);
+            File.WriteAllText(Path.Combine(directoryPath, "StyleSettings.json"), json);
             MessageBox.Show("Einstellungen gespeichert!");
         }
 
@@ -61,8 +52,8 @@ namespace BiMaDock
         {
             if (e.NewValue.HasValue)
             {
-                var color = e.NewValue.Value;
-                PrimaryColorPicker.Background = new SolidColorBrush(color);
+                PrimaryColorPicker.Background = new SolidColorBrush(e.NewValue.Value);
+                PrimaryColorPreview.Background = new SolidColorBrush(e.NewValue.Value);
             }
         }
 
@@ -70,8 +61,8 @@ namespace BiMaDock
         {
             if (e.NewValue.HasValue)
             {
-                var color = e.NewValue.Value;
-                SecondaryColorPicker.Background = new SolidColorBrush(color);
+                SecondaryColorPicker.Background = new SolidColorBrush(e.NewValue.Value);
+                SecondaryColorPreview.Background = new SolidColorBrush(e.NewValue.Value);
             }
         }
 
@@ -80,11 +71,9 @@ namespace BiMaDock
             var informationalVersionAttribute = Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-            string informationalVersion = informationalVersionAttribute != null
-                ? informationalVersionAttribute.InformationalVersion
-                : "Unbekannte Version";  // Fallback, wenn null
-
+            string informationalVersion = informationalVersionAttribute?.InformationalVersion ?? "Unbekannte Version";
             string clearVersion = informationalVersion.Split('+')[0];
+
             MessageBox.Show($"Detaillierte Version: {informationalVersion}\nKlare Version: {clearVersion}");
         }
 
@@ -102,6 +91,5 @@ namespace BiMaDock
         {
             StartupManager.AddToStartup(false);
         }
-
     }
 }
