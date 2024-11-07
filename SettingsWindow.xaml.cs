@@ -13,10 +13,48 @@ namespace BiMaDock
     {
         private readonly string settingsFilePath;
 
+        public class ScaleSettings
+        {
+            public double Duration { get; set; }
+            public double ScaleFactor { get; set; }
+            public bool AutoReverse { get; set; }
+            public int EffectIndex { get; set; }
+        }
+
+
+        public class RotateSettings
+        {
+            public double Duration { get; set; }
+            public double Angle { get; set; }
+            public bool AutoReverse { get; set; }
+            public int EffectIndex { get; set; }
+        }
+
+        public class TranslateSettings
+        {
+            public double Duration { get; set; }
+            public double TranslateX { get; set; }
+            public double TranslateY { get; set; }
+            public bool AutoReverse { get; set; }
+            public int EffectIndex { get; set; }
+        }
+        private ComboBox? animationEffectComboBox;
+        private Slider? durationSlider;
+        private Slider? scaleFactorSlider;
+        private Slider? angleSlider;
+        private Slider? translateXSlider;
+        private Slider? translateYSlider;
+        private CheckBox? autoReverseCheckBox;
+
+
+
+
+
         public SettingsWindow()
         {
             InitializeComponent();
             CreateAnimationEffectDropdown();
+            // animationEffectComboBox = new ComboBox();
             settingsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "StyleSettings.json");
 
             ShowVersionInConsole();
@@ -25,361 +63,473 @@ namespace BiMaDock
         }
 
 
-        
-private void CreateAnimationEffectDropdown()
-{
-    // Titel für das Animations-Tab
-    TextBlock titleTextBlock = new TextBlock
-    {
-        Text = "Animationseinstellungen",
-        FontSize = 20,
-        FontWeight = FontWeights.Bold,
-        Foreground = Brushes.White,
-        HorizontalAlignment = HorizontalAlignment.Center,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(titleTextBlock);
 
-    // ComboBox für die Auswahl des Animationseffekts
-    ComboBox animationEffectComboBox = new ComboBox
-    {
-        Name = "AnimationEffectComboBox", // Name zur Identifikation im Event-Handler
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    animationEffectComboBox.Items.Add("Scale");
-    animationEffectComboBox.Items.Add("Rotate");
-    animationEffectComboBox.Items.Add("Translate");
-    animationEffectComboBox.SelectedIndex = 0; // Standardmäßig "Scale" ausgewählt
-    animationEffectComboBox.SelectionChanged += AnimationEffectComboBox_SelectionChanged; // Event-Handler hinzufügen
-    AnimationSettingsPanel.Children.Add(animationEffectComboBox);
-
-    // Initiale Einstellungen erstellen (z.B. Scale)
-    CreateScaleAnimationSettings();
-}
-
-
-
-
-private void AnimationEffectComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-{
-    if (sender is ComboBox comboBox)
-    {
-        // Überprüfe, ob SelectedItem nicht null ist
-        string? selectedEffect = comboBox.SelectedItem?.ToString();
-        
-        if (!string.IsNullOrEmpty(selectedEffect))
+        private void CreateAnimationEffectDropdown()
         {
-            // Entferne nur die dynamisch erstellten Kinder, nicht das Dropdown-Menü
-            while (AnimationSettingsPanel.Children.Count > 2) // Da das Dropdown-Menü das zweite Element ist
+            // Initialisiere und weise die ComboBox dem globalen Feld zu
+            animationEffectComboBox = new ComboBox
             {
-                AnimationSettingsPanel.Children.RemoveAt(2);
-            }
+                Name = "AnimationEffectComboBox",
+                Margin = new Thickness(0, 0, 0, 20)
+            };
 
-            // Logik zur Erstellung der Animationseinstellungen basierend auf der Auswahl
-            if (selectedEffect == "Scale")
+            animationEffectComboBox.Items.Add("Kein Effekt");
+            animationEffectComboBox.Items.Add("Scale");
+            animationEffectComboBox.Items.Add("Rotate");
+            animationEffectComboBox.Items.Add("Translate");
+            animationEffectComboBox.SelectedIndex = 0;  // Setze den initialen Index auf "Kein Effekt"
+            animationEffectComboBox.SelectionChanged += AnimationEffectComboBox_SelectionChanged;
+            AnimationSettingsPanel.Children.Add(animationEffectComboBox);
+
+            // Initiale Einstellungen erstellen (z.B. Scale)
+            CreateScaleAnimationSettings();
+        }
+
+
+
+        private void AnimationEffectComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ComboBox comboBox)
             {
-                CreateScaleAnimationSettings();
-            }
-            else if (selectedEffect == "Rotate")
-            {
-                CreateRotateAnimationSettings();
-            }
-            else if (selectedEffect == "Translate")
-            {
-                CreateTranslateAnimationSettings();
+                // Überprüfe, ob SelectedItem nicht null ist
+                string? selectedEffect = comboBox.SelectedItem?.ToString();
+
+                if (!string.IsNullOrEmpty(selectedEffect))
+                {
+                    // Entferne nur die dynamisch erstellten Kinder, nicht das Dropdown-Menü
+                    while (AnimationSettingsPanel.Children.Count > 2) // Da das Dropdown-Menü das zweite Element ist
+                    {
+                        AnimationSettingsPanel.Children.RemoveAt(2);
+                    }
+
+                    // Logik zur Erstellung der Animationseinstellungen basierend auf der Auswahl
+                    if (selectedEffect == "Scale")
+                    {
+                        CreateScaleAnimationSettings();
+                    }
+                    else if (selectedEffect == "Rotate")
+                    {
+                        CreateRotateAnimationSettings();
+                    }
+                    else if (selectedEffect == "Translate")
+                    {
+                        CreateTranslateAnimationSettings();
+                    }
+
+                    // Ausgabe des aktuellen SelectedIndex auf der Konsole
+                    Console.WriteLine($"SelectedIndex: {comboBox.SelectedIndex}");
+                }
             }
         }
-    }
-}
 
 
+        private void CreateScaleAnimationSettings()
+        {
+            // Slider für die Animationsdauer
+            TextBlock durationTextBlock = new TextBlock
+            {
+                Text = "Dauer (in Sekunden):",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            AnimationSettingsPanel.Children.Add(durationTextBlock);
+
+            // Initialisiere und speichere die Referenz auf den globalen Slider für die Dauer
+            durationSlider = new Slider
+            {
+                Minimum = 0.1,
+                Maximum = 3.0,
+                Value = 0.3,
+                TickFrequency = 0.1,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(durationSlider);
+
+            // TextBlock zur Anzeige des aktuellen Werts des Sliders
+            TextBlock durationValueTextBlock = new TextBlock
+            {
+                Text = $"Aktuelle Dauer: {durationSlider.Value} s",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(durationValueTextBlock);
+
+            // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
+            durationSlider.ValueChanged += (s, e) =>
+            {
+                durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
+            };
+
+            // Slider für den Skalierungsfaktor
+            TextBlock scaleFactorTextBlock = new TextBlock
+            {
+                Text = "Skalierungsfaktor:",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            AnimationSettingsPanel.Children.Add(scaleFactorTextBlock);
+
+            // Initialisiere und speichere die Referenz auf den globalen Slider für den Skalierungsfaktor
+            scaleFactorSlider = new Slider
+            {
+                Minimum = 1.0,
+                Maximum = 2.0,
+                Value = 1.2,
+                TickFrequency = 0.1,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(scaleFactorSlider);
+
+            // TextBlock zur Anzeige des aktuellen Werts des Sliders
+            TextBlock scaleFactorValueTextBlock = new TextBlock
+            {
+                Text = $"Aktueller Skalierungsfaktor: {scaleFactorSlider.Value}",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(scaleFactorValueTextBlock);
+
+            // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
+            scaleFactorSlider.ValueChanged += (s, e) =>
+            {
+                scaleFactorValueTextBlock.Text = $"Aktueller Skalierungsfaktor: {scaleFactorSlider.Value}";
+            };
+
+            // Initialisiere und speichere die Referenz auf die globale CheckBox für AutoReverse
+            autoReverseCheckBox = new CheckBox
+            {
+                Content = "Automatisches Rückwärtslaufen (AutoReverse)",
+                Foreground = Brushes.White,
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
+        }
 
 
+        private void CreateRotateAnimationSettings()
+        {
+            // Slider für die Animationsdauer
+            TextBlock durationTextBlock = new TextBlock
+            {
+                Text = "Dauer (in Sekunden):",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            AnimationSettingsPanel.Children.Add(durationTextBlock);
 
+            // Initialisiere und speichere die Referenz auf den globalen Slider für die Dauer
+            durationSlider = new Slider
+            {
+                Minimum = 0.1,
+                Maximum = 3.0,
+                Value = 0.3,
+                TickFrequency = 0.1,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(durationSlider);
 
-private void CreateScaleAnimationSettings()
-{
-    // Slider für die Animationsdauer
-    TextBlock durationTextBlock = new TextBlock
-    {
-        Text = "Dauer (in Sekunden):",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 5)
-    };
-    AnimationSettingsPanel.Children.Add(durationTextBlock);
+            // TextBlock zur Anzeige des aktuellen Werts des Sliders
+            TextBlock durationValueTextBlock = new TextBlock
+            {
+                Text = $"Aktuelle Dauer: {durationSlider.Value} s",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(durationValueTextBlock);
 
-    Slider durationSlider = new Slider
-    {
-        Minimum = 0.1,
-        Maximum = 3.0,
-        Value = 0.3,
-        TickFrequency = 0.1,
-        IsSnapToTickEnabled = true,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(durationSlider);
+            // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
+            durationSlider.ValueChanged += (s, e) =>
+            {
+                durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
+            };
 
-    // TextBlock zur Anzeige des aktuellen Werts des Sliders
-    TextBlock durationValueTextBlock = new TextBlock
-    {
-        Text = $"Aktuelle Dauer: {durationSlider.Value} s",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(durationValueTextBlock);
+            // Slider für den Rotationswinkel
+            TextBlock angleTextBlock = new TextBlock
+            {
+                Text = "Rotationswinkel (in Grad):",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            AnimationSettingsPanel.Children.Add(angleTextBlock);
 
-    // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-    durationSlider.ValueChanged += (s, e) =>
-    {
-        durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
-    };
+            // Initialisiere und speichere die Referenz auf den globalen Slider für den Winkel
+            angleSlider = new Slider
+            {
+                Minimum = 0.0,
+                Maximum = 360.0,
+                Value = 180.0,
+                TickFrequency = 10.0,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(angleSlider);
 
-    // Slider für den Skalierungsfaktor
-    TextBlock scaleFactorTextBlock = new TextBlock
-    {
-        Text = "Skalierungsfaktor:",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 5)
-    };
-    AnimationSettingsPanel.Children.Add(scaleFactorTextBlock);
+            // TextBlock zur Anzeige des aktuellen Werts des Sliders
+            TextBlock angleValueTextBlock = new TextBlock
+            {
+                Text = $"Aktueller Winkel: {angleSlider.Value}°",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(angleValueTextBlock);
 
-    Slider scaleFactorSlider = new Slider
-    {
-        Minimum = 1.0,
-        Maximum = 2.0,
-        Value = 1.2,
-        TickFrequency = 0.1,
-        IsSnapToTickEnabled = true,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(scaleFactorSlider);
+            // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
+            angleSlider.ValueChanged += (s, e) =>
+            {
+                angleValueTextBlock.Text = $"Aktueller Winkel: {angleSlider.Value}°";
+            };
 
-    // TextBlock zur Anzeige des aktuellen Werts des Sliders
-    TextBlock scaleFactorValueTextBlock = new TextBlock
-    {
-        Text = $"Aktueller Skalierungsfaktor: {scaleFactorSlider.Value}",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(scaleFactorValueTextBlock);
+            // Initialisiere und speichere die Referenz auf die globale CheckBox für AutoReverse
+            autoReverseCheckBox = new CheckBox
+            {
+                Content = "Automatisches Rückwärtslaufen (AutoReverse)",
+                Foreground = Brushes.White,
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
+        }
 
-    // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-    scaleFactorSlider.ValueChanged += (s, e) =>
-    {
-        scaleFactorValueTextBlock.Text = $"Aktueller Skalierungsfaktor: {scaleFactorSlider.Value}";
-    };
+        // {
+        //     // Slider für die Animationsdauer
+        //     TextBlock durationTextBlock = new TextBlock
+        //     {
+        //         Text = "Dauer (in Sekunden):",
+        //         Foreground = Brushes.White,
+        //         Margin = new Thickness(0, 0, 0, 5)
+        //     };
+        //     AnimationSettingsPanel.Children.Add(durationTextBlock);
 
-    // CheckBox für AutoReverse
-    CheckBox autoReverseCheckBox = new CheckBox
-    {
-        Content = "Automatisches Rückwärtslaufen (AutoReverse)",
-        Foreground = Brushes.White,
-        IsChecked = true,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
-}
+        //     Slider durationSlider = new Slider
+        //     {
+        //         Minimum = 0.1,
+        //         Maximum = 3.0,
+        //         Value = 0.3,
+        //         TickFrequency = 0.1,
+        //         IsSnapToTickEnabled = true,
+        //         Margin = new Thickness(0, 0, 0, 20)
+        //     };
+        //     AnimationSettingsPanel.Children.Add(durationSlider);
 
-private void CreateRotateAnimationSettings()
-{
-    // Slider für die Animationsdauer
-    TextBlock durationTextBlock = new TextBlock
-    {
-        Text = "Dauer (in Sekunden):",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 5)
-    };
-    AnimationSettingsPanel.Children.Add(durationTextBlock);
+        //     // TextBlock zur Anzeige des aktuellen Werts des Sliders
+        //     TextBlock durationValueTextBlock = new TextBlock
+        //     {
+        //         Text = $"Aktuelle Dauer: {durationSlider.Value} s",
+        //         Foreground = Brushes.White,
+        //         Margin = new Thickness(0, 0, 0, 20)
+        //     };
+        //     AnimationSettingsPanel.Children.Add(durationValueTextBlock);
 
-    Slider durationSlider = new Slider
-    {
-        Minimum = 0.1,
-        Maximum = 3.0,
-        Value = 0.3,
-        TickFrequency = 0.1,
-        IsSnapToTickEnabled = true,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(durationSlider);
+        //     // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
+        //     durationSlider.ValueChanged += (s, e) =>
+        //     {
+        //         durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
+        //     };
 
-    // TextBlock zur Anzeige des aktuellen Werts des Sliders
-    TextBlock durationValueTextBlock = new TextBlock
-    {
-        Text = $"Aktuelle Dauer: {durationSlider.Value} s",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(durationValueTextBlock);
+        //     // Slider für die X-Achsen-Translation
+        //     TextBlock translateXTextBlock = new TextBlock
+        //     {
+        //         Text = "X-Translation (in Pixel):",
+        //         Foreground = Brushes.White,
+        //         Margin = new Thickness(0, 0, 0, 5)
+        //     };
+        //     AnimationSettingsPanel.Children.Add(translateXTextBlock);
 
-    // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-    durationSlider.ValueChanged += (s, e) =>
-    {
-        durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
-    };
+        //     Slider translateXSlider = new Slider
+        //     {
+        //         Minimum = -100.0,
+        //         Maximum = 100.0,
+        //         Value = 0.0,
+        //         TickFrequency = 10.0,
+        //         IsSnapToTickEnabled = true,
+        //         Margin = new Thickness(0, 0, 0, 20)
+        //     };
+        //     AnimationSettingsPanel.Children.Add(translateXSlider);
 
-    // Slider für den Rotationswinkel
-    TextBlock angleTextBlock = new TextBlock
-    {
-        Text = "Rotationswinkel (in Grad):",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 5)
-    };
-    AnimationSettingsPanel.Children.Add(angleTextBlock);
+        //     // TextBlock zur Anzeige des aktuellen Werts des Sliders
+        //     TextBlock translateXValueTextBlock = new TextBlock
+        //     {
+        //         Text = $"Aktuelle X-Translation: {translateXSlider.Value} px",
+        //         Foreground = Brushes.White,
+        //         Margin = new Thickness(0, 0, 0, 20)
+        //     };
+        //     AnimationSettingsPanel.Children.Add(translateXValueTextBlock);
 
-    Slider angleSlider = new Slider
-    {
-        Minimum = 0.0,
-        Maximum = 360.0,
-        Value = 180.0,
-        TickFrequency = 10.0,
-        IsSnapToTickEnabled = true,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(angleSlider);
+        //     // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
+        //     translateXSlider.ValueChanged += (s, e) =>
+        //     {
+        //         translateXValueTextBlock.Text = $"Aktuelle X-Translation: {translateXSlider.Value} px";
+        //     };
 
-    // TextBlock zur Anzeige des aktuellen Werts des Sliders
-    TextBlock angleValueTextBlock = new TextBlock
-    {
-        Text = $"Aktueller Winkel: {angleSlider.Value}°",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(angleValueTextBlock);
+        //     // Slider für die Y-Achsen-Translation
+        //     TextBlock translateYTextBlock = new TextBlock
+        //     {
+        //         Text = "Y-Translation (in Pixel):",
+        //         Foreground = Brushes.White,
+        //         Margin = new Thickness(0, 0, 0, 5)
+        //     };
+        //     AnimationSettingsPanel.Children.Add(translateYTextBlock);
 
-    // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-    angleSlider.ValueChanged += (s, e) =>
-    {
-        angleValueTextBlock.Text = $"Aktueller Winkel: {angleSlider.Value}°";
-    };
+        //     Slider translateYSlider = new Slider
+        //     {
+        //         Minimum = -100.0,
+        //         Maximum = 100.0,
+        //         Value = 0.0,
+        //         TickFrequency = 10.0,
+        //         IsSnapToTickEnabled = true,
+        //         Margin = new Thickness(0, 0, 0, 20)
+        //     };
+        //     AnimationSettingsPanel.Children.Add(translateYSlider);
 
-    // CheckBox für AutoReverse
-    CheckBox autoReverseCheckBox = new CheckBox
-    {
-        Content = "Automatisches Rückwärtslaufen (AutoReverse)",
-        Foreground = Brushes.White,
-        IsChecked = true,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
-}
+        //     // TextBlock zur Anzeige des aktuellen Werts des Sliders
+        //     TextBlock translateYValueTextBlock = new TextBlock
+        //     {
+        //         Text = $"Aktuelle Y-Translation: {translateYSlider.Value} px",
+        //         Foreground = Brushes.White,
+        //         Margin = new Thickness(0, 0, 0, 20)
+        //     };
+        //     AnimationSettingsPanel.Children.Add(translateYValueTextBlock);
 
-private void CreateTranslateAnimationSettings()
-{
-    // Slider für die Animationsdauer
-    TextBlock durationTextBlock = new TextBlock
-    {
-        Text = "Dauer (in Sekunden):",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 5)
-    };
-    AnimationSettingsPanel.Children.Add(durationTextBlock);
+        //     // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
+        //     translateYSlider.ValueChanged += (s, e) =>
+        //     {
+        //         translateYValueTextBlock.Text = $"Aktuelle Y-Translation: {translateYSlider.Value} px";
+        //     };
 
-    Slider durationSlider = new Slider
-    {
-        Minimum = 0.1,
-        Maximum = 3.0,
-        Value = 0.3,
-        TickFrequency = 0.1,
-        IsSnapToTickEnabled = true,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(durationSlider);
+        //     // CheckBox für AutoReverse
+        //     CheckBox autoReverseCheckBox = new CheckBox
+        //     {
+        //         Content = "Automatisches Rückwärtslaufen (AutoReverse)",
+        //         Foreground = Brushes.White,
+        //         IsChecked = true,
+        //         Margin = new Thickness(0, 0, 0, 20)
+        //     };
+        //     AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
+        // }
+        private void CreateTranslateAnimationSettings()
+        {
+            // Slider für die Animationsdauer
+            TextBlock durationTextBlock = new TextBlock
+            {
+                Text = "Dauer (in Sekunden):",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            AnimationSettingsPanel.Children.Add(durationTextBlock);
 
-    // TextBlock zur Anzeige des aktuellen Werts des Sliders
-    TextBlock durationValueTextBlock = new TextBlock
-    {
-        Text = $"Aktuelle Dauer: {durationSlider.Value} s",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(durationValueTextBlock);
+            // Initialisiere und speichere die Referenz auf den globalen Slider für die Dauer
+            durationSlider = new Slider
+            {
+                Minimum = 0.1,
+                Maximum = 3.0,
+                Value = 0.3,
+                TickFrequency = 0.1,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(durationSlider);
 
-    // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-    durationSlider.ValueChanged += (s, e) =>
-    {
-        durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
-    };
+            // TextBlock zur Anzeige des aktuellen Werts des Sliders
+            TextBlock durationValueTextBlock = new TextBlock
+            {
+                Text = $"Aktuelle Dauer: {durationSlider.Value} s",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(durationValueTextBlock);
 
-    // Slider für die X-Achsen-Translation
-    TextBlock translateXTextBlock = new TextBlock
-    {
-        Text = "X-Translation (in Pixel):",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 5)
-    };
-    AnimationSettingsPanel.Children.Add(translateXTextBlock);
+            // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
+            durationSlider.ValueChanged += (s, e) =>
+            {
+                durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
+            };
 
-    Slider translateXSlider = new Slider
-    {
-        Minimum = -100.0,
-        Maximum = 100.0,
-        Value = 0.0,
-        TickFrequency = 10.0,
-        IsSnapToTickEnabled = true,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(translateXSlider);
+            // Slider für die X-Achsen-Translation
+            TextBlock translateXTextBlock = new TextBlock
+            {
+                Text = "X-Translation (in Pixel):",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            AnimationSettingsPanel.Children.Add(translateXTextBlock);
 
-    // TextBlock zur Anzeige des aktuellen Werts des Sliders
-    TextBlock translateXValueTextBlock = new TextBlock
-    {
-        Text = $"Aktuelle X-Translation: {translateXSlider.Value} px",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(translateXValueTextBlock);
+            // Initialisiere und speichere die Referenz auf den globalen Slider für die X-Achsen-Translation
+            translateXSlider = new Slider
+            {
+                Minimum = -100.0,
+                Maximum = 100.0,
+                Value = 0.0,
+                TickFrequency = 10.0,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(translateXSlider);
 
-    // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-    translateXSlider.ValueChanged += (s, e) =>
-    {
-        translateXValueTextBlock.Text = $"Aktuelle X-Translation: {translateXSlider.Value} px";
-    };
+            // TextBlock zur Anzeige des aktuellen Werts des Sliders
+            TextBlock translateXValueTextBlock = new TextBlock
+            {
+                Text = $"Aktuelle X-Translation: {translateXSlider.Value} px",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(translateXValueTextBlock);
 
-    // Slider für die Y-Achsen-Translation
-    TextBlock translateYTextBlock = new TextBlock
-    {
-        Text = "Y-Translation (in Pixel):",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 5)
-    };
-    AnimationSettingsPanel.Children.Add(translateYTextBlock);
+            // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
+            translateXSlider.ValueChanged += (s, e) =>
+            {
+                translateXValueTextBlock.Text = $"Aktuelle X-Translation: {translateXSlider.Value} px";
+            };
 
-    Slider translateYSlider = new Slider
-    {
-        Minimum = -100.0,
-        Maximum = 100.0,
-        Value = 0.0,
-        TickFrequency = 10.0,
-        IsSnapToTickEnabled = true,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(translateYSlider);
+            // Slider für die Y-Achsen-Translation
+            TextBlock translateYTextBlock = new TextBlock
+            {
+                Text = "Y-Translation (in Pixel):",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            AnimationSettingsPanel.Children.Add(translateYTextBlock);
 
-    // TextBlock zur Anzeige des aktuellen Werts des Sliders
-    TextBlock translateYValueTextBlock = new TextBlock
-    {
-        Text = $"Aktuelle Y-Translation: {translateYSlider.Value} px",
-        Foreground = Brushes.White,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(translateYValueTextBlock);
+            // Initialisiere und speichere die Referenz auf den globalen Slider für die Y-Achsen-Translation
+            translateYSlider = new Slider
+            {
+                Minimum = -100.0,
+                Maximum = 100.0,
+                Value = 0.0,
+                TickFrequency = 10.0,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(translateYSlider);
 
-    // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-    translateYSlider.ValueChanged += (s, e) =>
-    {
-        translateYValueTextBlock.Text = $"Aktuelle Y-Translation: {translateYSlider.Value} px";
-    };
+            // TextBlock zur Anzeige des aktuellen Werts des Sliders
+            TextBlock translateYValueTextBlock = new TextBlock
+            {
+                Text = $"Aktuelle Y-Translation: {translateYSlider.Value} px",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(translateYValueTextBlock);
 
-    // CheckBox für AutoReverse
-    CheckBox autoReverseCheckBox = new CheckBox
-    {
-        Content = "Automatisches Rückwärtslaufen (AutoReverse)",
-        Foreground = Brushes.White,
-        IsChecked = true,
-        Margin = new Thickness(0, 0, 0, 20)
-    };
-    AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
-}
+            // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
+            translateYSlider.ValueChanged += (s, e) =>
+            {
+                translateYValueTextBlock.Text = $"Aktuelle Y-Translation: {translateYSlider.Value} px";
+            };
+
+            // Initialisiere und speichere die Referenz auf die globale CheckBox für AutoReverse
+            autoReverseCheckBox = new CheckBox
+            {
+                Content = "Automatisches Rückwärtslaufen (AutoReverse)",
+                Foreground = Brushes.White,
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
+        }
 
 
 
@@ -424,26 +574,84 @@ private void CreateTranslateAnimationSettings()
                 }
             }
         }
+private void SaveButton_Click(object sender, RoutedEventArgs e)
+{
+    var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
+    var secondaryColor = SecondaryColorPicker.SelectedColor ?? Colors.Transparent;
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+    // Standardwerte setzen, falls keine Änderungen vorgenommen wurden
+    var scaleSettings = new ScaleSettings
+    {
+        Duration = durationSlider?.Value ?? 0.3,
+        ScaleFactor = scaleFactorSlider?.Value ?? 1.2,
+        AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
+        EffectIndex = 1
+    };
+
+    var rotateSettings = new RotateSettings
+    {
+        Duration = durationSlider?.Value ?? 0.3,
+        Angle = angleSlider?.Value ?? 180.0,
+        AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
+        EffectIndex = 2
+    };
+
+    var translateSettings = new TranslateSettings
+    {
+        Duration = durationSlider?.Value ?? 0.3,
+        TranslateX = translateXSlider?.Value ?? 0.0,
+        TranslateY = translateYSlider?.Value ?? 0.0,
+        AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
+        EffectIndex = 3
+    };
+
+    if (animationEffectComboBox != null && animationEffectComboBox.SelectedItem != null)
+    {
+        var selectedEffectIndex = animationEffectComboBox.SelectedIndex;
+        Console.WriteLine($"SelectedEffectIndex in SaveButton_Click: {selectedEffectIndex}");
+
+        var settings = new
         {
-            var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
-            var secondaryColor = SecondaryColorPicker.SelectedColor ?? Colors.Transparent;
+            PrimaryColor = primaryColor.ToString(),
+            SecondaryColor = secondaryColor.ToString(),
+            SelectedEffectIndex = selectedEffectIndex,
+            Scale = scaleSettings,
+            Rotate = rotateSettings,
+            Translate = translateSettings
+        };
 
-            var settings = new
-            {
-                PrimaryColor = primaryColor.ToString(),
-                SecondaryColor = secondaryColor.ToString(),
-                // FadeDuration = FadeDurationSlider?.Value ?? 1.0
-            };
+        string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+        string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string directoryPath = Path.Combine(appDataPath, "BiMaDock");
 
-            string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+        Directory.CreateDirectory(directoryPath);
+        File.WriteAllText(Path.Combine(directoryPath, "StyleSettings.json"), json);
+
+        // Schließen des Fensters
+        Close();
+    }
+    else
+    {
+        MessageBox.Show("AnimationEffectComboBox oder dessen SelectedItem ist null.");
+    }
+}
+
+
+
+
+        private void SaveEffectSettings(string filename, object effectSettings)
+        {
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string directoryPath = Path.Combine(appDataPath, "BiMaDock");
-
             Directory.CreateDirectory(directoryPath);
-            File.WriteAllText(Path.Combine(directoryPath, "StyleSettings.json"), json);
+
+            // Serialize and save the settings for a specific animation effect
+            string json = JsonConvert.SerializeObject(effectSettings, Formatting.Indented);
+            File.WriteAllText(Path.Combine(directoryPath, filename), json);
         }
+
+
+
 
         private void PrimaryColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
