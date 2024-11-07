@@ -8,9 +8,9 @@ public class ButtonAnimations
 
 
     public static void NotAnimate(Button button)
-{
-    // Keine Animation, leer lassen
-}
+    {
+        // Keine Animation, leer lassen
+    }
 
     // Bestehende Animation
     public static void AnimateButton(Button button)
@@ -61,21 +61,26 @@ public class ButtonAnimations
     }
 
     // Methode zur Entscheidung, welche Animation verwendet wird
-public static void AnimateButtonByChoice(Button button, int choice)
-{
-    switch (choice)
+    public static void AnimateButtonByChoice(Button button, int choice)
     {
-        case 1:
-            AnimateButton(button);
-            break;
-        case 2:
-            AnimateButton2(button);
-            break;
-        default:
-            NotAnimate(button);  // Standardmethode, keine Animation
-            break;
+        Console.WriteLine($"AnimateButtonByChoice aufgerufen mit Button: {button.Name}, Choice: {choice}");
+        switch (choice)
+        {
+            case 1:
+                Console.WriteLine("Starte AnimateButton");
+                AnimateButton(button);
+                break;
+            case 2:
+                Console.WriteLine("Starte AnimateButton2");
+                AnimateButton2(button);
+                break;
+            default:
+                Console.WriteLine("Keine Animation - NotAnimate wird aufgerufen");
+                NotAnimate(button);  // Standardmethode, keine Animation
+                break;
+        }
     }
-}
+
 
 
 
