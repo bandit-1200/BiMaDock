@@ -23,7 +23,7 @@ public class DockManager
     private List<string> categories; // Liste zur Verwaltung der Kategorien
     private List<DockItem> dockItems = new List<DockItem>();
     private StackPanel? CategoryDockContainer;
-
+    private Dictionary<Button, bool> animationPlayed = new Dictionary<Button, bool>();
 
 
 
@@ -69,10 +69,12 @@ public class DockManager
     }
 
 
+    private Button? previousButton = null;
+
     private void DockPanel_MouseMove(object sender, MouseEventArgs e)
     {
         Point mousePosition = e.GetPosition(dockPanel);
-        LogMousePositionAndElements(mousePosition);  // Aufruf der neuen Methode
+        LogMousePositionAndElements(mousePosition);
 
         if (dragStartPoint.HasValue && draggedButton != null)
         {
@@ -102,19 +104,29 @@ public class DockManager
                     if (elementRect.Contains(mousePosition))
                     {
                         isOverElement = true;
+                        if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
+                        {
+                            AnimateButton(button);
+                            animationPlayed[button] = true;
+                        }
+                        else if (button != previousButton)
+                        {
+                            AnimateButton(button);
+                        }
+                        previousButton = button;
                         break;
                     }
-                    else if (mousePosition.X < elementRect.Left)
+                    else
                     {
                         previousElement = (i > 0) ? dockPanel.Children[i - 1] : null;
                         nextElement = dockPanel.Children[i];
-                        break;
                     }
                 }
             }
 
             if (!isOverElement)
             {
+                previousButton = null;
                 if (previousElement is Button prevButton && nextElement is Button nextButton)
                 {
                     Console.WriteLine($"Maus zwischen Elementen: {prevButton.Tag} und {nextButton.Tag}");
@@ -133,57 +145,75 @@ public class DockManager
                 }
             }
         }
-    }private void LogMousePositionAndElements(Point mousePosition)
-{
-    Console.WriteLine($"Aktuelle Mausposition: {mousePosition}");
+    }
 
-    foreach (var child in dockPanel.Children)
+
+
+    private void LogMousePositionAndElements(Point mousePosition)
     {
-        if (child is Button button && button.Tag is DockItem dockItem)
-        {
-            var elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
-            Console.WriteLine($"Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}, Size = {elementRect.Size}");
+        Console.WriteLine($"Aktuelle Mausposition: {mousePosition}");
 
-            if (elementRect.Contains(mousePosition))
+        foreach (var child in dockPanel.Children)
+        {
+            if (child is Button button && button.Tag is DockItem dockItem)
             {
-                Console.WriteLine($"Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
-                AnimateButton(button);  // Animation hinzufügen
+                var elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
+                Console.WriteLine($"Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}, Size = {elementRect.Size}");
+
+                if (elementRect.Contains(mousePosition))
+                {
+                    Console.WriteLine($"Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
+
+                    if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
+                    {
+                        AnimateButton(button);  // Animation hinzufügen
+                        animationPlayed[button] = true;
+                    }
+                    else if (button != previousButton)
+                    {
+                        AnimateButton(button);
+                    }
+                    previousButton = button;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Kein DockItem an diesem Button gefunden");
             }
         }
-        else
-        {
-            Console.WriteLine("Kein DockItem an diesem Button gefunden");
-        }
     }
-}
 
-private void AnimateButton(Button button)
-{
-    var scaleTransform = new ScaleTransform(1.0, 1.0);
-    button.RenderTransformOrigin = new Point(0.5, 0.5);
-    button.RenderTransform = scaleTransform;
 
-    var scaleXAnimation = new DoubleAnimation
+    private void AnimateButton(Button button)
     {
-        From = 1.0,
-        To = 1.2,
-        Duration = new Duration(TimeSpan.FromSeconds(0.3)),
-        AutoReverse = true,
-        RepeatBehavior = new RepeatBehavior(2)  // Animation 2-mal abspielen
-    };
+        var scaleTransform = new ScaleTransform(1.0, 1.0);
+        button.RenderTransformOrigin = new Point(0.5, 0.5);
+        button.RenderTransform = scaleTransform;
 
-    var scaleYAnimation = new DoubleAnimation
-    {
-        From = 1.0,
-        To = 1.2,
-        Duration = new Duration(TimeSpan.FromSeconds(0.3)),
-        AutoReverse = true,
-        RepeatBehavior = new RepeatBehavior(2)  // Animation 2-mal abspielen
-    };
+        var scaleXAnimation = new DoubleAnimation
+        {
+            From = 1.0,
+            To = 1.2,
+            Duration = new Duration(TimeSpan.FromSeconds(0.3)),
+            AutoReverse = true,
+            RepeatBehavior = new RepeatBehavior(2)  // Animation 2-mal abspielen
+        };
 
-    scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
-    scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
-}
+        var scaleYAnimation = new DoubleAnimation
+        {
+            From = 1.0,
+            To = 1.2,
+            Duration = new Duration(TimeSpan.FromSeconds(0.3)),
+            AutoReverse = true,
+            RepeatBehavior = new RepeatBehavior(2)  // Animation 2-mal abspielen
+        };
+
+        scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
+        scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
+    }
+
+
+
 
     // private void StopAnimation(Button button)
     // {
