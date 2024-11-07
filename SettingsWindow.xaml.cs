@@ -8,11 +8,16 @@ namespace BiMaDock
 {
     public partial class SettingsWindow : Window
     {
+        private readonly string settingsFilePath;
+
         public SettingsWindow()
         {
             InitializeComponent();
+            settingsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "StyleSettings.json");
+
             ShowVersionInConsole();
             AutoStartCheckBox.IsChecked = StartupManager.IsInStartup();
+            LoadSettings();
         }
 
         private void ShowVersionInConsole()
@@ -25,6 +30,32 @@ namespace BiMaDock
 
             System.Console.WriteLine($"Detaillierte Version: {informationalVersion}");
             System.Console.WriteLine($"Klare Version: {clearVersion}");
+        }
+
+        private void LoadSettings()
+        {
+            if (File.Exists(settingsFilePath))
+            {
+                string json = File.ReadAllText(settingsFilePath);
+                dynamic settings = JsonConvert.DeserializeObject(json);
+
+                if (settings != null)
+                {
+                    if (ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
+                    {
+                        PrimaryColorPicker.SelectedColor = primaryColor;
+                        PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
+                    }
+
+                    if (ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
+                    {
+                        SecondaryColorPicker.SelectedColor = secondaryColor;
+                        SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
+                    }
+
+                    AnimationSpeedSlider.Value = settings.AnimationSpeed;
+                }
+            }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
