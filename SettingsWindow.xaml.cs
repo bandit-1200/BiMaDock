@@ -32,31 +32,34 @@ namespace BiMaDock
             System.Console.WriteLine($"Klare Version: {clearVersion}");
         }
 
-private void LoadSettings()
-{
-    if (File.Exists(settingsFilePath))
-    {
-        string json = File.ReadAllText(settingsFilePath);
-        var settings = JsonConvert.DeserializeObject<dynamic>(json);
-
-        if (settings != null)
+        private void LoadSettings()
         {
-            if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
+            if (File.Exists(settingsFilePath))
             {
-                PrimaryColorPicker.SelectedColor = primaryColor;
-                PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
-            }
+                string json = File.ReadAllText(settingsFilePath);
+                var settings = JsonConvert.DeserializeObject<dynamic>(json);
 
-            if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
-            {
-                SecondaryColorPicker.SelectedColor = secondaryColor;
-                SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
-            }
+                if (settings != null)
+                {
+                    if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
+                    {
+                        PrimaryColorPicker.SelectedColor = primaryColor;
+                        PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
+                    }
 
-            AnimationSpeedSlider.Value = settings.AnimationSpeed;
+                    if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
+                    {
+                        SecondaryColorPicker.SelectedColor = secondaryColor;
+                        SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
+                    }
+
+                    if (settings.FadeDuration != null)
+                    {
+                        FadeDurationSlider.Value = settings.FadeDuration;
+                    }
+                }
+            }
         }
-    }
-}
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
@@ -67,7 +70,7 @@ private void LoadSettings()
             {
                 PrimaryColor = primaryColor.ToString(),
                 SecondaryColor = secondaryColor.ToString(),
-                AnimationSpeed = AnimationSpeedSlider?.Value ?? 1.0
+                FadeDuration = FadeDurationSlider?.Value ?? 1.0
             };
 
             string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
@@ -76,7 +79,6 @@ private void LoadSettings()
 
             Directory.CreateDirectory(directoryPath);
             File.WriteAllText(Path.Combine(directoryPath, "StyleSettings.json"), json);
-            MessageBox.Show("Einstellungen gespeichert!");
         }
 
         private void PrimaryColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
