@@ -28,9 +28,6 @@ namespace BiMaDock
         
 private void CreateAnimationEffectDropdown()
 {
-    // Container für die dynamisch erstellten Steuerelemente
-    StackPanel animationSettingsPanel = new StackPanel();
-
     // Titel für das Animations-Tab
     TextBlock titleTextBlock = new TextBlock
     {
@@ -41,7 +38,7 @@ private void CreateAnimationEffectDropdown()
         HorizontalAlignment = HorizontalAlignment.Center,
         Margin = new Thickness(0, 0, 0, 20)
     };
-    animationSettingsPanel.Children.Add(titleTextBlock);
+    AnimationSettingsPanel.Children.Add(titleTextBlock);
 
     // ComboBox für die Auswahl des Animationseffekts
     ComboBox animationEffectComboBox = new ComboBox
@@ -54,11 +51,14 @@ private void CreateAnimationEffectDropdown()
     animationEffectComboBox.Items.Add("Translate");
     animationEffectComboBox.SelectedIndex = 0; // Standardmäßig "Scale" ausgewählt
     animationEffectComboBox.SelectionChanged += AnimationEffectComboBox_SelectionChanged; // Event-Handler hinzufügen
-    animationSettingsPanel.Children.Add(animationEffectComboBox);
+    AnimationSettingsPanel.Children.Add(animationEffectComboBox);
 
-    // Füge das dynamisch erstellte Panel dem Platzhalter hinzu
-    AnimationSettingsPanel.Children.Add(animationSettingsPanel);
+    // Initiale Einstellungen erstellen (z.B. Scale)
+    CreateScaleAnimationSettings();
 }
+
+
+
 
 private void AnimationEffectComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 {
@@ -69,6 +69,12 @@ private void AnimationEffectComboBox_SelectionChanged(object sender, SelectionCh
         
         if (!string.IsNullOrEmpty(selectedEffect))
         {
+            // Entferne nur die dynamisch erstellten Kinder, nicht das Dropdown-Menü
+            while (AnimationSettingsPanel.Children.Count > 2) // Da das Dropdown-Menü das zweite Element ist
+            {
+                AnimationSettingsPanel.Children.RemoveAt(2);
+            }
+
             // Logik zur Erstellung der Animationseinstellungen basierend auf der Auswahl
             if (selectedEffect == "Scale")
             {
@@ -85,6 +91,12 @@ private void AnimationEffectComboBox_SelectionChanged(object sender, SelectionCh
         }
     }
 }
+
+
+
+
+
+
 private void CreateScaleAnimationSettings()
 {
     // Slider für die Animationsdauer
