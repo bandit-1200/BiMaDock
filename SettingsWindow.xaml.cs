@@ -592,13 +592,20 @@ private void LoadSettings()
             }
 
             // Effekt-Index laden
-            if (animationEffectComboBox != null && settings.SelectedEffectIndex != null)
+            if (settings.SelectedEffectIndex != null)
             {
-                animationEffectComboBox.SelectedIndex = (int)settings.SelectedEffectIndex;
+                var selectedEffectIndex = (int)settings.SelectedEffectIndex;
+                if (animationEffectComboBox != null)
+                {
+                    animationEffectComboBox.SelectedIndex = selectedEffectIndex;
+                }
             }
         }
     }
 }
+
+
+
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
