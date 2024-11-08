@@ -51,6 +51,7 @@ namespace BiMaDock
         {
             InitializeComponent();
             CheckAutostart();
+            ButtonAnimations.LoadSelectedEffectIndex();
             AllowDrop = true;
             Console.WriteLine("Hauptfenster initialisiert."); // Debugging
             dockManager = new DockManager(DockPanel, CategoryDockContainer, this); // Übergeben von CategoryDockContainer

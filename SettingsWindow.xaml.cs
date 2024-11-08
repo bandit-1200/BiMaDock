@@ -575,6 +575,7 @@ namespace BiMaDock
                 File.WriteAllText(Path.Combine(directoryPath, "StyleSettings.json"), json);
 
                 // Schließen des Fensters
+                ButtonAnimations.LoadSelectedEffectIndex();
                 Close();
             }
             else
@@ -582,6 +583,8 @@ namespace BiMaDock
                 MessageBox.Show("AnimationEffectComboBox oder dessen SelectedItem ist null.");
             }
         }
+
+
 
         // private void SaveEffectSettings(string filename, object effectSettings)
         // {
