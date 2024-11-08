@@ -575,7 +575,7 @@ namespace BiMaDock
                 File.WriteAllText(Path.Combine(directoryPath, "StyleSettings.json"), json);
 
                 // Schließen des Fensters
-                ButtonAnimations.LoadSelectedEffectIndex();
+                ButtonAnimations.LoadSettings();
                 Close();
             }
             else
