@@ -178,6 +178,35 @@ public class ButtonAnimations
 
         rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation);
     }
+    public static void AnimatTranslateTransform(Button button)
+    {
+         Console.WriteLine("AnimatTranslateTransform geladen...");
+        var translateTransform = new TranslateTransform();
+        button.RenderTransformOrigin = new Point(0.5, 0.5);
+        button.RenderTransform = translateTransform;
+
+        var translateXAnimation = new DoubleAnimation
+        {
+            From = 0,
+            To = TranslateSettings.TranslateX, // Verwendet TranslateX aus den Einstellungen
+            Duration = new Duration(TimeSpan.FromSeconds(TranslateSettings.Duration)), // Verwendet die Duration
+            AutoReverse = TranslateSettings.AutoReverse, // Verwendet AutoReverse aus den Einstellungen
+            RepeatBehavior = new RepeatBehavior(1)
+        };
+
+        var translateYAnimation = new DoubleAnimation
+        {
+            From = 0,
+            To = TranslateSettings.TranslateY, // Verwendet TranslateY aus den Einstellungen
+            Duration = new Duration(TimeSpan.FromSeconds(TranslateSettings.Duration)), // Verwendet die Duration
+            AutoReverse = TranslateSettings.AutoReverse, // Verwendet AutoReverse aus den Einstellungen
+            RepeatBehavior = new RepeatBehavior(1)
+        };
+
+        // Beginnt die Animation für X und Y Achsen
+        translateTransform.BeginAnimation(TranslateTransform.XProperty, translateXAnimation);
+        translateTransform.BeginAnimation(TranslateTransform.YProperty, translateYAnimation);
+    }
 
 
 
@@ -209,12 +238,17 @@ public class ButtonAnimations
         switch (animationChoice)
         {
             case 1:
-                Console.WriteLine("Starte AnimateButton");
+                Console.WriteLine("Starte Scale");
                 AnimatScaleTransform(button);
                 break;
             case 2:
-                Console.WriteLine("Starte AnimateButton2");
+                Console.WriteLine("Starte Rotate");
                 AnimatRotateTransform(button);
+                break;
+
+            case 3:
+                Console.WriteLine("Starte Translate");
+                AnimatTranslateTransform(button);
                 break;
             default:
                 Console.WriteLine("Keine Animation - NotAnimate wird aufgerufen");
