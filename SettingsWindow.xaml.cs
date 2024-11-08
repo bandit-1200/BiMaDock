@@ -546,35 +546,60 @@ namespace BiMaDock
             System.Console.WriteLine($"Detaillierte Version: {informationalVersion}");
             System.Console.WriteLine($"Klare Version: {clearVersion}");
         }
+private void LoadSettings()
+{
+    if (File.Exists(settingsFilePath))
+    {
+        string json = File.ReadAllText(settingsFilePath);
+        var settings = JsonConvert.DeserializeObject<dynamic>(json);
 
-        private void LoadSettings()
+        if (settings != null)
         {
-            if (File.Exists(settingsFilePath))
+            // Farben laden
+            if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
             {
-                string json = File.ReadAllText(settingsFilePath);
-                var settings = JsonConvert.DeserializeObject<dynamic>(json);
+                PrimaryColorPicker.SelectedColor = primaryColor;
+                PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
+            }
 
-                if (settings != null)
-                {
-                    if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
-                    {
-                        PrimaryColorPicker.SelectedColor = primaryColor;
-                        PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
-                    }
+            if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
+            {
+                SecondaryColorPicker.SelectedColor = secondaryColor;
+                SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
+            }
 
-                    if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
-                    {
-                        SecondaryColorPicker.SelectedColor = secondaryColor;
-                        SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
-                    }
+            // Animationseinstellungen laden
+            if (settings.Scale != null)
+            {
+                if (scaleDurationSlider != null) scaleDurationSlider.Value = settings.Scale.Duration ?? 0.3;
+                if (scaleFactorSlider != null) scaleFactorSlider.Value = settings.Scale.ScaleFactor ?? 1.2;
+                if (autoReverseCheckBox != null) autoReverseCheckBox.IsChecked = settings.Scale.AutoReverse ?? true;
+            }
 
-                    // if (settings.FadeDuration != null)
-                    // {
-                    //     FadeDurationSlider.Value = settings.FadeDuration;
-                    // }
-                }
+            if (settings.Rotate != null)
+            {
+                if (rotateDurationSlider != null) rotateDurationSlider.Value = settings.Rotate.Duration ?? 0.3;
+                if (angleSlider != null) angleSlider.Value = settings.Rotate.Angle ?? 180.0;
+                if (autoReverseCheckBox != null) autoReverseCheckBox.IsChecked = settings.Rotate.AutoReverse ?? true;
+            }
+
+            if (settings.Translate != null)
+            {
+                if (translateDurationSlider != null) translateDurationSlider.Value = settings.Translate.Duration ?? 0.3;
+                if (translateXSlider != null) translateXSlider.Value = settings.Translate.TranslateX ?? 0.0;
+                if (translateYSlider != null) translateYSlider.Value = settings.Translate.TranslateY ?? 0.0;
+                if (autoReverseCheckBox != null) autoReverseCheckBox.IsChecked = settings.Translate.AutoReverse ?? true;
+            }
+
+            // Effekt-Index laden
+            if (animationEffectComboBox != null && settings.SelectedEffectIndex != null)
+            {
+                animationEffectComboBox.SelectedIndex = (int)settings.SelectedEffectIndex;
             }
         }
+    }
+}
+
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
