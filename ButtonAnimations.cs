@@ -101,9 +101,10 @@ public static void LoadSelectedEffectIndex()
     }
 
     // Auswahl der Animation
-    public static void AnimateButtonByChoice(Button button, int? choice = null)
+    public static void AnimateButtonByChoice(Button button)
     {
-        int animationChoice = choice ?? SelectedEffectIndex;
+        // int? choice = SelectedEffectIndex;
+        int animationChoice = SelectedEffectIndex;
         Console.WriteLine($"AnimateButtonByChoice aufgerufen mit Button: {button.Name}, Choice: {animationChoice}");
 
         switch (animationChoice)

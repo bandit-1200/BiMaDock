@@ -106,12 +106,12 @@ public class DockManager
                         isOverElement = true;
                         if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
                         {
-                            ButtonAnimations.AnimateButtonByChoice(button, 1); // Methode aus der neuen Klasse aufrufen
+                            ButtonAnimations.AnimateButtonByChoice(button); // Methode aus der neuen Klasse aufrufen
                             animationPlayed[button] = true;
                         }
                         else if (button != previousButton)
                         {
-                            ButtonAnimations.AnimateButtonByChoice(button, 1); // Methode aus der neuen Klasse aufrufen
+                            ButtonAnimations.AnimateButtonByChoice(button); // Methode aus der neuen Klasse aufrufen
                         }
                         previousButton = button;
                         break;
@@ -167,13 +167,13 @@ public class DockManager
                     if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
                     {
                         Console.WriteLine("Animation wird gestartet");
-                        ButtonAnimations.AnimateButtonByChoice(button, 2);  // Animation aufrufen
+                        ButtonAnimations.AnimateButtonByChoice(button);  // Animation aufrufen
                         animationPlayed[button] = true;
                     }
                     else if (button != previousButton)
                     {
                         Console.WriteLine("Animation wird erneut gestartet");
-                        ButtonAnimations.AnimateButtonByChoice(button, 2);  // Animation aufrufen
+                        ButtonAnimations.AnimateButtonByChoice(button);  // Animation aufrufen
                     }
                     previousButton = button;
                 }
