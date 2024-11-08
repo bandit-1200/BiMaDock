@@ -13,31 +13,39 @@ namespace BiMaDock
     {
         private readonly string settingsFilePath;
 
+        // Variablen für die Einstellungen
+        private ScaleSettings scaleSettings;
+        private RotateSettings rotateSettings;
+        private TranslateSettings translateSettings;
+
         public class ScaleSettings
         {
-            public double Duration { get; set; }
-            public double ScaleFactor { get; set; }
-            public bool AutoReverse { get; set; }
-            public int EffectIndex { get; set; }
+            public double Duration { get; set; } = 0.3;
+            public double ScaleFactor { get; set; } = 1.2;
+            public bool AutoReverse { get; set; } = true;
+            public int EffectIndex { get; set; } = 0;
         }
+
 
 
         public class RotateSettings
         {
-            public double Duration { get; set; }
-            public double Angle { get; set; }
-            public bool AutoReverse { get; set; }
-            public int EffectIndex { get; set; }
+            public double Duration { get; set; } = 0.3;
+            public double Angle { get; set; } = 180.0;
+            public bool AutoReverse { get; set; } = true;
+            public int EffectIndex { get; set; } = 1;
         }
+
 
         public class TranslateSettings
         {
-            public double Duration { get; set; }
-            public double TranslateX { get; set; }
-            public double TranslateY { get; set; }
-            public bool AutoReverse { get; set; }
-            public int EffectIndex { get; set; }
+            public double Duration { get; set; } = 0.3;
+            public double TranslateX { get; set; } = 0.0;
+            public double TranslateY { get; set; } = 0.0;
+            public bool AutoReverse { get; set; } = true;
+            public int EffectIndex { get; set; } = 2;
         }
+
         private ComboBox? animationEffectComboBox;
         private Slider? scaleFactorSlider;
         private Slider? angleSlider;
@@ -54,6 +62,25 @@ namespace BiMaDock
         public SettingsWindow()
         {
             InitializeComponent();
+
+            // Initialisieren der Einstellungsvariablen
+            scaleSettings = new ScaleSettings();
+            rotateSettings = new RotateSettings();
+            translateSettings = new TranslateSettings();
+
+            // Initialisieren der Steuerelemente
+            // PrimaryColorPicker = new ColorPicker();
+            // SecondaryColorPicker = new ColorPicker();
+            scaleDurationSlider = new Slider();
+            scaleFactorSlider = new Slider();
+            autoReverseCheckBox = new CheckBox();
+            rotateDurationSlider = new Slider();
+            angleSlider = new Slider();
+            translateDurationSlider = new Slider();
+            translateXSlider = new Slider();
+            translateYSlider = new Slider();
+            animationEffectComboBox = new ComboBox();
+
             CreateAnimationEffectDropdown();
             // animationEffectComboBox = new ComboBox();
             settingsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "StyleSettings.json");
@@ -140,7 +167,7 @@ namespace BiMaDock
             {
                 Minimum = 0.1,
                 Maximum = 3.0,
-                Value = 0.3,
+                Value = scaleSettings.Duration, // Wert aus den Einstellungen laden
                 TickFrequency = 0.1,
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
@@ -176,7 +203,7 @@ namespace BiMaDock
             {
                 Minimum = 1.0,
                 Maximum = 2.0,
-                Value = 1.2,
+                Value = scaleSettings.ScaleFactor, // Wert aus den Einstellungen laden
                 TickFrequency = 0.1,
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
@@ -199,14 +226,14 @@ namespace BiMaDock
             };
 
             // Initialisiere und speichere die Referenz auf die globale CheckBox für AutoReverse
-            autoReverseCheckBox = new CheckBox
+            var scaleAutoReverseCheckBox = new CheckBox
             {
-                Content = "Automatisches Rückwärtslaufen (AutoReverse)",
+                Content = "Scale AutoReverse", // Benennen der CheckBox für späteren Zugriff
                 Foreground = Brushes.White,
-                IsChecked = true,
+                IsChecked = scaleSettings.AutoReverse, // Wert aus den Einstellungen laden
                 Margin = new Thickness(0, 0, 0, 20)
             };
-            AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
+            AnimationSettingsPanel.Children.Add(scaleAutoReverseCheckBox);
         }
 
 
@@ -226,7 +253,7 @@ namespace BiMaDock
             {
                 Minimum = 0.1,
                 Maximum = 3.0,
-                Value = 0.3,
+                Value = rotateSettings.Duration, // Wert aus den Einstellungen laden
                 TickFrequency = 0.1,
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
@@ -262,7 +289,7 @@ namespace BiMaDock
             {
                 Minimum = 0.0,
                 Maximum = 360.0,
-                Value = 180.0,
+                Value = rotateSettings.Angle, // Wert aus den Einstellungen laden
                 TickFrequency = 10.0,
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
@@ -285,132 +312,17 @@ namespace BiMaDock
             };
 
             // Initialisiere und speichere die Referenz auf die globale CheckBox für AutoReverse
-            autoReverseCheckBox = new CheckBox
+            var rotateAutoReverseCheckBox = new CheckBox
             {
-                Content = "Automatisches Rückwärtslaufen (AutoReverse)",
+                Content = "Rotate AutoReverse", // Benennen der CheckBox für späteren Zugriff
                 Foreground = Brushes.White,
-                IsChecked = true,
+                IsChecked = rotateSettings.AutoReverse, // Wert aus den Einstellungen laden
                 Margin = new Thickness(0, 0, 0, 20)
             };
-            AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
+            AnimationSettingsPanel.Children.Add(rotateAutoReverseCheckBox);
         }
 
-        // {
-        //     // Slider für die Animationsdauer
-        //     TextBlock durationTextBlock = new TextBlock
-        //     {
-        //         Text = "Dauer (in Sekunden):",
-        //         Foreground = Brushes.White,
-        //         Margin = new Thickness(0, 0, 0, 5)
-        //     };
-        //     AnimationSettingsPanel.Children.Add(durationTextBlock);
 
-        //     Slider durationSlider = new Slider
-        //     {
-        //         Minimum = 0.1,
-        //         Maximum = 3.0,
-        //         Value = 0.3,
-        //         TickFrequency = 0.1,
-        //         IsSnapToTickEnabled = true,
-        //         Margin = new Thickness(0, 0, 0, 20)
-        //     };
-        //     AnimationSettingsPanel.Children.Add(durationSlider);
-
-        //     // TextBlock zur Anzeige des aktuellen Werts des Sliders
-        //     TextBlock durationValueTextBlock = new TextBlock
-        //     {
-        //         Text = $"Aktuelle Dauer: {durationSlider.Value} s",
-        //         Foreground = Brushes.White,
-        //         Margin = new Thickness(0, 0, 0, 20)
-        //     };
-        //     AnimationSettingsPanel.Children.Add(durationValueTextBlock);
-
-        //     // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-        //     durationSlider.ValueChanged += (s, e) =>
-        //     {
-        //         durationValueTextBlock.Text = $"Aktuelle Dauer: {durationSlider.Value} s";
-        //     };
-
-        //     // Slider für die X-Achsen-Translation
-        //     TextBlock translateXTextBlock = new TextBlock
-        //     {
-        //         Text = "X-Translation (in Pixel):",
-        //         Foreground = Brushes.White,
-        //         Margin = new Thickness(0, 0, 0, 5)
-        //     };
-        //     AnimationSettingsPanel.Children.Add(translateXTextBlock);
-
-        //     Slider translateXSlider = new Slider
-        //     {
-        //         Minimum = -100.0,
-        //         Maximum = 100.0,
-        //         Value = 0.0,
-        //         TickFrequency = 10.0,
-        //         IsSnapToTickEnabled = true,
-        //         Margin = new Thickness(0, 0, 0, 20)
-        //     };
-        //     AnimationSettingsPanel.Children.Add(translateXSlider);
-
-        //     // TextBlock zur Anzeige des aktuellen Werts des Sliders
-        //     TextBlock translateXValueTextBlock = new TextBlock
-        //     {
-        //         Text = $"Aktuelle X-Translation: {translateXSlider.Value} px",
-        //         Foreground = Brushes.White,
-        //         Margin = new Thickness(0, 0, 0, 20)
-        //     };
-        //     AnimationSettingsPanel.Children.Add(translateXValueTextBlock);
-
-        //     // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-        //     translateXSlider.ValueChanged += (s, e) =>
-        //     {
-        //         translateXValueTextBlock.Text = $"Aktuelle X-Translation: {translateXSlider.Value} px";
-        //     };
-
-        //     // Slider für die Y-Achsen-Translation
-        //     TextBlock translateYTextBlock = new TextBlock
-        //     {
-        //         Text = "Y-Translation (in Pixel):",
-        //         Foreground = Brushes.White,
-        //         Margin = new Thickness(0, 0, 0, 5)
-        //     };
-        //     AnimationSettingsPanel.Children.Add(translateYTextBlock);
-
-        //     Slider translateYSlider = new Slider
-        //     {
-        //         Minimum = -100.0,
-        //         Maximum = 100.0,
-        //         Value = 0.0,
-        //         TickFrequency = 10.0,
-        //         IsSnapToTickEnabled = true,
-        //         Margin = new Thickness(0, 0, 0, 20)
-        //     };
-        //     AnimationSettingsPanel.Children.Add(translateYSlider);
-
-        //     // TextBlock zur Anzeige des aktuellen Werts des Sliders
-        //     TextBlock translateYValueTextBlock = new TextBlock
-        //     {
-        //         Text = $"Aktuelle Y-Translation: {translateYSlider.Value} px",
-        //         Foreground = Brushes.White,
-        //         Margin = new Thickness(0, 0, 0, 20)
-        //     };
-        //     AnimationSettingsPanel.Children.Add(translateYValueTextBlock);
-
-        //     // Event-Handler zur Aktualisierung des TextBlocks bei Änderung des Slider-Werts
-        //     translateYSlider.ValueChanged += (s, e) =>
-        //     {
-        //         translateYValueTextBlock.Text = $"Aktuelle Y-Translation: {translateYSlider.Value} px";
-        //     };
-
-        //     // CheckBox für AutoReverse
-        //     CheckBox autoReverseCheckBox = new CheckBox
-        //     {
-        //         Content = "Automatisches Rückwärtslaufen (AutoReverse)",
-        //         Foreground = Brushes.White,
-        //         IsChecked = true,
-        //         Margin = new Thickness(0, 0, 0, 20)
-        //     };
-        //     AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
-        // }
         private void CreateTranslateAnimationSettings()
         {
             // Slider für die Animationsdauer
@@ -427,7 +339,7 @@ namespace BiMaDock
             {
                 Minimum = 0.1,
                 Maximum = 3.0,
-                Value = 0.3,
+                Value = translateSettings.Duration, // Wert aus den Einstellungen laden
                 TickFrequency = 0.1,
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
@@ -463,7 +375,7 @@ namespace BiMaDock
             {
                 Minimum = -100.0,
                 Maximum = 100.0,
-                Value = 0.0,
+                Value = translateSettings.TranslateX, // Wert aus den Einstellungen laden
                 TickFrequency = 10.0,
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
@@ -499,7 +411,7 @@ namespace BiMaDock
             {
                 Minimum = -100.0,
                 Maximum = 100.0,
-                Value = 0.0,
+                Value = translateSettings.TranslateY, // Wert aus den Einstellungen laden
                 TickFrequency = 10.0,
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
@@ -522,16 +434,15 @@ namespace BiMaDock
             };
 
             // Initialisiere und speichere die Referenz auf die globale CheckBox für AutoReverse
-            autoReverseCheckBox = new CheckBox
+            var translateAutoReverseCheckBox = new CheckBox
             {
-                Content = "Automatisches Rückwärtslaufen (AutoReverse)",
+                Content = "Translate AutoReverse", // Benennen der CheckBox für späteren Zugriff
                 Foreground = Brushes.White,
-                IsChecked = true,
+                IsChecked = translateSettings.AutoReverse, // Wert aus den Einstellungen laden
                 Margin = new Thickness(0, 0, 0, 20)
             };
-            AnimationSettingsPanel.Children.Add(autoReverseCheckBox);
+            AnimationSettingsPanel.Children.Add(translateAutoReverseCheckBox);
         }
-
 
 
 
@@ -546,65 +457,66 @@ namespace BiMaDock
             System.Console.WriteLine($"Detaillierte Version: {informationalVersion}");
             System.Console.WriteLine($"Klare Version: {clearVersion}");
         }
-private void LoadSettings()
-{
-    if (File.Exists(settingsFilePath))
-    {
-        string json = File.ReadAllText(settingsFilePath);
-        var settings = JsonConvert.DeserializeObject<dynamic>(json);
-
-        if (settings != null)
+        private void LoadSettings()
         {
-            // Farben laden
-            if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
+            if (File.Exists(settingsFilePath))
             {
-                PrimaryColorPicker.SelectedColor = primaryColor;
-                PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
-            }
+                string json = File.ReadAllText(settingsFilePath);
+                var settings = JsonConvert.DeserializeObject<dynamic>(json);
 
-            if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
-            {
-                SecondaryColorPicker.SelectedColor = secondaryColor;
-                SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
-            }
-
-            // Animationseinstellungen laden
-            if (settings.Scale != null)
-            {
-                if (scaleDurationSlider != null) scaleDurationSlider.Value = settings.Scale.Duration ?? 0.3;
-                if (scaleFactorSlider != null) scaleFactorSlider.Value = settings.Scale.ScaleFactor ?? 1.2;
-                if (autoReverseCheckBox != null) autoReverseCheckBox.IsChecked = settings.Scale.AutoReverse ?? true;
-            }
-
-            if (settings.Rotate != null)
-            {
-                if (rotateDurationSlider != null) rotateDurationSlider.Value = settings.Rotate.Duration ?? 0.3;
-                if (angleSlider != null) angleSlider.Value = settings.Rotate.Angle ?? 180.0;
-                if (autoReverseCheckBox != null) autoReverseCheckBox.IsChecked = settings.Rotate.AutoReverse ?? true;
-            }
-
-            if (settings.Translate != null)
-            {
-                if (translateDurationSlider != null) translateDurationSlider.Value = settings.Translate.Duration ?? 0.3;
-                if (translateXSlider != null) translateXSlider.Value = settings.Translate.TranslateX ?? 0.0;
-                if (translateYSlider != null) translateYSlider.Value = settings.Translate.TranslateY ?? 0.0;
-                if (autoReverseCheckBox != null) autoReverseCheckBox.IsChecked = settings.Translate.AutoReverse ?? true;
-            }
-
-            // Effekt-Index laden
-            if (settings.SelectedEffectIndex != null)
-            {
-                var selectedEffectIndex = (int)settings.SelectedEffectIndex;
-                if (animationEffectComboBox != null)
+                if (settings != null)
                 {
-                    animationEffectComboBox.SelectedIndex = selectedEffectIndex;
+                    // Farben laden
+                    if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
+                    {
+                        PrimaryColorPicker.SelectedColor = primaryColor;
+                        PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
+                    }
+
+                    if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
+                    {
+                        SecondaryColorPicker.SelectedColor = secondaryColor;
+                        SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
+                    }
+
+                    // Animationseinstellungen laden
+                    if (settings.Scale != null)
+                    {
+                        scaleSettings.Duration = settings.Scale.Duration ?? scaleSettings.Duration;
+                        scaleSettings.ScaleFactor = settings.Scale.ScaleFactor ?? scaleSettings.ScaleFactor;
+                        scaleSettings.AutoReverse = settings.Scale.AutoReverse ?? scaleSettings.AutoReverse;
+                        scaleSettings.EffectIndex = 1; // Fester Wert für Scale
+                    }
+
+                    if (settings.Rotate != null)
+                    {
+                        rotateSettings.Duration = settings.Rotate.Duration ?? rotateSettings.Duration;
+                        rotateSettings.Angle = settings.Rotate.Angle ?? rotateSettings.Angle;
+                        rotateSettings.AutoReverse = settings.Rotate.AutoReverse ?? rotateSettings.AutoReverse;
+                        rotateSettings.EffectIndex = 2; // Fester Wert für Rotate
+                    }
+
+                    if (settings.Translate != null)
+                    {
+                        translateSettings.Duration = settings.Translate.Duration ?? translateSettings.Duration;
+                        translateSettings.TranslateX = settings.Translate.TranslateX ?? translateSettings.TranslateX;
+                        translateSettings.TranslateY = settings.Translate.TranslateY ?? translateSettings.TranslateY;
+                        translateSettings.AutoReverse = settings.Translate.AutoReverse ?? translateSettings.AutoReverse;
+                        translateSettings.EffectIndex = 3; // Fester Wert für Translate
+                    }
+
+                    // Effekt-Index laden
+                    if (settings.SelectedEffectIndex != null)
+                    {
+                        var selectedEffectIndex = (int)settings.SelectedEffectIndex;
+                        if (animationEffectComboBox != null)
+                        {
+                            animationEffectComboBox.SelectedIndex = selectedEffectIndex;
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
-
 
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -612,55 +524,38 @@ private void LoadSettings()
             var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
             var secondaryColor = SecondaryColorPicker.SelectedColor ?? Colors.Transparent;
 
-            // Überprüfen und Setzen der Dauer für jede Animation
-            var scaleDuration = scaleDurationSlider?.Value ?? 0.3;
-            if (scaleDurationSlider != null && scaleDurationSlider.Value != 0.3)
-            {
-                scaleDuration = scaleDurationSlider.Value;
-            }
+            // Aktualisiere die Variablen mit den Werten der Steuerelemente
+            if (scaleDurationSlider != null) scaleSettings.Duration = scaleDurationSlider.Value;
+            if (scaleFactorSlider != null) scaleSettings.ScaleFactor = scaleFactorSlider.Value;
 
-            var rotateDuration = rotateDurationSlider?.Value ?? 0.3;
-            if (rotateDurationSlider != null && rotateDurationSlider.Value != 0.3)
-            {
-                rotateDuration = rotateDurationSlider.Value;
-            }
+            // Hier speziell die CheckBox für Scale verwenden
+            var scaleAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Scale AutoReverse");
+            if (scaleAutoReverseCheckBox != null) scaleSettings.AutoReverse = scaleAutoReverseCheckBox.IsChecked ?? true;
 
-            var translateDuration = translateDurationSlider?.Value ?? 0.3;
-            if (translateDurationSlider != null && translateDurationSlider.Value != 0.3)
-            {
-                translateDuration = translateDurationSlider.Value;
-            }
+            if (rotateDurationSlider != null) rotateSettings.Duration = rotateDurationSlider.Value;
+            if (angleSlider != null) rotateSettings.Angle = angleSlider.Value;
 
-            // Standardwerte setzen, falls keine Änderungen vorgenommen wurden
-            var scaleSettings = new ScaleSettings
-            {
-                Duration = scaleDuration,
-                ScaleFactor = scaleFactorSlider?.Value ?? 1.2,
-                AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
-                EffectIndex = 1
-            };
+            // Hier speziell die CheckBox für Rotate verwenden
+            var rotateAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Rotate AutoReverse");
+            if (rotateAutoReverseCheckBox != null) rotateSettings.AutoReverse = rotateAutoReverseCheckBox.IsChecked ?? true;
 
-            var rotateSettings = new RotateSettings
-            {
-                Duration = rotateDuration,
-                Angle = angleSlider?.Value ?? 180.0,
-                AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
-                EffectIndex = 2
-            };
+            if (translateDurationSlider != null) translateSettings.Duration = translateDurationSlider.Value;
+            if (translateXSlider != null) translateSettings.TranslateX = translateXSlider.Value;
+            if (translateYSlider != null) translateSettings.TranslateY = translateYSlider.Value;
 
-            var translateSettings = new TranslateSettings
-            {
-                Duration = translateDuration,
-                TranslateX = translateXSlider?.Value ?? 0.0,
-                TranslateY = translateYSlider?.Value ?? 0.0,
-                AutoReverse = autoReverseCheckBox?.IsChecked ?? true,
-                EffectIndex = 3
-            };
+            // Hier speziell die CheckBox für Translate verwenden
+            var translateAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Translate AutoReverse");
+            if (translateAutoReverseCheckBox != null) translateSettings.AutoReverse = translateAutoReverseCheckBox.IsChecked ?? true;
 
             if (animationEffectComboBox != null && animationEffectComboBox.SelectedItem != null)
             {
                 var selectedEffectIndex = animationEffectComboBox.SelectedIndex;
                 Console.WriteLine($"SelectedEffectIndex in SaveButton_Click: {selectedEffectIndex}");
+
+                // Setze den festen Effektindex für jede Animation
+                scaleSettings.EffectIndex = 1;
+                rotateSettings.EffectIndex = 2;
+                translateSettings.EffectIndex = 3;
 
                 var settings = new
                 {
@@ -688,18 +583,16 @@ private void LoadSettings()
             }
         }
 
+        // private void SaveEffectSettings(string filename, object effectSettings)
+        // {
+        //     string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        //     string directoryPath = Path.Combine(appDataPath, "BiMaDock");
+        //     Directory.CreateDirectory(directoryPath);
 
-
-        private void SaveEffectSettings(string filename, object effectSettings)
-        {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string directoryPath = Path.Combine(appDataPath, "BiMaDock");
-            Directory.CreateDirectory(directoryPath);
-
-            // Serialize and save the settings for a specific animation effect
-            string json = JsonConvert.SerializeObject(effectSettings, Formatting.Indented);
-            File.WriteAllText(Path.Combine(directoryPath, filename), json);
-        }
+        //     // Serialize and save the settings for a specific animation effect
+        //     string json = JsonConvert.SerializeObject(effectSettings, Formatting.Indented);
+        //     File.WriteAllText(Path.Combine(directoryPath, filename), json);
+        // }
 
 
 
