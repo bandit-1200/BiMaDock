@@ -8,10 +8,13 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading; // Für den DispatcherTimer
 
 
+
 namespace BiMaDock
 {
     public partial class MainWindow : Window
     {
+        // private GlobalMouseHook mouseHook;  // Deklariere die private Variable für den Hook
+
         private DockManager dockManager;
         // private bool isDragging = false;
         public bool dockVisible = true;
@@ -53,6 +56,12 @@ namespace BiMaDock
         {
             InitializeComponent();
             CheckAutostart();
+            // GlobalMouseHook mouseHook = new GlobalMouseHook(this); // 'this' bezieht sich auf das MainWindow
+
+            // mouseHook = new GlobalMouseHook();
+            // mouseHook.Start();
+
+
             ButtonAnimations.LoadSettings();
             AllowDrop = true;
             Console.WriteLine("Hauptfenster initialisiert."); // Debugging
@@ -282,8 +291,11 @@ namespace BiMaDock
 
 
 
+
+
         public void HideDock()
         {
+            currentDockStatus = DockStatus.None;
             if (dockVisible)
             {
                 dockVisible = false;
@@ -985,10 +997,10 @@ namespace BiMaDock
                 Console.WriteLine("Fehler: Kein Dateipfad bereitgestellt"); // Debug-Ausgabe
             }
             Console.WriteLine("OpenFile: Dock schließen");
+            HideCategoryDockPanel();
             HideDock();
             currentDockStatus = DockStatus.None;
-            CheckAllConditions();
-
+            // CheckAllConditions();
 
 
         }
@@ -1213,7 +1225,11 @@ namespace BiMaDock
 
 
 
-
+        protected override void OnClosed(EventArgs e)
+        {
+            // mouseHook.Stop();
+            // base.OnClosed(e);
+        }
 
 
 
