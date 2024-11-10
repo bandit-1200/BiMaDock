@@ -27,6 +27,8 @@ namespace BiMaDock
 
         private bool isCategoryMessageShown = false;
 
+        private Border? currentPlaceholder = null; // Referenz auf den Platzhalter
+        private int currentPlaceholderIndex = -1; // Index des Platzhalters, der die aktuelle Position speichert
 
         public void SetDragging(bool value)
         {
@@ -335,36 +337,36 @@ namespace BiMaDock
 
 
 
-private void CheckMousePosition(object sender, MouseEventArgs e)
-{
-    if (DockPanel != null && e != null) // Sicherstellen, dass DockPanel und e nicht null sind
-    {
-        var mousePos = Mouse.GetPosition(DockPanel);
-        var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Docks
-
-        if (dockBounds.Contains(mousePos))  // Überprüfen, ob die Maus sich innerhalb der Grenzen des Docks befindet
+        private void CheckMousePosition(object sender, MouseEventArgs e)
         {
-            Console.WriteLine("Mouse over DockPanel");  // Debug-Ausgabe
+            if (DockPanel != null && e != null) // Sicherstellen, dass DockPanel und e nicht null sind
+            {
+                var mousePos = Mouse.GetPosition(DockPanel);
+                var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Docks
 
-            // Timer neu starten, wenn die Maus über dem Dock ist
-            // dockHideTimer.Stop();
-            // dockHideTimer.Start();
+                if (dockBounds.Contains(mousePos))  // Überprüfen, ob die Maus sich innerhalb der Grenzen des Docks befindet
+                {
+                    Console.WriteLine("Mouse over DockPanel");  // Debug-Ausgabe
 
-            // categoryHideTimer.Stop();
-            // categoryHideTimer.Start();
+                    // Timer neu starten, wenn die Maus über dem Dock ist
+                    // dockHideTimer.Stop();
+                    // dockHideTimer.Start();
+
+                    // categoryHideTimer.Stop();
+                    // categoryHideTimer.Start();
+                }
+                else
+                {
+                    Console.WriteLine("Mouse not over DockPanel");  // Debug-Ausgabe
+                                                                    // HideDock();
+
+                }
+            }
+            else
+            {
+                Console.WriteLine("Fehler: DockPanel oder EventArgs sind null.");  // Debug-Ausgabe
+            }
         }
-        else
-        {
-            Console.WriteLine("Mouse not over DockPanel");  // Debug-Ausgabe
-                                                            // HideDock();
-
-        }
-    }
-    else
-    {
-        Console.WriteLine("Fehler: DockPanel oder EventArgs sind null.");  // Debug-Ausgabe
-    }
-}
 
 
 
@@ -607,8 +609,58 @@ private void CheckMousePosition(object sender, MouseEventArgs e)
         private void DockPanel_DragEnter(object sender, DragEventArgs e)
         {
             Console.WriteLine("DockPanel_DragEnter: Aufgerufen"); // Debug-Ausgabe
-            currentDockStatus |= DockStatus.DraggingToDock;
+            currentDockStatus |= DockStatus.DraggingToDock;  // Flag setzen
             CheckAllConditions();
+
+            // Position des Drag-Elements im DockPanel ermitteln
+            Point dropPosition = e.GetPosition(DockPanel);
+            Console.WriteLine($"DockPanel_DragEnter: Drop-Position: X={dropPosition.X}, Y={dropPosition.Y}"); // Debug-Ausgabe der Position
+
+            // Entferne vorhandene Platzhalter, bevor der neue erstellt wird
+            if (currentPlaceholder != null)
+            {
+                DockPanel.Children.Remove(currentPlaceholder);
+                Console.WriteLine("DockPanel_DragEnter: Vorhandenen Platzhalter entfernt.");
+            }
+
+            // Verzögerte Erstellung des Platzhalters
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                // Platzhalter-Element (z.B. transparentes Border)
+                currentPlaceholder = new Border
+                {
+                    Background = new SolidColorBrush(Colors.LightGray),
+                    Opacity = 0.5,
+                    Height = 0.1, // Höhe des Platzhalters
+                    Width = 20, // Breite des Platzhalters
+                };
+
+                // Durchlaufe die Kinder des DockPanels, um zu ermitteln, zwischen welchen Elementen das neue Element abgelegt wird
+                for (int i = 0; i < DockPanel.Children.Count; i++)
+                {
+                    if (DockPanel.Children[i] is UIElement element)
+                    {
+                        // Erhalte die Position jedes vorhandenen Elements
+                        Point elementPosition = element.TransformToAncestor(DockPanel).Transform(new Point(0, 0));
+                        double elementCenterX = elementPosition.X + (element.RenderSize.Width / 2);
+
+                        Console.WriteLine($"DockPanel_DragEnter: Element {i} - Position: X={elementPosition.X}, Y={elementPosition.Y}, CenterX={elementCenterX}"); // Debug-Ausgabe der Position des Elements
+
+                        // Überprüfe, ob die Drop-Position vor oder nach dem aktuellen Element ist
+                        if (dropPosition.X < elementCenterX)
+                        {
+                            // Wenn der Platzhalter-Index nicht übereinstimmt, füge den Platzhalter an der neuen Position ein
+                            if (currentPlaceholderIndex != i)
+                            {
+                                currentPlaceholderIndex = i; // Update den Platzhalter-Index
+                                DockPanel.Children.Insert(i, currentPlaceholder);
+                                Console.WriteLine($"DockPanel_DragEnter: Platzhalter zwischen Element {i - 1} und Element {i} hinzugefügt.");
+                            }
+                            break; // Hier kannst du weitere Logik hinzufügen, um das Element zu platzieren
+                        }
+                    }
+                }
+            }));
 
             // Prüfen auf Serializable und FileDrop
             if ((e.Data.GetDataPresent(DataFormats.Serializable) || e.Data.GetDataPresent(DataFormats.FileDrop)) && DockPanel != null)
@@ -622,16 +674,31 @@ private void CheckMousePosition(object sender, MouseEventArgs e)
                 e.Effects = DragDropEffects.None;
                 Console.WriteLine("DockPanel_DragEnter: Kein Element erkannt oder DockPanel ist null"); // Debug-Ausgabe
             }
+
+            // Sicherstellen, dass alle Platzhalter entfernt werden, wenn der Drag-Vorgang beendet ist
+            if (currentPlaceholder != null)
+            {
+                DockPanel.Children.Remove(currentPlaceholder);
+                Console.WriteLine("DockPanel_DragEnter: Platzhalter nach Verlassen der Methode entfernt.");
+                currentPlaceholder = null; // Rücksetzen der Referenz
+            }
         }
-
-
 
 
         private void DockPanel_DragLeave(object sender, DragEventArgs e)
         {
             Console.WriteLine("DockPanel_DragLeave: Aufgerufen"); // Debug-Ausgabe
-            currentDockStatus &= ~DockStatus.DraggingToDock;
+            currentDockStatus &= ~DockStatus.DraggingToDock;  // Flag zurücksetzen, wenn der Drag-Vorgang das DockPanel verlässt
             CheckAllConditions();
+
+            // Entferne den Platzhalter, wenn der Drag-Vorgang das DockPanel verlässt
+            if (currentPlaceholder != null)
+            {
+                DockPanel.Children.Remove(currentPlaceholder);
+                Console.WriteLine("DockPanel_DragLeave: Platzhalter entfernt.");
+                currentPlaceholder = null; // Setze die Platzhalter-Referenz zurück
+                currentPlaceholderIndex = -1; // Zurücksetzen des Platzhalter-Index
+            }
 
             // Visuelles Feedback zurücksetzen
             var brush = (SolidColorBrush)FindResource("PrimaryColor");
@@ -641,6 +708,41 @@ private void CheckMousePosition(object sender, MouseEventArgs e)
                 Console.WriteLine("DockPanel_DragLeave: Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
             }
         }
+
+
+
+        // private void DockPanel_Drop(object sender, DragEventArgs e)
+        // {
+        //     Console.WriteLine("DockPanel_Drop: Aufgerufen"); // Debug-Ausgabe
+
+        //     // Entferne den Platzhalter, wenn das Element abgelegt wird
+        //     if (currentPlaceholder != null)
+        //     {
+        //         DockPanel.Children.Remove(currentPlaceholder);
+        //         Console.WriteLine("DockPanel_Drop: Platzhalter entfernt.");
+        //         currentPlaceholder = null; // Setze die Platzhalter-Referenz zurück
+        //         currentPlaceholderIndex = -1; // Zurücksetzen des Platzhalter-Index
+        //     }
+
+        //     // Weitere Logik für das Ablegen des Elements hier einfügen
+        //     // Zum Beispiel: das tatsächliche Hinzufügen des Drag-Elements an die Position des Platzhalters
+        // }
+
+        // original Methode
+        // private void DockPanel_DragLeave(object sender, DragEventArgs e)
+        // {
+        //     Console.WriteLine("DockPanel_DragLeave: Aufgerufen"); // Debug-Ausgabe
+        //     currentDockStatus &= ~DockStatus.DraggingToDock;
+        //     CheckAllConditions();
+
+        //     // Visuelles Feedback zurücksetzen
+        //     var brush = (SolidColorBrush)FindResource("PrimaryColor");
+        //     if (brush != null)
+        //     {
+        //         DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
+        //         Console.WriteLine("DockPanel_DragLeave: Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
+        //     }
+        // }
 
 
 
