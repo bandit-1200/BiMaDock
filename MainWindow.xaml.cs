@@ -56,6 +56,8 @@ namespace BiMaDock
         {
             InitializeComponent();
             CheckAutostart();
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            this.Width = screenWidth * 0.8;  // 80% der Bildschirmbreite
             // GlobalMouseHook mouseHook = new GlobalMouseHook(this); // 'this' bezieht sich auf das MainWindow
 
             // mouseHook = new GlobalMouseHook();
