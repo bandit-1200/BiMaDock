@@ -984,6 +984,13 @@ namespace BiMaDock
             {
                 Console.WriteLine("Fehler: Kein Dateipfad bereitgestellt"); // Debug-Ausgabe
             }
+            Console.WriteLine("OpenFile: Dock schließen");
+            HideDock();
+            currentDockStatus = DockStatus.None;
+            CheckAllConditions();
+
+
+
         }
 
 
