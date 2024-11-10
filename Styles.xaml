@@ -59,7 +59,7 @@
                 <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="#005A9E"/> <!-- Dunklere Akzentfarbe beim Drücken -->
+                <Setter Property="Background" Value="#FFFFFF"/> <!-- Dunklere Akzentfarbe beim Drücken -->
             </Trigger>
         </Style.Triggers>
     </Style>
