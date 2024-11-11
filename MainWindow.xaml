@@ -67,7 +67,15 @@
                 </Border>
             </Grid>
             <!-- Kategorie-Dock Panel -->
-            <Border x:Name="CategoryDockBorder" Background="{StaticResource DebugColor4}" BorderBrush="{StaticResource AccentColor}" BorderThickness="2" CornerRadius="5" Padding="10" Visibility="Collapsed" HorizontalAlignment="Center">
+            <Border x:Name="CategoryDockBorder" 
+                Background="{StaticResource DebugColor4}" 
+                BorderBrush="{StaticResource AccentColor}" 
+                BorderThickness="2" 
+                CornerRadius="5" 
+                Padding="10" 
+                Visibility="Collapsed" 
+                HorizontalAlignment="Center"
+                Margin="500,0,0,0">
                 <StackPanel x:Name="CategoryDockContainer" Tag="KategorieDockContainer" Style="{StaticResource CategoryDockStyle}" AllowDrop="True" MinHeight="50" MouseEnter="CategoryDockContainer_MouseEnter" MouseLeave="CategoryDockContainer_MouseLeave" MouseMove="CategoryDockContainer_MouseMove"/>
             </Border>
         </StackPanel>
