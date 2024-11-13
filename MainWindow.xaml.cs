@@ -26,7 +26,8 @@ namespace BiMaDock
         private DispatcherTimer categoryHideTimer;
         // private string currentOpenCategory;
         private string currentOpenCategory = "";
-        private bool isCategoryDockOpen = false;
+        public bool isCategoryDockOpen = false;
+        public string isCategoryDockOpenID = "";
 
         private bool isCategoryMessageShown = false;
 
@@ -979,9 +980,12 @@ namespace BiMaDock
                     // Kategoriedock schließen
                     CategoryDockContainer.Visibility = Visibility.Collapsed;
                     CategoryDockBorder.Visibility = Visibility.Collapsed;
+                    OverlayCanvas.Visibility = Visibility.Collapsed;
                     currentDockStatus &= ~DockStatus.CategoryElementClicked; // Flag zurücksetzen
+
                     isCategoryDockOpen = false;
-                    Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} geschlossen"); // Debug-Ausgabe
+                    Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} ID: {dockItem.Id} geschlossen"); // Debug-Ausgabe
+                    isCategoryDockOpenID = "";
                 }
                 else
                 {
@@ -993,7 +997,8 @@ namespace BiMaDock
                     });
                     currentDockStatus |= DockStatus.CategoryElementClicked; // Flag setzen
                     isCategoryDockOpen = true;
-                    Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} geöffnet"); // Debug-Ausgabe
+                    Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} ID: {dockItem.Id} geöffnet"); // Debug-Ausgabe
+                    isCategoryDockOpenID = dockItem.Id;
                 }
             }
             CheckAllConditions();
@@ -1087,6 +1092,7 @@ namespace BiMaDock
             CategoryDockContainer.Children.Add(categoryDock);
             CategoryDockContainer.Visibility = Visibility.Visible;
             CategoryDockBorder.Visibility = Visibility.Visible;
+            OverlayCanvas.Visibility = Visibility.Visible;
             // Programmgesteuerte Mindestbreite setzen
             // CategoryDockContainer.MinWidth = 350; 
             var items = SettingsManager.LoadSettings();
@@ -1112,14 +1118,15 @@ namespace BiMaDock
             // Console.WriteLine("HideCategoryDockPanel aufgerufen"); // Debugging
             CategoryDockContainer.Visibility = Visibility.Collapsed;
             CategoryDockBorder.Visibility = Visibility.Collapsed; // Sichtbarkeit der CategoryDockBorder ändern
+            OverlayCanvas.Visibility = Visibility.Collapsed;
 
             // MainStackPanel zurücksetzen
             MainStackPanel.Margin = new Thickness(0, 0, 0, 0);
 
             // Timer stoppen
             categoryHideTimer.Stop();
-            // Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
-            CheckAllConditions();
+            Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
+            // CheckAllConditions();
         }
 
 

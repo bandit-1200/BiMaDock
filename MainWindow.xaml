@@ -17,17 +17,15 @@
         <StackPanel x:Name="MainStackPanel" Orientation="Vertical" HorizontalAlignment="Center" Background="Transparent">
             <Grid Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="10"/> <!-- Breite der Endkappe geändert -->
+                    <ColumnDefinition Width="10"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="10"/> <!-- Breite der Endkappe geändert -->
+                    <ColumnDefinition Width="10"/>
                 </Grid.ColumnDefinitions>
-                <!-- Linke Endkappe -->
                 <Border x:Name="LeftEndCap" Width="10" Height="80" Background="{StaticResource PrimaryColor}" CornerRadius="7,0,0,7" BorderBrush="{StaticResource SecondaryColor}" BorderThickness="1" Grid.Column="0">
                     <Border.RenderTransform>
                         <TranslateTransform/>
                     </Border.RenderTransform>
                 </Border>
-                <!-- Haupt-Dock Panel -->
                 <StackPanel Orientation="Horizontal" Name="DockPanel"
                             AllowDrop="True" Style="{StaticResource MainDockStyle}"
                             HorizontalAlignment="Center"
@@ -37,7 +35,6 @@
                     <StackPanel.RenderTransform>
                         <TranslateTransform/>
                     </StackPanel.RenderTransform>
-                    <!-- Hier kommen die Kategorie-Elemente hin -->
                     <StackPanel x:Name="CategoryElementContainer" Orientation="Horizontal"/>
                     <StackPanel.ContextMenu>
                         <ContextMenu x:Name="DockContextMenu">
@@ -47,7 +44,7 @@
                             <Separator/>
                             <MenuItem Header="Kategorie erstellen" Click="AddCategory_Click"/>
                             <Separator/>
-                            <MenuItem Header="Einstellungen" Click="OpenSettings_Click"/> <!-- Neuer Eintrag für Einstellungen -->
+                            <MenuItem Header="Einstellungen" Click="OpenSettings_Click"/>
                             <MenuItem Header="Autostart">
                                 <MenuItem.Icon>
                                     <CheckBox x:Name="AutostartCheckBox" Checked="AutostartCheckBox_Checked" Unchecked="AutostartCheckBox_Unchecked"/>
@@ -56,16 +53,32 @@
                             <Separator/>
                             <MenuItem Header="Beenden" Click="Exit_Click"/>
                         </ContextMenu>
-
                     </StackPanel.ContextMenu>
                 </StackPanel>
-                <!-- Rechte Endkappe -->
                 <Border x:Name="RightEndCap" Width="10" Height="80" Background="{StaticResource PrimaryColor}" CornerRadius="0,7,7,0" BorderBrush="{StaticResource SecondaryColor}" BorderThickness="1" Grid.Column="2">
                     <Border.RenderTransform>
                         <TranslateTransform/>
                     </Border.RenderTransform>
                 </Border>
             </Grid>
+
+            
+                <!-- Overlay für die Lücke am oberen Rand mit Path und Geometry -->
+                <Canvas x:Name="OverlayCanvas" HorizontalAlignment="Center" VerticalAlignment="Top" Panel.ZIndex="1">
+                    <!-- Linke vertikale blaue Linie -->
+                    <Line x:Name="OverlayCanvasLeftLine" X1="26" Y1="-19" X2="26" Y2="1" Stroke="#0078D4" StrokeThickness="1" Canvas.Left="100"/>
+                    <!-- Rechte vertikale blaue Linie -->
+                    <Line x:Name="OverlayCanvasRightLine" X1="95" Y1="-19" X2="95" Y2="1" Stroke="#0078D4" StrokeThickness="1" Canvas.Left="100"/>
+                    <!-- Horizontale rote Linie -->
+                    <Line x:Name="OverlayCanvasHorizontalLine" X1="27" Y1="1" X2="94" Y2="1" Stroke="#2D2D2D" StrokeThickness="2" Canvas.Left="100"/>
+                </Canvas>
+
+
+
+
+
+
+
             <!-- Kategorie-Dock Panel -->
             <Border x:Name="CategoryDockBorder" 
                 Background="{StaticResource DebugColor4}" 
@@ -76,8 +89,20 @@
                 Visibility="Collapsed" 
                 HorizontalAlignment="Center"
                 Margin="500,0,0,0">
-                <StackPanel x:Name="CategoryDockContainer" Tag="KategorieDockContainer" Style="{StaticResource CategoryDockStyle}" AllowDrop="True" MinHeight="50" MouseEnter="CategoryDockContainer_MouseEnter" MouseLeave="CategoryDockContainer_MouseLeave" MouseMove="CategoryDockContainer_MouseMove"/>
+
+                <!-- StackPanel, das den `CategoryDockContainer` enthält -->
+                <StackPanel x:Name="CategoryDockContainer" 
+                            Background="Transparent" 
+                            Tag="KategorieDockContainer" 
+                            Style="{StaticResource CategoryDockStyle}" 
+                            AllowDrop="True" 
+                            MinHeight="50" 
+                            MouseEnter="CategoryDockContainer_MouseEnter" 
+                            MouseLeave="CategoryDockContainer_MouseLeave" 
+                            MouseMove="CategoryDockContainer_MouseMove"/>
             </Border>
+            
+
         </StackPanel>
     </Grid>
 </Window>

@@ -151,38 +151,50 @@ public class DockManager
     // Vorherige Methoden
     private void LogMousePositionAndElements(Point mousePosition)
     {
-        Console.WriteLine($"Aktuelle Mausposition: {mousePosition}");
+        Console.WriteLine($"LogMousePositionAndElements: Aktuelle Mausposition: {mousePosition}");
 
         foreach (var child in dockPanel.Children)
         {
             if (child is Button button && button.Tag is DockItem dockItem)
             {
                 var elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
-                Console.WriteLine($"Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}, Size = {elementRect.Size}");
+                Console.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}, Size = {elementRect.Size}");
 
                 if (elementRect.Contains(mousePosition))
                 {
-                    Console.WriteLine($"Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
+                    Console.WriteLine($"LogMousePositionAndElements: Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
+                    Console.WriteLine($"LogMousePositionAndElements: Maus über Button: ID KAT = {mainWindow.isCategoryDockOpenID}");
+                    //  isCategoryDockOpenID
 
-                    // Setze Margin basierend auf Position
-                    if (mainWindow.CategoryDockBorder != null)
+                    if (dockItem.Id == mainWindow.isCategoryDockOpenID)
                     {
-                        mainWindow.CategoryDockBorder.Margin = new Thickness(elementRect.Location.X, 0, 0, 0);
+                        Console.WriteLine("LogMousePositionAndElements: Maus über offener Kategorie");
+                        // Setze Margin basierend auf Position
+                        if (mainWindow.CategoryDockBorder != null)
+                        {
+                            mainWindow.CategoryDockBorder.Margin = new Thickness(elementRect.Location.X, 0, 0, 0);
+                        }
+                        else
+                        {
+                            mainWindow.HideCategoryDockPanel();
+                        }
+
                     }
-                    else
-                    {
-                        mainWindow.HideCategoryDockPanel();
-                    }
+
+
+
+
+
 
                     if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
                     {
-                        Console.WriteLine("Animation wird gestartet");
+                        Console.WriteLine("LogMousePositionAndElements: Animation wird gestartet");
                         ButtonAnimations.AnimateButtonByChoice(button);  // Animation aufrufen
                         animationPlayed[button] = true;
                     }
                     else if (button != previousButton)
                     {
-                        Console.WriteLine("Animation wird erneut gestartet");
+                        Console.WriteLine("LogMousePositionAndElements: Animation wird erneut gestartet");
                         ButtonAnimations.AnimateButtonByChoice(button);  // Animation aufrufen
                     }
                     previousButton = button;
@@ -190,7 +202,7 @@ public class DockManager
                     // Überprüfe, ob das DockItem eine Kategorie ist und rufe ShowCategoryDockPanel auf
                     if (dockItem.IsCategory)
                     {
-                        Console.WriteLine("DockItem ist eine Kategorie, rufe ShowCategoryDockPanel auf");
+                        Console.WriteLine("LogMousePositionAndElements :DockItem ist eine Kategorie, rufe ShowCategoryDockPanel auf");
 
                         // Erstelle und übergebe ein StackPanel
                         StackPanel categoryDock = new StackPanel
@@ -210,7 +222,7 @@ public class DockManager
                 {
                     if (animationPlayed.ContainsKey(button))
                     {
-                        Console.WriteLine($"Maus verlässt Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
+                        Console.WriteLine($"LogMousePositionAndElements: Maus verlässt Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
                         animationPlayed[button] = false;
                     }
                 }
