@@ -834,10 +834,10 @@ namespace BiMaDock
                         {
                             if (!isCategoryMessageShown)
                             {
-                                MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
+                                // MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
                                 isCategoryMessageShown = true; // Nachricht wurde gezeigt
                             }
-                            isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
+                           
                             return; // Abbrechen, wenn es eine Kategorie ist
                         }
 
@@ -1139,6 +1139,7 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
             categoryHideTimer.Stop();
             Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
             // CheckAllConditions();
+             isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
         }
 
 
