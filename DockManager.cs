@@ -12,6 +12,7 @@ using System.Windows.Media.Animation;
 
 public class DockManager
 {
+    public double mousePositionSave = 0;
 
     private StackPanel dockPanel;
     private StackPanel? categoryDockContainer; // Referenz zu CategoryDockContainer
@@ -165,6 +166,10 @@ public class DockManager
                     Console.WriteLine($"LogMousePositionAndElements: Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
                     Console.WriteLine($"LogMousePositionAndElements: Maus über Button: ID KAT = {mainWindow.isCategoryDockOpenID}");
                     //  isCategoryDockOpenID
+                    if(dockItem.IsCategory)
+                    {
+                        mousePositionSave = elementRect.Location.X;
+                    }
 
                     if (dockItem.Id == mainWindow.isCategoryDockOpenID)
                     {
@@ -172,7 +177,7 @@ public class DockManager
                         // Setze Margin basierend auf Position
                         if (mainWindow.CategoryDockBorder != null)
                         {
-                            mainWindow.CategoryDockBorder.Margin = new Thickness(elementRect.Location.X, 0, 0, 0);
+                            // mainWindow.CategoryDockBorder.Margin = new Thickness(elementRect.Location.X, 0, 0, 0);
                         }
                         else
                         {
