@@ -1090,7 +1090,7 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
     CategoryDockContainer.Children.Add(categoryDock);
     CategoryDockContainer.Visibility = Visibility.Visible;
     CategoryDockBorder.Visibility = Visibility.Visible;
-    OverlayCanvas.Visibility = Visibility.Visible;
+    // OverlayCanvas.Visibility = Visibility.Visible;
 
     // Verwende Dispatcher, um den Margin-Wert nach dem Rendern zu setzen
     Application.Current.Dispatcher.InvokeAsync(() =>
