@@ -1102,7 +1102,7 @@ namespace BiMaDock
             CategoryDockContainer.Children.Add(categoryDock);
             CategoryDockContainer.Visibility = Visibility.Visible;
             CategoryDockBorder.Visibility = Visibility.Visible;
-            // OverlayCanvas.Visibility = Visibility.Visible;
+            OverlayCanvas.Visibility = Visibility.Visible;
 
             // Verwende Dispatcher, um den Margin-Wert nach dem Rendern zu setzen
             Application.Current.Dispatcher.InvokeAsync(() =>
@@ -1133,7 +1133,9 @@ namespace BiMaDock
                      Console.WriteLine($"Nach dem Rendern categoryDockPositionX: {categoryDockPositionX}"); // Debugging
                     CategoryDockBorder.Margin = new Thickness(categoryDockPositionX , 0, 0, 0);
 
-                    Canvas.SetLeft(OverlayCanvasHorizontalLine, dockManager.mousePositionSave);
+                    double overlayPositionX = dockManager.mousePositionSave  -16;
+
+                    Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
 
                 }
             }, System.Windows.Threading.DispatcherPriority.Loaded);
