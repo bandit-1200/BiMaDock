@@ -58,7 +58,7 @@ namespace BiMaDock
             InitializeComponent();
             CheckAutostart();
             double screenWidth = SystemParameters.PrimaryScreenWidth;
-            this.Width = screenWidth * 0.8;  // 80% der Bildschirmbreite
+            this.Width = screenWidth * 1.0;  // 100% der Bildschirmbreite
             // GlobalMouseHook mouseHook = new GlobalMouseHook(this); // 'this' bezieht sich auf das MainWindow
 
             // mouseHook = new GlobalMouseHook();
@@ -796,6 +796,18 @@ namespace BiMaDock
             Application.Current.Shutdown();
         }
 
+        private void Test_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Test_Click aufgerufen"); // Debug-Ausgabe
+
+            // Erstelle eine Instanz von TestWindow
+            TestWindow testWindow = new TestWindow(this);
+
+            // Zeige das Fenster
+            testWindow.Show();
+        }
+
+
 
         public void UpdateDockItemLocation(Button button)
         {
@@ -837,7 +849,7 @@ namespace BiMaDock
                                 // MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
                                 isCategoryMessageShown = true; // Nachricht wurde gezeigt
                             }
-                           
+
                             return; // Abbrechen, wenn es eine Kategorie ist
                         }
 
@@ -1083,45 +1095,65 @@ namespace BiMaDock
 
 
 
-public void ShowCategoryDockPanel(StackPanel categoryDock)
-{
-    // Setzt die grundlegenden Eigenschaften und fügt das CategoryDock hinzu
-    CategoryDockContainer.Children.Clear();
-    CategoryDockContainer.Children.Add(categoryDock);
-    CategoryDockContainer.Visibility = Visibility.Visible;
-    CategoryDockBorder.Visibility = Visibility.Visible;
-    // OverlayCanvas.Visibility = Visibility.Visible;
-
-    // Verwende Dispatcher, um den Margin-Wert nach dem Rendern zu setzen
-    Application.Current.Dispatcher.InvokeAsync(() =>
-    {
-        if (CategoryDockBorder.ActualWidth > 0)
+        public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
-            CategoryDockBorder.Margin = new Thickness(
-                dockManager.mousePositionSave - (CategoryDockBorder.ActualWidth / 2) ,
-                0, 0, 0
-            );
-            Canvas.SetLeft(OverlayCanvasHorizontalLine, dockManager.mousePositionSave );
-            Console.WriteLine($"Nach dem Rendern CategoryDockBorder: {CategoryDockBorder.ActualWidth}"); // Debugging
-        }
-    }, System.Windows.Threading.DispatcherPriority.Loaded);
+            // Setzt die grundlegenden Eigenschaften und fügt das CategoryDock hinzu
+            CategoryDockContainer.Children.Clear();
+            CategoryDockContainer.Children.Add(categoryDock);
+            CategoryDockContainer.Visibility = Visibility.Visible;
+            CategoryDockBorder.Visibility = Visibility.Visible;
+            // OverlayCanvas.Visibility = Visibility.Visible;
 
-    // Restlicher Code
-    currentDockStatus |= DockStatus.CategoryElementClicked;
-    currentOpenCategory = categoryDock.Name;
-    var items = SettingsManager.LoadSettings();
-    foreach (var item in items)
-    {
-        if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
-        {
-            dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
-        }
-    }
+            // Verwende Dispatcher, um den Margin-Wert nach dem Rendern zu setzen
+            Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                if (CategoryDockBorder.ActualWidth > 0)
+                {
+                    double MainStackPanelMitte = MainStackPanel.ActualWidth / 2;
 
-    MainStackPanel.Margin = new Thickness(0);
-    categoryHideTimer.Start();
-    CheckAllConditions();
-}
+
+                    Console.WriteLine($"Nach dem Rendern MainStackPanelMitte: {MainStackPanelMitte}"); // Debugging
+
+
+                    // double MainStackPanelWidth =0;
+
+                    
+                    // // MainStackPanel.ActualWidth;
+                    Console.WriteLine($"Nach dem Rendern MainStackPanel.ActualWidth: {MainStackPanel.ActualWidth}"); // Debugging
+                    Console.WriteLine($"Nach dem Rendern mousePositionSave: {dockManager.mousePositionSave}"); // Debugging
+                    // Console.WriteLine($"Nach dem Rendern CategoryDockBorder.ActualWidth: {CategoryDockBorder.ActualWidth / 2}"); // Debugging
+                    // Console.WriteLine($"Nach dem Rendern categoryDockPositionX: {categoryDockPositionX}"); // Debugging
+
+                    // double screenPositionX = this.Left + (dockManager.mousePositionSave - MainStackPanelWidth );
+                    // Console.WriteLine($"Nach dem Rendern screenPositionX: {screenPositionX}"); // Debugging
+
+                    // CategoryDockBorder.Margin = new Thickness(screenPositionX, 0, 0, 0);
+
+                    double categoryDockPositionX = 50 + dockManager.mousePositionSave - CategoryDockBorder.ActualWidth / 2;
+                     Console.WriteLine($"Nach dem Rendern categoryDockPositionX: {categoryDockPositionX}"); // Debugging
+                    CategoryDockBorder.Margin = new Thickness(categoryDockPositionX , 0, 0, 0);
+
+                    Canvas.SetLeft(OverlayCanvasHorizontalLine, dockManager.mousePositionSave);
+
+                }
+            }, System.Windows.Threading.DispatcherPriority.Loaded);
+
+            // Restlicher Code
+            currentDockStatus |= DockStatus.CategoryElementClicked;
+            currentOpenCategory = categoryDock.Name;
+            var items = SettingsManager.LoadSettings();
+            foreach (var item in items)
+            {
+                if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+                {
+                    dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
+                }
+            }
+
+            MainStackPanel.Margin = new Thickness(0);
+            categoryHideTimer.Start();
+            CheckAllConditions();
+        }
 
 
 
@@ -1138,8 +1170,8 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
             // Timer stoppen
             categoryHideTimer.Stop();
             Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
-            // CheckAllConditions();
-             isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
+                                                                                                       // CheckAllConditions();
+            isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
         }
 
 

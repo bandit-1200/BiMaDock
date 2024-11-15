@@ -77,6 +77,28 @@ public class DockManager
         Point mousePosition = e.GetPosition(dockPanel);
         LogMousePositionAndElements(mousePosition);
 
+        // Erhalte die Position der Maus relativ zum MainWindow
+        Point windowMousePosition = e.GetPosition(mainWindow);
+
+        // Konvertiere die Position relativ zum MainWindow in Bildschirmkoordinaten
+        Point screenPosition = mainWindow.PointToScreen(windowMousePosition);
+        // Ausgabe der Bildschirmkoordinaten
+        Console.WriteLine($"DockPanel_MouseMove: Mausposition auf dem Bildschirm: X = {screenPosition.X}, Y = {screenPosition.Y}");
+        // Erhalte die Breite des Hauptbildschirms
+        double screenWidth = SystemParameters.PrimaryScreenWidth;
+
+        // Ausgabe der Bildschirmbreite
+        Console.WriteLine($"DockPanel_MouseMove: Bildschirmbreite: {screenWidth}");
+        // Erhalte die Position des Canvas relativ zum MainWindow
+        Point canvasPosition = mainWindow.OverlayCanvas.TranslatePoint(new Point(0, 0), mainWindow);
+
+        // Konvertiere die Position relativ zum MainWindow in Bildschirmkoordinaten
+        Point canvasScreenPosition = mainWindow.PointToScreen(canvasPosition);
+        // Ausgabe der Bildschirmkoordinaten
+        Console.WriteLine($"DockPanel_MouseMove: Canvasposition auf dem Bildschirm: X = {canvasScreenPosition.X}, Y = {canvasScreenPosition.Y}");
+
+
+
         if (dragStartPoint.HasValue && draggedButton != null)
         {
             Point position = e.GetPosition(dockPanel);
@@ -149,7 +171,7 @@ public class DockManager
     }
 
 
-    // Vorherige Methoden
+    // Vorherige Methodenf
     private void LogMousePositionAndElements(Point mousePosition)
     {
         Console.WriteLine($"LogMousePositionAndElements: Aktuelle Mausposition: {mousePosition}");
@@ -159,16 +181,51 @@ public class DockManager
             if (child is Button button && button.Tag is DockItem dockItem)
             {
                 var elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
-                Console.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}, Size = {elementRect.Size}");
+                Point elementPosition = button.TranslatePoint(new Point(0, 0), mainWindow);
+
+                // Console.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}, Size = {elementRect.Size}");
 
                 if (elementRect.Contains(mousePosition))
+
                 {
-                    Console.WriteLine($"LogMousePositionAndElements: Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
-                    Console.WriteLine($"LogMousePositionAndElements: Maus über Button: ID KAT = {mainWindow.isCategoryDockOpenID}");
+                    // Console.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}");
+                    Console.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementPosition}, Size = {elementRect.Size}");
+                    // Console.WriteLine($"LogMousePositionAndElements: Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
+                    // Console.WriteLine($"LogMousePositionAndElements: Maus über Button: ID KAT = {mainWindow.isCategoryDockOpenID}");
+                    double elementCenterX = elementPosition.X + (elementRect.Width / 2);
+                    // Console.WriteLine($"LogMousePositionAndElements: elementCenterX {elementCenterX}");
+                    // double categoryDockPositionX = elementCenterX - (mainWindow.CategoryDockBorder.Width / 2);
+                    // double categoryDockBorderWidth = mainWindow.CategoryDockBorder.Width;
+                    // Console.WriteLine($"LogMousePositionAndElements: mainWindow.CategoryDockBorder.Width {mainWindow.CategoryDockBorder.Width}");
+                    // double categoryDockPositionX = elementCenterX - (categoryDockBorderWidth / 2);
+
+
+                    // Console.WriteLine($"LogMousePositionAndElements: categoryDockPositionX {categoryDockPositionX}");
+
+                    // mainWindow.CategoryDockBorder.Margin = new Thickness(elementCenterX, 0, 0, 0);
+
+
+                    // Vergewissere dich, dass du die richtige Eigenschaft zum Setzen der Position verwendest.
+                    // Hier ein Beispiel, wenn du Canvas verwendest:
+                    // Canvas.SetLeft(mainWindow.CategoryDockBorder, categoryDockPositionX);
+
+
+                    // Oder setze die Margin, falls du sie verwenden möchtest:
+                    // mainWindow.CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, mainWindow.CategoryDockBorder.Margin.Top, 0, 0);
+
+
+
+
+
+
+                    // Console.WriteLine($"LogMousePositionAndElements: Element MainWindow Left {mainWindow.Left}");
+                    // Console.WriteLine($"LogMousePositionAndElements: Element MainStackPanel  {mainWindow.MainStackPanel}");
+                    // Console.WriteLine($"LogMousePositionAndElements: Element MainWindow Left {mainWindow.Left}");
+
                     //  isCategoryDockOpenID
-                    if(dockItem.IsCategory)
+                    if (dockItem.IsCategory)
                     {
-                        mousePositionSave = elementRect.Location.X;
+                        mousePositionSave = elementRect.X;
                     }
 
                     if (dockItem.Id == mainWindow.isCategoryDockOpenID)
@@ -227,7 +284,7 @@ public class DockManager
                 {
                     if (animationPlayed.ContainsKey(button))
                     {
-                        Console.WriteLine($"LogMousePositionAndElements: Maus verlässt Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
+                        // Console.WriteLine($"LogMousePositionAndElements: Maus verlässt Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
                         animationPlayed[button] = false;
                     }
                 }

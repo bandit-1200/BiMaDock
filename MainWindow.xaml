@@ -41,6 +41,7 @@
                             <MenuItem x:Name="OpenMenuItem" Header="Öffnen" Click="Open_Click"/>
                             <MenuItem x:Name="DeleteMenuItem" Header="Löschen" Click="Delete_Click"/>
                             <MenuItem x:Name="EditMenuItem" Header="Eigenschaften bearbeiten" Click="Edit_Click"/>
+                            <MenuItem x:Name="TestMenuItem" Header="Test" Click="Test_Click"/>
                             <Separator/>
                             <MenuItem Header="Kategorie erstellen" Click="AddCategory_Click"/>
                             <Separator/>
@@ -87,8 +88,8 @@
                 CornerRadius="5" 
                 Padding="10" 
                 Visibility="Collapsed" 
-                HorizontalAlignment="Center"
-                Margin="500,0,0,0">
+                HorizontalAlignment="Left"
+                Margin="0,0,0,0">
 
                 <!-- StackPanel, das den `CategoryDockContainer` enthält -->
                 <StackPanel x:Name="CategoryDockContainer" 
