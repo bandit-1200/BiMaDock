@@ -376,7 +376,7 @@ namespace BiMaDock
                 else
                 {
                     // Console.WriteLine("Mouse not over DockPanel");  // Debug-Ausgabe
-                                                                    // HideDock();
+                    // HideDock();
 
                 }
             }
@@ -818,11 +818,11 @@ namespace BiMaDock
 
                 // Aktualisiere die Position des Dock-Items
                 dockManager.UpdateDockItemLocation(button, currentCategory); // currentCategory mitgeben
-                Console.WriteLine($"DockItem {dockItem.DisplayName} aktualisiert und gespeichert"); // Debug-Ausgabe
+                Console.WriteLine($"UpdateDockItemLocation: DockItem {dockItem.DisplayName} aktualisiert und gespeichert"); // Debug-Ausgabe
             }
             else
             {
-                Console.WriteLine("DockItem ist null"); // Debug-Ausgabe
+                Console.WriteLine("UpdateDockItemLocation: DockItem ist null"); // Debug-Ausgabe
             }
         }
 
@@ -888,6 +888,11 @@ namespace BiMaDock
                                 {
                                     Point elementPosition = existingButton.TranslatePoint(new Point(0, 0), CategoryDockContainer);
                                     double elementCenterX = elementPosition.X + (existingButton.ActualWidth / 2);
+       // Debugging-Ausgaben mit Namen
+        string buttonName = !string.IsNullOrEmpty(existingButton.Name) ? existingButton.Name : "(kein Name)";
+        Console.WriteLine($"CategoryDockContainer_Drop: Element {i}: Name = {buttonName}, Position X = {elementPosition.X}, Center X = {elementCenterX}");
+        Console.WriteLine($"CategoryDockContainer_Drop: Drop Position X = {dropCenterX}");
+
                                     if (dropCenterX < elementCenterX)
                                     {
                                         CategoryDockContainer.Children.Insert(i, button);
@@ -1171,7 +1176,7 @@ namespace BiMaDock
             // Timer stoppen
             categoryHideTimer.Stop();
             // Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
-                                                                                                       // CheckAllConditions();
+            // CheckAllConditions();
             isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
         }
 
@@ -1363,43 +1368,43 @@ namespace BiMaDock
 
 
 
-private void Test_Click(object sender, RoutedEventArgs e)
-{
-    // Debugging-Ausgabe mit Präfix
-    Console.WriteLine("Test_Click: Aufruf der Methode");
+        private void Test_Click(object sender, RoutedEventArgs e)
+        {
+            // Debugging-Ausgabe mit Präfix
+            Console.WriteLine("Test_Click: Aufruf der Methode");
 
-    // Aktuellen Wert der Resource ausgeben
-    var primaryColor = Application.Current.Resources["PrimaryColor"];
-    Console.WriteLine($"Test_Click:  primaryColor {primaryColor}");
-
-
-foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
-{
-    Console.WriteLine("Test_Click: App: ResourceDictionary gefunden.");
-    foreach (var key in dictionary.Keys)
-    {
-        var value = dictionary[key];
-        Console.WriteLine($"Test_Click: App: Schlüssel gefunden: {key}, Wert: {value}");
-    }
-}
+            // Aktuellen Wert der Resource ausgeben
+            var primaryColor = Application.Current.Resources["PrimaryColor"];
+            Console.WriteLine($"Test_Click:  primaryColor {primaryColor}");
 
 
-    // Resource zur Laufzeit ändern
-    Application.Current.Resources["PrimaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
-    Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
+            foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+            {
+                Console.WriteLine("Test_Click: App: ResourceDictionary gefunden.");
+                foreach (var key in dictionary.Keys)
+                {
+                    var value = dictionary[key];
+                    Console.WriteLine($"Test_Click: App: Schlüssel gefunden: {key}, Wert: {value}");
+                }
+            }
 
-    var updatedPrimaryColor = Application.Current.Resources["PrimaryColor"];
 
-                var brush = (SolidColorBrush)FindResource("PrimaryColor");
-                DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
+            // Resource zur Laufzeit ändern
+            Application.Current.Resources["PrimaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
+            Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
+
+            var updatedPrimaryColor = Application.Current.Resources["PrimaryColor"];
+
+            var brush = (SolidColorBrush)FindResource("PrimaryColor");
+            DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
 
 
 
 
-    // Überprüfen, ob die Änderung durchgeführt wurde
-    
-    Console.WriteLine($"Test_Click: Geänderte PrimaryColor: {updatedPrimaryColor}");
-}
+            // Überprüfen, ob die Änderung durchgeführt wurde
+
+            Console.WriteLine($"Test_Click: Geänderte PrimaryColor: {updatedPrimaryColor}");
+        }
 
 
 

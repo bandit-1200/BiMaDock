@@ -813,6 +813,32 @@ public class DockManager
     public void UpdateDockItemLocation(Button button, string currentCategory)
     {
         var dockItem = button.Tag as DockItem;
+        // Debug.WriteLine($"UpdateDockItemLocation: {dockItem.DisplayName}");
+
+        // Debug.WriteLine($"UpdateDockItemLocation: Name:{dockItem?.DisplayName}, ID: {dockItem?.Id}, Category: {dockItem?.Category}");
+
+        // // Alle Buttons im CategoryDockContainer auflisten
+        // Debug.WriteLine("UpdateDockItemLocation: Alle Buttons im CategoryDockContainer:");
+        // foreach (var child in CategoryDockContainer.Children)
+        // {
+        //     if (child is Button childButton)
+        //     {
+        //         var childDockItem = childButton.Tag as DockItem;
+        //         string childName = !string.IsNullOrEmpty(childButton.Name) ? childButton.Name : "(kein Name)";
+        //         string childDisplayName = childDockItem?.DisplayName ?? "(kein DisplayName)";
+        //         string childCategory = childDockItem?.Category ?? "(keine Kategorie)";
+
+        //         Debug.WriteLine($"UpdateDockItemLocation: Button Name: {childName}, DisplayName: {childDisplayName}, Kategorie: {childCategory}");
+        //     }
+        // }
+
+
+
+
+
+
+
+
         if (dockItem != null)
         {
             // Aktualisiere die Position des Dock-Items
