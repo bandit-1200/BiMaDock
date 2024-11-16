@@ -448,6 +448,8 @@ namespace BiMaDock
 
         public void CategoryDockContainer_MouseMove(object sender, MouseEventArgs e)
         {
+
+            Console.WriteLine($"CategoryDockContainer_MouseMove: gestartet"); // Debugging
             if (dragStartPoint.HasValue && draggedButton != null)
             {
                 Point position = e.GetPosition(CategoryDockContainer);
@@ -832,6 +834,9 @@ namespace BiMaDock
 
         public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
+            Console.WriteLine("CategoryDockContainer_Drop aufgerufen"); // Debug-Ausgabe
+
+
             if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
             {
                 var button = e.Data.GetData(DataFormats.Serializable) as Button;
@@ -888,10 +893,6 @@ namespace BiMaDock
                                 {
                                     Point elementPosition = existingButton.TranslatePoint(new Point(0, 0), CategoryDockContainer);
                                     double elementCenterX = elementPosition.X + (existingButton.ActualWidth / 2);
-       // Debugging-Ausgaben mit Namen
-        string buttonName = !string.IsNullOrEmpty(existingButton.Name) ? existingButton.Name : "(kein Name)";
-        Console.WriteLine($"CategoryDockContainer_Drop: Element {i}: Name = {buttonName}, Position X = {elementPosition.X}, Center X = {elementCenterX}");
-        Console.WriteLine($"CategoryDockContainer_Drop: Drop Position X = {dropCenterX}");
 
                                     if (dropCenterX < elementCenterX)
                                     {
@@ -938,20 +939,23 @@ namespace BiMaDock
             {
                 e.Effects = DragDropEffects.Move;
                 CategoryDockContainer.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
-                Console.WriteLine("Element über dem Kategoriedock erkannt"); // Debug-Ausgabe
+                Console.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt"); // Debug-Ausgabe
 
                 // Den Tag der geöffneten Kategorie lesen
                 var categoryName = CategoryDockContainer.Tag as string;
+
+                Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete categoryName: {categoryName}");
+
                 if (!string.IsNullOrEmpty(categoryName))
                 {
                     currentOpenCategory = categoryName;
-                    Console.WriteLine($"Geöffnete Kategorie: {currentOpenCategory}"); // Debug-Ausgabe
+                    Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete Kategorie: {currentOpenCategory}"); // Debug-Ausgabe
                 }
             }
             else
             {
                 e.Effects = DragDropEffects.None;
-                Console.WriteLine("Kein Button erkannt"); // Debug-Ausgabe
+                Console.WriteLine("CategoryDockContainer_DragEnter: Kein Button erkannt"); // Debug-Ausgabe
             }
             CheckAllConditions();
         }
@@ -1147,6 +1151,7 @@ namespace BiMaDock
             // Restlicher Code
             currentDockStatus |= DockStatus.CategoryElementClicked;
             currentOpenCategory = categoryDock.Name;
+            CategoryDockContainer.Tag = currentOpenCategory;
             var items = SettingsManager.LoadSettings();
             foreach (var item in items)
             {

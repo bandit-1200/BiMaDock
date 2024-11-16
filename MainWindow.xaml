@@ -92,6 +92,7 @@
                 <!-- StackPanel, das den `CategoryDockContainer` enthält -->
                 <StackPanel x:Name="CategoryDockContainer" 
                             Background="Transparent" 
+                            Tag="KategorieDockContainer"
                             Style="{DynamicResource CategoryDockStyle}" 
                             AllowDrop="True" 
                             MinHeight="50" 
