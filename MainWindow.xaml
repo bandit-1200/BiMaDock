@@ -6,28 +6,22 @@
         VerticalAlignment="Top" AllowsTransparency="True" Background="Transparent"
         AllowDrop="True"
         ShowInTaskbar="False">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
-    <Grid Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Top">
-        <StackPanel x:Name="MainStackPanel" Orientation="Vertical" HorizontalAlignment="Center" Background="Transparent">
+
+    <Grid Background="#00FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Top" >
+        <StackPanel x:Name="MainStackPanel" Orientation="Vertical" HorizontalAlignment="Center" Background="#00FFFFFF">
             <Grid Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="10"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="10"/>
                 </Grid.ColumnDefinitions>
-                <Border x:Name="LeftEndCap" Width="10" Height="80" Background="{StaticResource PrimaryColor}" CornerRadius="7,0,0,7" BorderBrush="{StaticResource SecondaryColor}" BorderThickness="1" Grid.Column="0">
+                <Border x:Name="LeftEndCap" Width="10" Height="80" Background="{DynamicResource PrimaryColor}" CornerRadius="7,0,0,7" BorderBrush="{DynamicResource SecondaryColor}" BorderThickness="0" Grid.Column="0">
                     <Border.RenderTransform>
                         <TranslateTransform/>
                     </Border.RenderTransform>
                 </Border>
-                <StackPanel Orientation="Horizontal" Name="DockPanel"
-                            AllowDrop="True" Style="{StaticResource MainDockStyle}"
+                <StackPanel Orientation="Horizontal" x:Name="DockPanel"
+                            AllowDrop="True" Style="{DynamicResource MainDockStyle}"
                             HorizontalAlignment="Center"
                             MinWidth="60"
                             Visibility="Visible"
@@ -46,9 +40,13 @@
                             <MenuItem Header="Kategorie erstellen" Click="AddCategory_Click"/>
                             <Separator/>
                             <MenuItem Header="Einstellungen" Click="OpenSettings_Click"/>
-                            <MenuItem Header="Autostart">
+                            <MenuItem Header="Autostart" Click="AutostartMenuItem_Click">
                                 <MenuItem.Icon>
-                                    <CheckBox x:Name="AutostartCheckBox" Checked="AutostartCheckBox_Checked" Unchecked="AutostartCheckBox_Unchecked"/>
+                                    <CheckBox x:Name="AutostartCheckBox"
+                                        Content="Autostart aktivieren" 
+                                         Checked="AutostartCheckBox_Checked" 
+                                         Unchecked="AutostartCheckBox_Unchecked"/>
+
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
@@ -56,7 +54,7 @@
                         </ContextMenu>
                     </StackPanel.ContextMenu>
                 </StackPanel>
-                <Border x:Name="RightEndCap" Width="10" Height="80" Background="{StaticResource PrimaryColor}" CornerRadius="0,7,7,0" BorderBrush="{StaticResource SecondaryColor}" BorderThickness="1" Grid.Column="2">
+                <Border x:Name="RightEndCap" Width="10" Height="80" Background="{DynamicResource PrimaryColor}" CornerRadius="0,7,7,0" BorderBrush="{DynamicResource SecondaryColor}" BorderThickness="0" Grid.Column="2">
                     <Border.RenderTransform>
                         <TranslateTransform/>
                     </Border.RenderTransform>
@@ -82,8 +80,8 @@
 
             <!-- Kategorie-Dock Panel -->
             <Border x:Name="CategoryDockBorder" 
-                Background="{StaticResource DebugColor4}" 
-                BorderBrush="{StaticResource AccentColor}" 
+                Background="{DynamicResource DebugColor4}" 
+                BorderBrush="{DynamicResource AccentColor}" 
                 BorderThickness="2" 
                 CornerRadius="5" 
                 Padding="10" 
@@ -95,7 +93,7 @@
                 <StackPanel x:Name="CategoryDockContainer" 
                             Background="Transparent" 
                             Tag="KategorieDockContainer" 
-                            Style="{StaticResource CategoryDockStyle}" 
+                            Style="{DynamicResource CategoryDockStyle}" 
                             AllowDrop="True" 
                             MinHeight="50" 
                             MouseEnter="CategoryDockContainer_MouseEnter" 
