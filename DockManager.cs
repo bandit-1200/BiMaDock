@@ -793,7 +793,10 @@ public class DockManager
             }
 
             // Setze Hintergrundfarbe zurück
-            SolidColorBrush? primaryColor = (SolidColorBrush?)new BrushConverter().ConvertFromString("#1E1E1E");
+            // var primaryColor = Application.Current.Resources["PrimaryColor"];
+            SolidColorBrush? primaryColor = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
+            // SolidColorBrush? primaryColor = (SolidColorBrush?)new BrushConverter().ConvertFromString("#1E1E1E");
+
             if (primaryColor != null)
             {
                 dockPanel.Background = primaryColor;

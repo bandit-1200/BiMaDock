@@ -16,7 +16,7 @@ namespace BiMaDock
     public partial class MainWindow : Window
     {
         // private GlobalMouseHook mouseHook;  // Deklariere die private Variable für den Hook
-
+        
         private DockManager dockManager;
         // private bool isDragging = false;
         public bool dockVisible = true;
@@ -59,6 +59,7 @@ namespace BiMaDock
         {
             InitializeComponent();
             CheckAutostart();
+
             //  SettingsWindow.LoadSettings();
 
             double screenWidth = SystemParameters.PrimaryScreenWidth;
@@ -1375,40 +1376,12 @@ namespace BiMaDock
 
         private void Test_Click(object sender, RoutedEventArgs e)
         {
+
             // Debugging-Ausgabe mit Präfix
             Console.WriteLine("Test_Click: Aufruf der Methode");
-
-            // Aktuellen Wert der Resource ausgeben
-            var primaryColor = Application.Current.Resources["PrimaryColor"];
-            Console.WriteLine($"Test_Click:  primaryColor {primaryColor}");
+            SettingsManager.SetColors(this);
 
 
-            foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
-            {
-                Console.WriteLine("Test_Click: App: ResourceDictionary gefunden.");
-                foreach (var key in dictionary.Keys)
-                {
-                    var value = dictionary[key];
-                    Console.WriteLine($"Test_Click: App: Schlüssel gefunden: {key}, Wert: {value}");
-                }
-            }
-
-
-            // Resource zur Laufzeit ändern
-            Application.Current.Resources["PrimaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
-            Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
-
-            var updatedPrimaryColor = Application.Current.Resources["PrimaryColor"];
-
-            var brush = (SolidColorBrush)FindResource("PrimaryColor");
-            DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
-
-
-
-
-            // Überprüfen, ob die Änderung durchgeführt wurde
-
-            Console.WriteLine($"Test_Click: Geänderte PrimaryColor: {updatedPrimaryColor}");
         }
 
 

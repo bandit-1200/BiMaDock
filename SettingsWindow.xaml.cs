@@ -595,6 +595,7 @@ namespace BiMaDock
             {
                 MessageBox.Show("AnimationEffectComboBox oder dessen SelectedItem ist null.");
             }
+            LoadSettings();
         }
 
 
