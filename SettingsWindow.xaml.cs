@@ -11,6 +11,7 @@ namespace BiMaDock
 {
     public partial class SettingsWindow : Window
     {
+        private MainWindow mainWindow;
         private readonly string settingsFilePath;
 
         // Variablen für die Einstellungen
@@ -59,10 +60,12 @@ namespace BiMaDock
 
 
 
-        public SettingsWindow()
+        public SettingsWindow(MainWindow window)
         {
             InitializeComponent();
-
+            
+            mainWindow = window;
+            
             // Initialisieren der Einstellungsvariablen
             scaleSettings = new ScaleSettings();
             rotateSettings = new RotateSettings();
@@ -457,12 +460,13 @@ namespace BiMaDock
             System.Console.WriteLine($"Detaillierte Version: {informationalVersion}");
             System.Console.WriteLine($"Klare Version: {clearVersion}");
         }
-        private void LoadSettings()
+        public void LoadSettings()
         {
             if (File.Exists(settingsFilePath))
             {
                 string json = File.ReadAllText(settingsFilePath);
                 var settings = JsonConvert.DeserializeObject<dynamic>(json);
+                var resources = Application.Current.Resources;
 
                 if (settings != null)
                 {
@@ -471,12 +475,21 @@ namespace BiMaDock
                     {
                         PrimaryColorPicker.SelectedColor = primaryColor;
                         PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
+                        resources["PrimaryColor"] = new SolidColorBrush(primaryColor);
+                        Console.WriteLine($"LoadSettings: PrimaryColor {settings.PrimaryColor}");
+
+                        // this.Resources["PrimaryColor"] = newColorBrush;
+                        mainWindow.DockPanel.Background = settings.PrimaryColor;
+                        
+
+
                     }
 
                     if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
                     {
                         SecondaryColorPicker.SelectedColor = secondaryColor;
                         SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
+                        resources["SecondaryColor"] = new SolidColorBrush(secondaryColor);
                     }
 
                     // Animationseinstellungen laden
@@ -599,15 +612,18 @@ namespace BiMaDock
 
 
 
-
-        private void PrimaryColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
-        {
-            if (e.NewValue.HasValue)
-            {
+private void PrimaryColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+{
+    if (e.NewValue.HasValue)
+    {
                 PrimaryColorPicker.Background = new SolidColorBrush(e.NewValue.Value);
                 PrimaryColorPreview.Background = new SolidColorBrush(e.NewValue.Value);
-            }
-        }
+    }
+}
+
+
+
+
 
         private void SecondaryColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {

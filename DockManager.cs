@@ -64,7 +64,7 @@ public class DockManager
     {
         if (!mainWindow.isDragging && mainWindow.dockVisible) // Prüfen, ob das Dock sichtbar ist, bevor es ausgeblendet wird
         {
-            Console.WriteLine("DockPanel verlassen, HideDock wird aufgerufen"); // Debugging
+            // Console.WriteLine("DockPanel verlassen, HideDock wird aufgerufen"); // Debugging
             mainWindow.HideDock();
         }
     }
@@ -83,19 +83,19 @@ public class DockManager
         // Konvertiere die Position relativ zum MainWindow in Bildschirmkoordinaten
         Point screenPosition = mainWindow.PointToScreen(windowMousePosition);
         // Ausgabe der Bildschirmkoordinaten
-        Console.WriteLine($"DockPanel_MouseMove: Mausposition auf dem Bildschirm: X = {screenPosition.X}, Y = {screenPosition.Y}");
+        // Console.WriteLine($"DockPanel_MouseMove: Mausposition auf dem Bildschirm: X = {screenPosition.X}, Y = {screenPosition.Y}");
         // Erhalte die Breite des Hauptbildschirms
         double screenWidth = SystemParameters.PrimaryScreenWidth;
 
         // Ausgabe der Bildschirmbreite
-        Console.WriteLine($"DockPanel_MouseMove: Bildschirmbreite: {screenWidth}");
+        // Console.WriteLine($"DockPanel_MouseMove: Bildschirmbreite: {screenWidth}");
         // Erhalte die Position des Canvas relativ zum MainWindow
         Point canvasPosition = mainWindow.OverlayCanvas.TranslatePoint(new Point(0, 0), mainWindow);
 
         // Konvertiere die Position relativ zum MainWindow in Bildschirmkoordinaten
         Point canvasScreenPosition = mainWindow.PointToScreen(canvasPosition);
         // Ausgabe der Bildschirmkoordinaten
-        Console.WriteLine($"DockPanel_MouseMove: Canvasposition auf dem Bildschirm: X = {canvasScreenPosition.X}, Y = {canvasScreenPosition.Y}");
+        // Console.WriteLine($"DockPanel_MouseMove: Canvasposition auf dem Bildschirm: X = {canvasScreenPosition.X}, Y = {canvasScreenPosition.Y}");
 
 
 
@@ -152,19 +152,19 @@ public class DockManager
                 previousButton = null;
                 if (previousElement is Button prevButton && nextElement is Button nextButton)
                 {
-                    Console.WriteLine($"Maus zwischen Elementen: {prevButton.Tag} und {nextButton.Tag}");
+                    // Console.WriteLine($"Maus zwischen Elementen: {prevButton.Tag} und {nextButton.Tag}");
                 }
                 else if (nextElement is Button onlyNextButton)
                 {
-                    Console.WriteLine($"Maus vor dem ersten Element: {onlyNextButton.Tag}");
+                    // Console.WriteLine($"Maus vor dem ersten Element: {onlyNextButton.Tag}");
                 }
                 else if (previousElement is Button onlyPrevButton)
                 {
-                    Console.WriteLine($"Maus nach dem letzten Element: {onlyPrevButton.Tag}");
+                    // Console.WriteLine($"Maus nach dem letzten Element: {onlyPrevButton.Tag}");
                 }
                 else
                 {
-                    Console.WriteLine("Maus über Dock ohne Element");
+                    // Console.WriteLine("Maus über Dock ohne Element");
                 }
             }
         }
@@ -174,7 +174,7 @@ public class DockManager
     // Vorherige Methodenf
     private void LogMousePositionAndElements(Point mousePosition)
     {
-        Console.WriteLine($"LogMousePositionAndElements: Aktuelle Mausposition: {mousePosition}");
+        // Console.WriteLine($"LogMousePositionAndElements: Aktuelle Mausposition: {mousePosition}");
 
         foreach (var child in dockPanel.Children)
         {
@@ -189,7 +189,7 @@ public class DockManager
 
                 {
                     // Console.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}");
-                    Console.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementPosition}, Size = {elementRect.Size}");
+                    // Console.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementPosition}, Size = {elementRect.Size}");
                     // Console.WriteLine($"LogMousePositionAndElements: Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
                     // Console.WriteLine($"LogMousePositionAndElements: Maus über Button: ID KAT = {mainWindow.isCategoryDockOpenID}");
                     double elementCenterX = elementPosition.X + (elementRect.Width / 2);
@@ -230,7 +230,7 @@ public class DockManager
 
                     if (dockItem.Id == mainWindow.isCategoryDockOpenID)
                     {
-                        Console.WriteLine("LogMousePositionAndElements: Maus über offener Kategorie");
+                        // Console.WriteLine("LogMousePositionAndElements: Maus über offener Kategorie");
                         // Setze Margin basierend auf Position
                         if (mainWindow.CategoryDockBorder != null)
                         {
@@ -250,13 +250,13 @@ public class DockManager
 
                     if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
                     {
-                        Console.WriteLine("LogMousePositionAndElements: Animation wird gestartet");
+                        // Console.WriteLine("LogMousePositionAndElements: Animation wird gestartet");
                         ButtonAnimations.AnimateButtonByChoice(button);  // Animation aufrufen
                         animationPlayed[button] = true;
                     }
                     else if (button != previousButton)
                     {
-                        Console.WriteLine("LogMousePositionAndElements: Animation wird erneut gestartet");
+                        // Console.WriteLine("LogMousePositionAndElements: Animation wird erneut gestartet");
                         ButtonAnimations.AnimateButtonByChoice(button);  // Animation aufrufen
                     }
                     previousButton = button;
@@ -264,7 +264,7 @@ public class DockManager
                     // Überprüfe, ob das DockItem eine Kategorie ist und rufe ShowCategoryDockPanel auf
                     if (dockItem.IsCategory)
                     {
-                        Console.WriteLine("LogMousePositionAndElements :DockItem ist eine Kategorie, rufe ShowCategoryDockPanel auf");
+                        // Console.WriteLine("LogMousePositionAndElements :DockItem ist eine Kategorie, rufe ShowCategoryDockPanel auf");
 
                         // Erstelle und übergebe ein StackPanel
                         StackPanel categoryDock = new StackPanel
@@ -291,7 +291,7 @@ public class DockManager
             }
             else
             {
-                Console.WriteLine("Kein DockItem an diesem Button gefunden");
+                // Console.WriteLine("Kein DockItem an diesem Button gefunden");
             }
         }
     }
@@ -350,7 +350,7 @@ public class DockManager
 
     public void LoadDockItems()
     {
-        Console.WriteLine("Lade Dock-Elemente..."); // Debugging zu Beginn des Aufrufs
+        // Console.WriteLine("Lade Dock-Elemente..."); // Debugging zu Beginn des Aufrufs
         var items = SettingsManager.LoadSettings();
 
         // Zuerst alle vorhandenen Items aus den Panels entfernen
@@ -407,7 +407,7 @@ public class DockManager
             }
         }
 
-        Console.WriteLine("Dock-Elemente geladen."); // Debugging am Ende des Aufrufs
+        // Console.WriteLine("Dock-Elemente geladen."); // Debugging am Ende des Aufrufs
     }
 
     public void SaveDockItems(string currentCategory)
@@ -885,7 +885,7 @@ public class DockManager
         // Speichern der aktualisierten Dock-Items
         SettingsManager.SaveSettings(items);
 
-        Console.WriteLine($"Alle Kinder der Kategorie '{categoryName}' wurden entfernt und gespeichert."); // Debug-Ausgabe
+        // Console.WriteLine($"Alle Kinder der Kategorie '{categoryName}' wurden entfernt und gespeichert."); // Debug-Ausgabe
     }
 
 
@@ -988,15 +988,15 @@ public class DockManager
 
     public void Open_Click(object sender, RoutedEventArgs e)
     {
-        Console.WriteLine("Open_Click aufgerufen"); // Debug-Ausgabe
+        // Console.WriteLine("Open_Click aufgerufen"); // Debug-Ausgabe
 
         if (mainWindow.DockContextMenu.PlacementTarget is Button button)
         {
-            Console.WriteLine("Button erkannt"); // Debug-Ausgabe
+            // Console.WriteLine("Button erkannt"); // Debug-Ausgabe
 
             if (button.Tag is DockItem dockItem)
             {
-                Console.WriteLine($"DockItem erkannt: {dockItem.DisplayName}"); // Debug-Ausgabe
+                // Console.WriteLine($"DockItem erkannt: {dockItem.DisplayName}"); // Debug-Ausgabe
 
                 if (!string.IsNullOrEmpty(dockItem.FilePath))
                 {

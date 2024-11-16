@@ -49,7 +49,7 @@ public class ButtonAnimations
                 if (settings?.SelectedEffectIndex != null)
                 {
                     SelectedEffectIndex = (int)settings.SelectedEffectIndex;
-                    Console.WriteLine($"SelectedEffectIndex geladen: {SelectedEffectIndex}");
+                    // Console.WriteLine($"SelectedEffectIndex geladen: {SelectedEffectIndex}");
                 }
 
                 // Lade die Einstellungen für Scale
@@ -60,7 +60,7 @@ public class ButtonAnimations
                     if (settings.Scale?.AutoReverse != null) ScaleSettings.AutoReverse = (bool)settings.Scale.AutoReverse;
                     if (settings.Scale?.EffectIndex != null) ScaleSettings.EffectIndex = (int)settings.Scale.EffectIndex;
 
-                    Console.WriteLine($"Scale Einstellungen geladen: Duration={ScaleSettings.Duration}, ScaleFactor={ScaleSettings.ScaleFactor}, AutoReverse={ScaleSettings.AutoReverse}");
+                    // Console.WriteLine($"Scale Einstellungen geladen: Duration={ScaleSettings.Duration}, ScaleFactor={ScaleSettings.ScaleFactor}, AutoReverse={ScaleSettings.AutoReverse}");
                 }
 
                 // Lade die Einstellungen für Rotate
@@ -71,7 +71,7 @@ public class ButtonAnimations
                     if (settings.Rotate?.AutoReverse != null) RotateSettings.AutoReverse = (bool)settings.Rotate.AutoReverse;
                     if (settings.Rotate?.EffectIndex != null) RotateSettings.EffectIndex = (int)settings.Rotate.EffectIndex;
 
-                    Console.WriteLine($"Rotate Einstellungen geladen: Duration={RotateSettings.Duration}, Angle={RotateSettings.Angle}, AutoReverse={RotateSettings.AutoReverse}");
+                    // Console.WriteLine($"Rotate Einstellungen geladen: Duration={RotateSettings.Duration}, Angle={RotateSettings.Angle}, AutoReverse={RotateSettings.AutoReverse}");
                 }
 
                 // Lade die Einstellungen für Translate
@@ -83,7 +83,7 @@ public class ButtonAnimations
                     if (settings.Translate?.AutoReverse != null) TranslateSettings.AutoReverse = (bool)settings.Translate.AutoReverse;
                     if (settings.Translate?.EffectIndex != null) TranslateSettings.EffectIndex = (int)settings.Translate.EffectIndex;
 
-                    Console.WriteLine($"Translate Einstellungen geladen: Duration={TranslateSettings.Duration}, TranslateX={TranslateSettings.TranslateX}, TranslateY={TranslateSettings.TranslateY}, AutoReverse={TranslateSettings.AutoReverse}");
+                    // Console.WriteLine($"Translate Einstellungen geladen: Duration={TranslateSettings.Duration}, TranslateX={TranslateSettings.TranslateX}, TranslateY={TranslateSettings.TranslateY}, AutoReverse={TranslateSettings.AutoReverse}");
                 }
             }
             catch (Exception ex)
@@ -233,7 +233,7 @@ public class ButtonAnimations
     {
         // int? choice = SelectedEffectIndex;
         int animationChoice = SelectedEffectIndex;
-        Console.WriteLine($"AnimateButtonByChoice aufgerufen mit Button: {button.Name}, Choice: {animationChoice}");
+        // Console.WriteLine($"AnimateButtonByChoice aufgerufen mit Button: {button.Name}, Choice: {animationChoice}");
 
         switch (animationChoice)
         {

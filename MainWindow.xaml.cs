@@ -6,6 +6,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading; // Für den DispatcherTimer
+using System.Collections;
+
 
 
 
@@ -57,6 +59,8 @@ namespace BiMaDock
         {
             InitializeComponent();
             CheckAutostart();
+            //  SettingsWindow.LoadSettings();
+
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             this.Width = screenWidth * 1.0;  // 100% der Bildschirmbreite
             // GlobalMouseHook mouseHook = new GlobalMouseHook(this); // 'this' bezieht sich auf das MainWindow
@@ -160,11 +164,10 @@ namespace BiMaDock
         // Weitere Initialisierung
 
 
-
         // Methode zum Öffnen des Einstellungsfensters
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
-            SettingsWindow settingsWindow = new SettingsWindow();
+            SettingsWindow settingsWindow = new SettingsWindow(this);
             settingsWindow.ShowDialog(); // Modal anzeigen
         }
 
@@ -215,11 +218,11 @@ namespace BiMaDock
             {
                 dragStartPoint = e.GetPosition(DockPanel);
                 draggedButton = button;
-                Console.WriteLine("DockPanel_MouseLeftButtonDown: Drag Start: " + draggedButton.Tag); // Debugging
+                // Console.WriteLine("DockPanel_MouseLeftButtonDown: Drag Start: " + draggedButton.Tag); // Debugging
             }
             else
             {
-                Console.WriteLine("DockPanel_MouseLeftButtonDown: Kein Button als Quelle gefunden"); // Debugging
+                // Console.WriteLine("DockPanel_MouseLeftButtonDown: Kein Button als Quelle gefunden"); // Debugging
             }
         }
 
@@ -264,7 +267,7 @@ namespace BiMaDock
                 slideAnimation.Completed += (s, e) =>
                 {
                     DockPanel.Margin = new Thickness(0, 0, 0, 0);
-                    Console.WriteLine("Dock vollständig eingeblendet"); // Debugging
+                    // Console.WriteLine("Dock vollständig eingeblendet"); // Debugging
                 };
 
 
@@ -316,7 +319,7 @@ namespace BiMaDock
                 slideAnimation.Completed += (s, e) =>
                 {
                     DockPanel.Margin = new Thickness(0, -DockPanel.ActualHeight + toValue, 0, 0);
-                    Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
+                    // Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
                 };
 
 
@@ -361,7 +364,7 @@ namespace BiMaDock
 
                 if (dockBounds.Contains(mousePos))  // Überprüfen, ob die Maus sich innerhalb der Grenzen des Docks befindet
                 {
-                    Console.WriteLine("Mouse over DockPanel");  // Debug-Ausgabe
+                    // Console.WriteLine("Mouse over DockPanel");  // Debug-Ausgabe
 
                     // Timer neu starten, wenn die Maus über dem Dock ist
                     // dockHideTimer.Stop();
@@ -372,7 +375,7 @@ namespace BiMaDock
                 }
                 else
                 {
-                    Console.WriteLine("Mouse not over DockPanel");  // Debug-Ausgabe
+                    // Console.WriteLine("Mouse not over DockPanel");  // Debug-Ausgabe
                                                                     // HideDock();
 
                 }
@@ -421,18 +424,18 @@ namespace BiMaDock
         {
             RemoveCrrentPlaceholder();
             // Ausgabe im Klartext
-            Console.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
+            // Console.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
 
             if (currentDockStatus > 0) // Überprüft, ob irgendein Flag gesetzt ist
             {
-                Console.WriteLine("Conditions met, showing dock."); // Debug-Ausgabe
+                // Console.WriteLine("Conditions met, showing dock."); // Debug-Ausgabe
                 ShowDock();
                 categoryHideTimer.Stop();
                 dockHideTimer.Stop();
             }
             else
             {
-                Console.WriteLine("Conditions not met, hiding dock."); // Debug-Ausgabe
+                // Console.WriteLine("Conditions not met, hiding dock."); // Debug-Ausgabe
                 categoryHideTimer.Start();
                 dockHideTimer.Start();
             }
@@ -787,6 +790,11 @@ namespace BiMaDock
         //     }
         // }
 
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            MessageBox.Show("Grid wurde angeklickt!");
+        }
+
 
 
 
@@ -796,16 +804,7 @@ namespace BiMaDock
             Application.Current.Shutdown();
         }
 
-        private void Test_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("Test_Click aufgerufen"); // Debug-Ausgabe
 
-            // Erstelle eine Instanz von TestWindow
-            TestWindow testWindow = new TestWindow(this);
-
-            // Zeige das Fenster
-            testWindow.Show();
-        }
 
 
 
@@ -1117,7 +1116,7 @@ namespace BiMaDock
 
                     // double MainStackPanelWidth =0;
 
-                    
+
                     // // MainStackPanel.ActualWidth;
                     Console.WriteLine($"Nach dem Rendern MainStackPanel.ActualWidth: {MainStackPanel.ActualWidth}"); // Debugging
                     Console.WriteLine($"Nach dem Rendern mousePositionSave: {dockManager.mousePositionSave}"); // Debugging
@@ -1129,11 +1128,11 @@ namespace BiMaDock
 
                     // CategoryDockBorder.Margin = new Thickness(screenPositionX, 0, 0, 0);
 
-                    double categoryDockPositionX = 50 + dockManager.mousePositionSave - CategoryDockBorder.ActualWidth / 2;
-                     Console.WriteLine($"Nach dem Rendern categoryDockPositionX: {categoryDockPositionX}"); // Debugging
-                    CategoryDockBorder.Margin = new Thickness(categoryDockPositionX , 0, 0, 0);
+                    double categoryDockPositionX = 45 + dockManager.mousePositionSave - CategoryDockBorder.ActualWidth / 2;
+                    Console.WriteLine($"Nach dem Rendern categoryDockPositionX: {categoryDockPositionX}"); // Debugging
+                    CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
 
-                    double overlayPositionX = dockManager.mousePositionSave  -16;
+                    double overlayPositionX = dockManager.mousePositionSave - 16;
 
                     Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
 
@@ -1171,7 +1170,7 @@ namespace BiMaDock
 
             // Timer stoppen
             categoryHideTimer.Stop();
-            Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
+            // Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
                                                                                                        // CheckAllConditions();
             isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
         }
@@ -1291,12 +1290,28 @@ namespace BiMaDock
         }
 
 
-        private SettingsWindow settingsWindow = new SettingsWindow();
+        // private SettingsWindow settingsWindow = new SettingsWindow();
 
         private void CheckAutostart()
         {
             AutostartCheckBox.IsChecked = StartupManager.IsInStartup();
         }
+
+        private void AutostartMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (AutostartCheckBox.IsChecked == true)
+            {
+                AutostartCheckBox.IsChecked = false;
+                StartupManager.AddToStartup(false);
+            }
+            else
+            {
+                AutostartCheckBox.IsChecked = true;
+                StartupManager.AddToStartup(true);
+            }
+        }
+
+
 
         private void AutostartCheckBox_Checked(object sender, RoutedEventArgs e)
         {
@@ -1324,6 +1339,91 @@ namespace BiMaDock
             // mouseHook.Stop();
             // base.OnClosed(e);
         }
+
+        // Methode zur direkten Änderung der PrimaryColor
+        private void UpdatePrimaryColor(Color newColor)
+        {
+            var newColorBrush = new SolidColorBrush(newColor);
+
+            // Direkte Aktualisierung des ResourceDictionary
+            foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+            {
+                if (dictionary.Contains("PrimaryColor"))
+                {
+                    dictionary["PrimaryColor"] = newColorBrush;
+                    Console.WriteLine("PrimaryColor direkt im ResourceDictionary aktualisiert.");
+                }
+            }
+
+            // Überprüfen, ob die Änderung sichtbar ist
+            this.Resources["PrimaryColor"] = newColorBrush;
+            DockPanel.Background = newColorBrush;
+            Console.WriteLine("PrimaryColor im UI aktualisiert.");
+        }
+
+
+
+private void Test_Click(object sender, RoutedEventArgs e)
+{
+    // Debugging-Ausgabe mit Präfix
+    Console.WriteLine("Test_Click: Aufruf der Methode");
+
+    // Aktuellen Wert der Resource ausgeben
+    var primaryColor = Application.Current.Resources["PrimaryColor"];
+    Console.WriteLine($"Test_Click:  primaryColor {primaryColor}");
+
+
+foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+{
+    Console.WriteLine("Test_Click: App: ResourceDictionary gefunden.");
+    foreach (var key in dictionary.Keys)
+    {
+        var value = dictionary[key];
+        Console.WriteLine($"Test_Click: App: Schlüssel gefunden: {key}, Wert: {value}");
+    }
+}
+
+
+    // Resource zur Laufzeit ändern
+    Application.Current.Resources["PrimaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
+    Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
+
+    var updatedPrimaryColor = Application.Current.Resources["PrimaryColor"];
+
+                var brush = (SolidColorBrush)FindResource("PrimaryColor");
+                DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
+
+
+
+
+    // Überprüfen, ob die Änderung durchgeführt wurde
+    
+    Console.WriteLine($"Test_Click: Geänderte PrimaryColor: {updatedPrimaryColor}");
+}
+
+
+
+
+        private void UpdateSecondaryColor(Color newColor)
+        {
+            var newColorBrush = new SolidColorBrush(newColor);
+
+            // Direkte Aktualisierung des ResourceDictionary
+            foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+            {
+                if (dictionary.Contains("SecondaryColor"))
+                {
+                    dictionary["SecondaryColor"] = newColorBrush;
+                    Console.WriteLine("SecondaryColor direkt im ResourceDictionary aktualisiert.");
+                }
+            }
+
+            // Überprüfen, ob die Änderung sichtbar ist
+            this.Resources["SecondaryColor"] = newColorBrush;
+            DockPanel.Background = newColorBrush;
+            Console.WriteLine("PrimaryColor im UI aktualisiert.");
+        }
+
 
 
 
