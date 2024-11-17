@@ -1636,11 +1636,13 @@ namespace BiMaDock
 
                     // Prüfen, ob das aktuelle Item existiert
                     var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
+
                     if (settings == null)
                     {
                         MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
+
 
                     // Edit-Dialog initialisieren
                     EditPropertiesWindow editWindow = new EditPropertiesWindow
@@ -1648,8 +1650,10 @@ namespace BiMaDock
                         Owner = this,
                         IdTextBox = { Text = settings.Id },
                         NameTextBox = { Text = settings.DisplayName },
-                        IconSourceTextBox = { Text = settings.IconSource } // Hinzufügen des Bildpfads
+                        IconSourceTextBox = { Text = settings.IconSource }, // Hinzufügen des Bildpfads
+                        DockItem = settings
                     };
+                    Console.WriteLine($"Edit_Click: Übergebenes DockItem: ID = {settings.Id}, Name = {settings.DisplayName}, IconSource = {settings.IconSource}, Kategorie = {settings.Category}, Ist Kategorie = {settings.IsCategory}");
 
                     bool? dialogResult = editWindow.ShowDialog();
                     if (dialogResult == true)

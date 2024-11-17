@@ -13,11 +13,22 @@ namespace BiMaDock
 {
     public partial class EditPropertiesWindow : Window
     {
+        public DockItem? DockItem { get; set; }
         public EditPropertiesWindow()
         {
             InitializeComponent();
-            InitializeIcons(); // Stelle sicher, dass die Symbole initialisiert werden
+            // InitializeIcons(); // Stelle sicher, dass die Symbole initialisiert werden
+            Loaded += EditPropertiesWindow_Loaded; // Füge den Event-Handler hinzu
+
         }
+
+
+        private void EditPropertiesWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            InitializeIcons(); // Rufe InitializeIcons auf, wenn das Fenster geladen ist
+        }
+
+
 
         private void CreateAppDataIconDirectory()
         {
@@ -80,13 +91,30 @@ namespace BiMaDock
             Console.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
             CreateAppDataIconDirectory();
 
+            // Übergebene Werte per Konsole ausgeben
+            if (DockItem != null)
+            {
+                Console.WriteLine($"ID: {DockItem.Id}");
+                Console.WriteLine($"Name: {DockItem.DisplayName}");
+                Console.WriteLine($"IconSource: {DockItem.IconSource}");
+                Console.WriteLine($"Kategorie: {DockItem.Category}");
+                Console.WriteLine($"Ist Kategorie: {DockItem.IsCategory}");
+                // Weitere Werte hier ausgeben
+
+                // Originalbild laden und anzeigen
+                string originalImagePath = DockItem?.IconSource ?? "Pfad/zum/Standardbild.png"; // Pfad zu deinem Standardbild
+                var originalImage = IconHelper.GetIcon(originalImagePath);
+                OriginalImage.Source = originalImage;
+
+
+            }
+
             // Zuerst Benutzer-Icons laden, wenn vorhanden, andernfalls Standard-Icons verwenden
             if (!LoadIconsFromAppData())
             {
                 Console.WriteLine("Keine Benutzer-Icons gefunden. Kopiere Standard-Icons.");
                 CopyDefaultIcons();
                 LoadIconsFromAppData(); // Versuche jetzt erneut, Icons zu laden
-                
             }
 
             Console.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
@@ -141,58 +169,70 @@ namespace BiMaDock
             return false; // Rückgabe false, wenn keine Icons gefunden wurden
         }
 
-
-private void CopyDefaultIcons()
-{
-    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-    string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
-
-    // Sicherstellen, dass das Verzeichnis existiert
-    Directory.CreateDirectory(iconDirectoryPath);
-
-    // Der relative Pfad zum Entwicklungsverzeichnis
-    string developmentIconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Resources\Icons");
-
-    // Der Pfad zum Installationsverzeichnis zur Laufzeit
-    string? installationPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
-    // Überprüfen, ob installationPath null ist
-    if (string.IsNullOrEmpty(installationPath))
-    {
-        Console.WriteLine("CopyDefaultIcons: Installationspfad konnte nicht ermittelt werden.");
-        return; // Wenn der Pfad nicht ermittelt werden kann, abbrechen
-    }
-
-    // Pfad zu den Icons im Installationsverzeichnis
-    string resourceDirectoryPath = Path.Combine(installationPath, "Resources", "Icons");
-
-    // Wenn der Installationspfad nicht existiert, benutze den Entwicklungsverzeichnis-Pfad
-    if (!Directory.Exists(resourceDirectoryPath))
-    {
-        resourceDirectoryPath = developmentIconPath;
-    }
-
-    Console.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
-
-    // Alle Standard-Icons aus dem Verzeichnis (Entwicklung oder Installation) kopieren
-    var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
-    foreach (var iconPath in defaultIcons)
-    {
-        string fileName = Path.GetFileName(iconPath);
-        string destinationPath = Path.Combine(iconDirectoryPath, fileName);
-
-        // Wenn das Icon noch nicht existiert, kopiere es
-        if (!File.Exists(destinationPath))
+        private void DeleteIcon_Click(object sender, RoutedEventArgs e)
         {
-            File.Copy(iconPath, destinationPath);
-            Console.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt.");
+            // Bildpfad löschen
+            // var iconSourceTextBox = this.FindName("IconSourceTextBox") as TextBox;
+            // var selectedIconImage = this.FindName("SelectedIconImage") as Image;
+            IconSourceTextBox.Text = string.Empty;
+            Console.WriteLine("Icon_Click: IconSourceTextBox aktualisiert - " + IconSourceTextBox.Text);
+
+            // Bild im Vorschaufenster löschen
+            SelectedIconImage.Source = null;
+            SelectedIconBorder.Visibility = Visibility.Collapsed;
         }
-        else
+
+        private void CopyDefaultIcons()
         {
-            Console.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis.");
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+
+            // Sicherstellen, dass das Verzeichnis existiert
+            Directory.CreateDirectory(iconDirectoryPath);
+
+            // Der relative Pfad zum Entwicklungsverzeichnis
+            string developmentIconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Resources\Icons");
+
+            // Der Pfad zum Installationsverzeichnis zur Laufzeit
+            string? installationPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+            // Überprüfen, ob installationPath null ist
+            if (string.IsNullOrEmpty(installationPath))
+            {
+                Console.WriteLine("CopyDefaultIcons: Installationspfad konnte nicht ermittelt werden.");
+                return; // Wenn der Pfad nicht ermittelt werden kann, abbrechen
+            }
+
+            // Pfad zu den Icons im Installationsverzeichnis
+            string resourceDirectoryPath = Path.Combine(installationPath, "Resources", "Icons");
+
+            // Wenn der Installationspfad nicht existiert, benutze den Entwicklungsverzeichnis-Pfad
+            if (!Directory.Exists(resourceDirectoryPath))
+            {
+                resourceDirectoryPath = developmentIconPath;
+            }
+
+            Console.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
+
+            // Alle Standard-Icons aus dem Verzeichnis (Entwicklung oder Installation) kopieren
+            var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
+            foreach (var iconPath in defaultIcons)
+            {
+                string fileName = Path.GetFileName(iconPath);
+                string destinationPath = Path.Combine(iconDirectoryPath, fileName);
+
+                // Wenn das Icon noch nicht existiert, kopiere es
+                if (!File.Exists(destinationPath))
+                {
+                    File.Copy(iconPath, destinationPath);
+                    Console.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt.");
+                }
+                else
+                {
+                    Console.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis.");
+                }
+            }
         }
-    }
-}
 
         private void UploadIcon_Click(object sender, RoutedEventArgs e)
         {
