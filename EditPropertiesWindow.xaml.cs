@@ -86,6 +86,7 @@ namespace BiMaDock
                 Console.WriteLine("Keine Benutzer-Icons gefunden. Kopiere Standard-Icons.");
                 CopyDefaultIcons();
                 LoadIconsFromAppData(); // Versuche jetzt erneut, Icons zu laden
+                
             }
 
             Console.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
@@ -141,48 +142,57 @@ namespace BiMaDock
         }
 
 
-        private void CopyDefaultIcons()
+private void CopyDefaultIcons()
+{
+    string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+
+    // Sicherstellen, dass das Verzeichnis existiert
+    Directory.CreateDirectory(iconDirectoryPath);
+
+    // Der relative Pfad zum Entwicklungsverzeichnis
+    string developmentIconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Resources\Icons");
+
+    // Der Pfad zum Installationsverzeichnis zur Laufzeit
+    string? installationPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+    // Überprüfen, ob installationPath null ist
+    if (string.IsNullOrEmpty(installationPath))
+    {
+        Console.WriteLine("CopyDefaultIcons: Installationspfad konnte nicht ermittelt werden.");
+        return; // Wenn der Pfad nicht ermittelt werden kann, abbrechen
+    }
+
+    // Pfad zu den Icons im Installationsverzeichnis
+    string resourceDirectoryPath = Path.Combine(installationPath, "Resources", "Icons");
+
+    // Wenn der Installationspfad nicht existiert, benutze den Entwicklungsverzeichnis-Pfad
+    if (!Directory.Exists(resourceDirectoryPath))
+    {
+        resourceDirectoryPath = developmentIconPath;
+    }
+
+    Console.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
+
+    // Alle Standard-Icons aus dem Verzeichnis (Entwicklung oder Installation) kopieren
+    var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
+    foreach (var iconPath in defaultIcons)
+    {
+        string fileName = Path.GetFileName(iconPath);
+        string destinationPath = Path.Combine(iconDirectoryPath, fileName);
+
+        // Wenn das Icon noch nicht existiert, kopiere es
+        if (!File.Exists(destinationPath))
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
-
-            // Sicherstellen, dass das Verzeichnis existiert
-            Directory.CreateDirectory(iconDirectoryPath);
-
-            // Der Pfad zum Installationsverzeichnis
-            string? installationPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
-            // Überprüfen, ob installationPath null ist
-            if (string.IsNullOrEmpty(installationPath))
-            {
-                Console.WriteLine("CopyDefaultIcons: Installationspfad konnte nicht ermittelt werden.");
-                return; // Wenn der Pfad nicht ermittelt werden kann, abbrechen
-            }
-
-            // Pfad zu den Icons im Installationsverzeichnis
-            string resourceDirectoryPath = Path.Combine(installationPath, "Icons");
-
-            Console.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
-
-            // Alle Standard-Icons aus dem Installationsverzeichnis kopieren
-            var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
-            foreach (var iconPath in defaultIcons)
-            {
-                string fileName = Path.GetFileName(iconPath);
-                string destinationPath = Path.Combine(iconDirectoryPath, fileName);
-
-                // Wenn das Icon noch nicht existiert, kopiere es
-                if (!File.Exists(destinationPath))
-                {
-                    File.Copy(iconPath, destinationPath);
-                    Console.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt.");
-                }
-                else
-                {
-                    Console.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis.");
-                }
-            }
+            File.Copy(iconPath, destinationPath);
+            Console.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt.");
         }
+        else
+        {
+            Console.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis.");
+        }
+    }
+}
 
         private void UploadIcon_Click(object sender, RoutedEventArgs e)
         {
