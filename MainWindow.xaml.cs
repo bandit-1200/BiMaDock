@@ -912,7 +912,8 @@ namespace BiMaDock
                                 CategoryDockContainer.Children.Add(button);
                             }
 
-                            CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
+                            // CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen Farbe
+                            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
 
                             // Aktualisiere die interne Struktur oder Daten, falls nötig
                             UpdateDockItemLocation(button);
@@ -929,7 +930,8 @@ namespace BiMaDock
             }
 
             // Visuelles Feedback zurücksetzen
-            CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
+            // CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
+             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
             CheckAllConditions();
         }
 
@@ -942,7 +944,7 @@ namespace BiMaDock
             if (e.Data.GetDataPresent(DataFormats.Serializable))
             {
                 e.Effects = DragDropEffects.Move;
-                CategoryDockContainer.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
+                CategoryDockContainer.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback Farbe
                 Console.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt"); // Debug-Ausgabe
 
                 // Den Tag der geöffneten Kategorie lesen
@@ -976,8 +978,8 @@ namespace BiMaDock
                 currentOpenCategory = "";
                 Console.WriteLine("Geöffnete Kategorie zurückgesetzt"); // Debug-Ausgabe
             }
-
-            CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen
+            CategoryDockBorder.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
+            // CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen Farbe
             Console.WriteLine("Element hat das Kategoriedock verlassen"); // Debug-Ausgabe
         }
 
@@ -1358,23 +1360,23 @@ namespace BiMaDock
 
 
 
-private void Test_Click(object sender, RoutedEventArgs e)
-{
-    // Ersetze die Ressource direkt mit einer neuen Brush
-    Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Colors.Green);
+        private void Test_Click(object sender, RoutedEventArgs e)
+        {
+            // Ersetze die Ressource direkt mit einer neuen Brush
+            Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Colors.Green);
 
-    // Debugging-Ausgabe
-    Console.WriteLine("Test_Click: Aufruf der Methode");
+            // Debugging-Ausgabe
+            Console.WriteLine("Test_Click: Aufruf der Methode");
 
-    // // Wenn du die Farbe später erneut ändern möchtest
-    // if (Application.Current.Resources["PrimaryColor"] is SolidColorBrush primaryBrush)
-    // {
-    //     // Clone erstellen, um schreibgeschützte Brushes zu vermeiden
-    //     var newBrush = primaryBrush.Clone();
-    //     newBrush.Color = Colors.Red; // Ändere zu Rot
-    //     Application.Current.Resources["PrimaryColor"] = newBrush;
-    // }
-}
+            // // Wenn du die Farbe später erneut ändern möchtest
+            // if (Application.Current.Resources["PrimaryColor"] is SolidColorBrush primaryBrush)
+            // {
+            //     // Clone erstellen, um schreibgeschützte Brushes zu vermeiden
+            //     var newBrush = primaryBrush.Clone();
+            //     newBrush.Color = Colors.Red; // Ändere zu Rot
+            //     Application.Current.Resources["PrimaryColor"] = newBrush;
+            // }
+        }
 
 
 

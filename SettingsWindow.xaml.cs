@@ -473,13 +473,18 @@ namespace BiMaDock
                     // Farben laden
                     if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
                     {
+                        // Farbwähler und Vorschau aktualisieren
                         PrimaryColorPicker.SelectedColor = primaryColor;
                         PrimaryColorPreview.Background = new SolidColorBrush(primaryColor);
-                        resources["PrimaryColor"] = new SolidColorBrush(primaryColor);
-                        Console.WriteLine($"LoadSettings: PrimaryColor {settings.PrimaryColor}");
 
-                        // this.Resources["PrimaryColor"] = newColorBrush;
+                        // Ressourcen aktualisieren
+                        var newPrimaryColor = new SolidColorBrush(primaryColor);
+                        Application.Current.Resources["PrimaryColor"] = newPrimaryColor;
+                        // resources["PrimaryColor"] = new SolidColorBrush(primaryColor);
+
                         mainWindow.DockPanel.Background = settings.PrimaryColor;
+                        mainWindow.CategoryDockBorder.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
+                        mainWindow.OverlayCanvasHorizontalLine.Stroke = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
 
 
 
@@ -493,8 +498,8 @@ namespace BiMaDock
                         SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
 
                         // Ressourcen aktualisieren
-                        var newBrush = new SolidColorBrush(secondaryColor);
-                        Application.Current.Resources["SecondaryColor"] = newBrush;
+                        var newSecondaryColor = new SolidColorBrush(secondaryColor);
+                        Application.Current.Resources["SecondaryColor"] = newSecondaryColor;
 
                         // Debugging
                         Console.WriteLine($"LoadSettings: SecondaryColor {settings.SecondaryColor}");

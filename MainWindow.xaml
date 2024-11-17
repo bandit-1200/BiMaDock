@@ -69,7 +69,7 @@
                     <!-- Rechte vertikale blaue Linie -->
                     <!-- <Line x:Name="OverlayCanvasRightLine" X1="95" Y1="-19" X2="95" Y2="1" Stroke="#0078D4" StrokeThickness="1" Canvas.Left="0"/> -->
                     <!-- Horizontale rote Linie -->
-                    <Line x:Name="OverlayCanvasHorizontalLine" X1="27" Y1="1" X2="94" Y2="1" Stroke="#2D2D2D" StrokeThickness="2" Canvas.Left="0"/>
+                    <Line x:Name="OverlayCanvasHorizontalLine" X1="27" Y1="1" X2="94" Y2="1" Stroke="{DynamicResource SecondaryColor}" StrokeThickness="2" Canvas.Left="0"/>
                 </Canvas>
 
 
