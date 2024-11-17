@@ -896,9 +896,6 @@ public class DockManager
 
 
 
-
-
-
     public void AddDockItemAt(DockItem item, int index, string currentCategory)
     {
         // Check if the item is a category and has an IconSource
@@ -991,6 +988,9 @@ public class DockManager
         }
         SaveDockItems(currentCategory);
     }
+
+
+
 
 
     public void Open_Click(object sender, RoutedEventArgs e)
