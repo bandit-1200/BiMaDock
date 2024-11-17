@@ -931,7 +931,7 @@ namespace BiMaDock
 
             // Visuelles Feedback zurücksetzen
             // CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
-             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
+            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
             CheckAllConditions();
         }
 
@@ -1193,6 +1193,122 @@ namespace BiMaDock
 
 
 
+        // private void Edit_Click(object sender, RoutedEventArgs e)
+        // {
+        //     try
+        //     {
+        //         if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+        //         {
+        //             // Alle Dock-Items laden
+        //             var dockItems = SettingsManager.LoadSettings() ?? new List<DockItem>();
+
+        //             // Prüfen, ob das aktuelle Item eine Kategorie ist
+        //             var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
+        //             if (settings == null)
+        //             {
+        //                 MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        //                 return;
+        //             }
+
+        //             // Edit-Dialog initialisieren
+        //             EditPropertiesWindow editWindow = new EditPropertiesWindow
+        //             {
+        //                 Owner = this,
+        //                 NameTextBox = { Text = settings.DisplayName },
+        //                 IconSourceTextBox = { Text = settings.IconSource } // Hinzufügen des Bildpfads
+        //             };
+
+        //             bool? dialogResult = editWindow.ShowDialog();
+        //             if (dialogResult == true)
+        //             {
+        //                 string newName = editWindow.NameTextBox.Text.Trim();
+        //                 string newIconPath = editWindow.IconSourceTextBox.Text.Trim(); // Neues Bildpfad
+
+        //                 // Neuen Namen validieren
+        //                 if (string.IsNullOrEmpty(newName))
+        //                 {
+        //                     MessageBox.Show("Name darf nicht leer sein.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //                     return;
+        //                 }
+
+        //                 // Prüfen, ob der neue Name bereits für eine andere Kategorie verwendet wird
+        //                 if (dockItems.Any(di => di.IsCategory && di.DisplayName == newName && di.Id != settings.Id)) // Sicherstellen, dass es nicht dasselbe ist
+        //                 {
+        //                     MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //                     return;
+        //                 }
+
+        //                 // Prüfen, ob der Kategoriename geändert wurde
+        //                 bool nameChanged = settings.DisplayName != newName;
+
+        //                 // Falls es eine Kategorie ist
+        //                 if (settings.IsCategory)
+        //                 {
+        //                     if (nameChanged)
+        //                     {
+        //                         string oldCategory = settings.DisplayName;
+        //                         settings.DisplayName = newName;
+
+        //                         // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören
+        //                         foreach (var item in dockItems)
+        //                         {
+        //                             if (!item.IsCategory && item.Category == oldCategory)
+        //                             {
+        //                                 item.Category = newName;
+        //                             }
+        //                         }
+
+        //                         // Aktualisiere den Button-Text
+        //                         var textBlock = new TextBlock
+        //                         {
+        //                             Text = newName,
+        //                             TextAlignment = TextAlignment.Center,
+        //                             TextWrapping = TextWrapping.Wrap,
+        //                             Width = 60,
+        //                             Margin = new Thickness(5)
+        //                         };
+
+        //                         var stackPanel = button.Content as StackPanel;
+        //                         if (stackPanel != null)
+        //                         {
+        //                             stackPanel.Children.RemoveAt(1);
+        //                             stackPanel.Children.Add(textBlock);
+        //                         }
+        //                     }
+
+        //                     // Wenn der Name nicht geändert wurde, nur das Symbol aktualisieren
+        //                     if (!string.IsNullOrEmpty(newIconPath))
+        //                     {
+        //                         settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
+        //                     }
+
+        //                     button.Tag = dockItem;
+
+        //                     // Speichern der aktualisierten Einstellungen
+        //                     SettingsManager.SaveSettings(dockItems);
+        //                     dockManager.LoadDockItems();
+        //                 }
+        //                 else
+        //                 {
+        //                     MessageBox.Show("Dieses Element ist keine Kategorie.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        //                 }
+        //             }
+        //         }
+        //         else
+        //         {
+        //             MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         MessageBox.Show($"Ein unerwarteter Fehler ist aufgetreten: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        //     }
+        // }
+
+
+        // private SettingsWindow settingsWindow = new SettingsWindow();
+
+
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -1202,7 +1318,7 @@ namespace BiMaDock
                     // Alle Dock-Items laden
                     var dockItems = SettingsManager.LoadSettings() ?? new List<DockItem>();
 
-                    // Prüfen, ob das aktuelle Item eine Kategorie ist
+                    // Prüfen, ob das aktuelle Item existiert
                     var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
                     if (settings == null)
                     {
@@ -1231,67 +1347,59 @@ namespace BiMaDock
                             return;
                         }
 
-                        // Prüfen, ob der neue Name bereits für eine andere Kategorie verwendet wird
-                        if (dockItems.Any(di => di.IsCategory && di.DisplayName == newName && di.Id != settings.Id)) // Sicherstellen, dass es nicht dasselbe ist
+                        // Prüfen, ob der neue Name bereits für ein anderes Element verwendet wird
+                        if (dockItems.Any(di => di.DisplayName == newName && di.Id != settings.Id)) // Sicherstellen, dass es nicht dasselbe ist
                         {
-                            MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            MessageBox.Show("Ein Element mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                             return;
                         }
 
-                        // Prüfen, ob der Kategoriename geändert wurde
+                        // Prüfen, ob der Name geändert wurde
                         bool nameChanged = settings.DisplayName != newName;
 
-                        // Falls es eine Kategorie ist
-                        if (settings.IsCategory)
+                        if (nameChanged)
                         {
-                            if (nameChanged)
+                            string oldCategory = settings.DisplayName;
+                            settings.DisplayName = newName;
+
+                            // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören, falls das Element eine Kategorie ist
+                            foreach (var item in dockItems)
                             {
-                                string oldCategory = settings.DisplayName;
-                                settings.DisplayName = newName;
-
-                                // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören
-                                foreach (var item in dockItems)
+                                if (item.Category == oldCategory)
                                 {
-                                    if (!item.IsCategory && item.Category == oldCategory)
-                                    {
-                                        item.Category = newName;
-                                    }
-                                }
-
-                                // Aktualisiere den Button-Text
-                                var textBlock = new TextBlock
-                                {
-                                    Text = newName,
-                                    TextAlignment = TextAlignment.Center,
-                                    TextWrapping = TextWrapping.Wrap,
-                                    Width = 60,
-                                    Margin = new Thickness(5)
-                                };
-
-                                var stackPanel = button.Content as StackPanel;
-                                if (stackPanel != null)
-                                {
-                                    stackPanel.Children.RemoveAt(1);
-                                    stackPanel.Children.Add(textBlock);
+                                    item.Category = newName;
                                 }
                             }
 
-                            // Wenn der Name nicht geändert wurde, nur das Symbol aktualisieren
-                            if (!string.IsNullOrEmpty(newIconPath))
+                            // Aktualisiere den Button-Text
+                            var textBlock = new TextBlock
                             {
-                                settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
+                                Text = newName,
+                                TextAlignment = TextAlignment.Center,
+                                TextWrapping = TextWrapping.Wrap,
+                                Width = 60,
+                                Margin = new Thickness(5)
+                            };
+
+                            var stackPanel = button.Content as StackPanel;
+                            if (stackPanel != null)
+                            {
+                                stackPanel.Children.RemoveAt(1);
+                                stackPanel.Children.Add(textBlock);
                             }
-
-                            button.Tag = dockItem;
-
-                            // Speichern der aktualisierten Einstellungen
-                            SettingsManager.SaveSettings(dockItems);
-                            dockManager.LoadDockItems();
                         }
-                        else
+
+                        // Wenn der Name nicht geändert wurde oder das Symbol aktualisiert werden muss
+                        if (!string.IsNullOrEmpty(newIconPath))
                         {
-                            MessageBox.Show("Dieses Element ist keine Kategorie.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                            settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
                         }
+
+                        button.Tag = dockItem;
+
+                        // Speichern der aktualisierten Einstellungen
+                        SettingsManager.SaveSettings(dockItems);
+                        dockManager.LoadDockItems();
                     }
                 }
                 else
@@ -1304,9 +1412,6 @@ namespace BiMaDock
                 MessageBox.Show($"Ein unerwarteter Fehler ist aufgetreten: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
-
-        // private SettingsWindow settingsWindow = new SettingsWindow();
 
         private void CheckAutostart()
         {

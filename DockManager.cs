@@ -368,7 +368,8 @@ public class DockManager
                 DisplayName = "File Explorer",
                 Category = "",
                 IsCategory = false,
-                Position = 0
+                Position = 0,
+                IconSource = ""
             };
             AddDockItemAt(explorerItem, 0, explorerItem.Category); // currentCategory übergeben
 
@@ -378,7 +379,8 @@ public class DockManager
                 DisplayName = "Command Prompt",
                 Category = "",
                 IsCategory = false,
-                Position = 1
+                Position = 1,
+                IconSource = ""
             };
             AddDockItemAt(cmdItem, 1, cmdItem.Category); // currentCategory übergeben
         }
@@ -925,7 +927,8 @@ public class DockManager
     public void AddDockItemAt(DockItem item, int index, string currentCategory)
     {
         // Check if the item is a category and has an IconSource
-        var iconSource = item.IsCategory && !string.IsNullOrEmpty(item.IconSource) ? item.IconSource : item.FilePath;
+        // var iconSource = item.IsCategory && !string.IsNullOrEmpty(item.IconSource) ? item.IconSource : item.FilePath;
+        var iconSource = !string.IsNullOrEmpty(item.IconSource) ? item.IconSource : item.FilePath;
         var icon = IconHelper.GetIcon(iconSource);
 
         var image = new Image
