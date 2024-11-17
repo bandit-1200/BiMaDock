@@ -11,14 +11,14 @@
 
     <!-- Stile und Templates -->
     <Style x:Key="MainDockStyle" TargetType="StackPanel">
-        <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryColor}"/>
         <Setter Property="Orientation" Value="Horizontal"/>
         <Setter Property="Height" Value="80"/>
         <Setter Property="Margin" Value="0"/>
     </Style>
 
     <Style x:Key="CategoryDockStyle" TargetType="StackPanel">
-        <Setter Property="Background" Value="{StaticResource SecondaryColor}"/>
+        <Setter Property="Background" Value="{DynamicResource SecondaryColor}"/>
         <Setter Property="Orientation" Value="Horizontal"/>
         <Setter Property="MinWidth" Value="80"/>
     </Style>
@@ -27,14 +27,14 @@
     <Style TargetType="Separator">
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="Margin" Value="10,5,10,5"/>
-        <Setter Property="Background" Value="{StaticResource HighlightColor}"/>
+        <Setter Property="Background" Value="{DynamicResource HighlightColor}"/>
     </Style>
 
     <!-- Button-Stil für einen subtilen Look -->
     <Style TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SecondaryColor}"/>
-        <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource AccentColor}"/>
+        <Setter Property="Background" Value="{DynamicResource SecondaryColor}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="10,5"/>
         <Setter Property="Margin" Value="5"/>
@@ -55,8 +55,8 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource AccentColor}"/>
-                <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+                <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
                 <Setter Property="Background" Value="#FFFFFF"/> <!-- Dunklere Akzentfarbe beim Drücken -->

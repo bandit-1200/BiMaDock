@@ -58,13 +58,13 @@ public class SettingsManager
         Console.WriteLine("SetColors: Aufruf der Methode");
 
         // Greife auf die aktuellen Ressourcen zu
-        var primaryColor = Application.Current.Resources["PrimaryColor"];
-        Console.WriteLine($"Test_Click: primaryColor {primaryColor}");
+        // var primaryColor = Application.Current.Resources["PrimaryColor"];
+        // Console.WriteLine($"Test_Click: primaryColor {primaryColor}");
 
-        // Ressourcen zur Laufzeit ändern
-        Application.Current.Resources["PrimaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
-        Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
-        mainWindow.DockPanel.Background = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
+        // Ressourcen zur Laufzeit ändern TEST
+        // Application.Current.Resources["PrimaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
+        // Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
+        // mainWindow.DockPanel.Background = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot
         
         
 

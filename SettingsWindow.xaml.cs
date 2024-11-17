@@ -63,9 +63,9 @@ namespace BiMaDock
         public SettingsWindow(MainWindow window)
         {
             InitializeComponent();
-            
+
             mainWindow = window;
-            
+
             // Initialisieren der Einstellungsvariablen
             scaleSettings = new ScaleSettings();
             rotateSettings = new RotateSettings();
@@ -480,17 +480,26 @@ namespace BiMaDock
 
                         // this.Resources["PrimaryColor"] = newColorBrush;
                         mainWindow.DockPanel.Background = settings.PrimaryColor;
-                        
+
 
 
                     }
 
-                    if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
+                    if (settings.SecondaryColor != null
+                        && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
                     {
+                        // Farbwähler und Vorschau aktualisieren
                         SecondaryColorPicker.SelectedColor = secondaryColor;
                         SecondaryColorPreview.Background = new SolidColorBrush(secondaryColor);
-                        resources["SecondaryColor"] = new SolidColorBrush(secondaryColor);
+
+                        // Ressourcen aktualisieren
+                        var newBrush = new SolidColorBrush(secondaryColor);
+                        Application.Current.Resources["SecondaryColor"] = newBrush;
+
+                        // Debugging
+                        Console.WriteLine($"LoadSettings: SecondaryColor {settings.SecondaryColor}");
                     }
+
 
                     // Animationseinstellungen laden
                     if (settings.Scale != null)
@@ -613,14 +622,14 @@ namespace BiMaDock
 
 
 
-private void PrimaryColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
-{
-    if (e.NewValue.HasValue)
-    {
+        private void PrimaryColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        {
+            if (e.NewValue.HasValue)
+            {
                 PrimaryColorPicker.Background = new SolidColorBrush(e.NewValue.Value);
                 PrimaryColorPreview.Background = new SolidColorBrush(e.NewValue.Value);
-    }
-}
+            }
+        }
 
 
 

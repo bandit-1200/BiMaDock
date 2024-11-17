@@ -16,7 +16,7 @@ namespace BiMaDock
     public partial class MainWindow : Window
     {
         // private GlobalMouseHook mouseHook;  // Deklariere die private Variable für den Hook
-        
+
         private DockManager dockManager;
         // private bool isDragging = false;
         public bool dockVisible = true;
@@ -55,22 +55,25 @@ namespace BiMaDock
 
         public DockStatus currentDockStatus = DockStatus.None;
 
+
+
         public MainWindow()
         {
             InitializeComponent();
             CheckAutostart();
 
             //  SettingsWindow.LoadSettings();
-
+            SettingsWindow settingsWindow = new SettingsWindow(this);
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             this.Width = screenWidth * 1.0;  // 100% der Bildschirmbreite
-            // GlobalMouseHook mouseHook = new GlobalMouseHook(this); // 'this' bezieht sich auf das MainWindow
+                                             // GlobalMouseHook mouseHook = new GlobalMouseHook(this); // 'this' bezieht sich auf das MainWindow
 
             // mouseHook = new GlobalMouseHook();
             // mouseHook.Start();
 
-
-            ButtonAnimations.LoadSettings();
+            // LoadSettings()
+            ButtonAnimations.LoadSettings(); //Animation
+            settingsWindow.LoadSettings();
             AllowDrop = true;
             Console.WriteLine("Hauptfenster initialisiert."); // Debugging
             dockManager = new DockManager(DockPanel, CategoryDockContainer, this); // Übergeben von CategoryDockContainer
@@ -1351,6 +1354,30 @@ namespace BiMaDock
             // base.OnClosed(e);
         }
 
+
+
+
+
+private void Test_Click(object sender, RoutedEventArgs e)
+{
+    // Ersetze die Ressource direkt mit einer neuen Brush
+    Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Colors.Green);
+
+    // Debugging-Ausgabe
+    Console.WriteLine("Test_Click: Aufruf der Methode");
+
+    // // Wenn du die Farbe später erneut ändern möchtest
+    // if (Application.Current.Resources["PrimaryColor"] is SolidColorBrush primaryBrush)
+    // {
+    //     // Clone erstellen, um schreibgeschützte Brushes zu vermeiden
+    //     var newBrush = primaryBrush.Clone();
+    //     newBrush.Color = Colors.Red; // Ändere zu Rot
+    //     Application.Current.Resources["PrimaryColor"] = newBrush;
+    // }
+}
+
+
+
         // Methode zur direkten Änderung der PrimaryColor
         private void UpdatePrimaryColor(Color newColor)
         {
@@ -1371,19 +1398,6 @@ namespace BiMaDock
             DockPanel.Background = newColorBrush;
             Console.WriteLine("PrimaryColor im UI aktualisiert.");
         }
-
-
-
-        private void Test_Click(object sender, RoutedEventArgs e)
-        {
-
-            // Debugging-Ausgabe mit Präfix
-            Console.WriteLine("Test_Click: Aufruf der Methode");
-            SettingsManager.SetColors(this);
-
-
-        }
-
 
 
 
