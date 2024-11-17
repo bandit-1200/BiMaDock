@@ -480,13 +480,13 @@ public class DockManager
         var existingItems = SettingsManager.LoadSettings();
 
         // Überprüfen, ob die Kategorie bereits existiert
-        var existingCategoryItem = existingItems.FirstOrDefault(item => item.DisplayName == categoryName && item.IsCategory);
+        // var existingCategoryItem = existingItems.FirstOrDefault(item => item.DisplayName == categoryName && item.IsCategory);
 
-        if (existingCategoryItem != null)
-        {
-            MessageBox.Show($"Kategorie '{categoryName}' existiert bereits.", "Kategorie existiert", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return; // Kategorie nicht erneut erstellen
-        }
+        // if (existingCategoryItem != null)
+        // {
+        //     MessageBox.Show($"Kategorie '{categoryName}' existiert bereits.", "Kategorie existiert", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //     return; // Kategorie nicht erneut erstellen
+        // }
 
         // Neue Kategorie erstellen
         var categoryItem = new DockItem
@@ -506,7 +506,7 @@ public class DockManager
             Id = Guid.NewGuid().ToString(), // Neue eindeutige ID für das "Command Prompt"-Element
             FilePath = @"C:\Windows\System32\cmd.exe",
             DisplayName = "Command Prompt",
-            Category = categoryName, // Setze die neue Kategorie
+            Category = categoryItem.Id, // Setze die neue Kategorie
             IsCategory = false,
             IconSource = "" // cmdItem hat keine IconSource
         };
