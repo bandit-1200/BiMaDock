@@ -818,31 +818,6 @@ public class DockManager
     public void UpdateDockItemLocation(Button button, string currentCategory)
     {
         var dockItem = button.Tag as DockItem;
-        // Debug.WriteLine($"UpdateDockItemLocation: {dockItem.DisplayName}");
-
-        // Debug.WriteLine($"UpdateDockItemLocation: Name:{dockItem?.DisplayName}, ID: {dockItem?.Id}, Category: {dockItem?.Category}");
-
-        // // Alle Buttons im CategoryDockContainer auflisten
-        // Debug.WriteLine("UpdateDockItemLocation: Alle Buttons im CategoryDockContainer:");
-        // foreach (var child in CategoryDockContainer.Children)
-        // {
-        //     if (child is Button childButton)
-        //     {
-        //         var childDockItem = childButton.Tag as DockItem;
-        //         string childName = !string.IsNullOrEmpty(childButton.Name) ? childButton.Name : "(kein Name)";
-        //         string childDisplayName = childDockItem?.DisplayName ?? "(kein DisplayName)";
-        //         string childCategory = childDockItem?.Category ?? "(keine Kategorie)";
-
-        //         Debug.WriteLine($"UpdateDockItemLocation: Button Name: {childName}, DisplayName: {childDisplayName}, Kategorie: {childCategory}");
-        //     }
-        // }
-
-
-
-
-
-
-
 
         if (dockItem != null)
         {
@@ -1054,82 +1029,6 @@ public class DockManager
             Console.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button"); // Debug-Ausgabe
         }
     }
-
-
-
-
-    // public void AddDockItem(DockItem item)
-    // {
-    //     AddDockItemAt(item, dockPanel.Children.Count);
-    // }
-
-    // public void InitializeCategoryDock(string categoryName)
-    // {
-    //     Console.WriteLine("InitializeCategoryDock aufgerufen"); // Debug-Ausgabe
-
-    //     // Erstelle ein Standard-Dock-Item und weise es der Kategorie zu
-    //     var cmdItem = new DockItem
-    //     {
-    //         FilePath = @"C:\Windows\System32\cmd.exe",
-    //         DisplayName = "Command Prompt",
-    //         Category = categoryName, // Zuweisung zur spezifischen Kategorie
-    //         IsCategory = false,
-    //         Position = 0
-    //     };
-
-    //     // Füge das Standard-Element zum Kategoriedock hinzu
-    //     AddDockItemAt(cmdItem, 0, categoryName);
-    //     Console.WriteLine($"Standard-Element 'Command Prompt' zur Kategorie {categoryName} hinzugefügt"); // Debug-Ausgabe
-    // }
-
-
-
-
-
-    // private void ShowCategoryDock(DockItem categoryItem)
-    // {
-    //     Console.WriteLine($"Kategorie anzeigen geklickt: {categoryItem.DisplayName}"); // Debugging
-
-    //     var categoryDock = new StackPanel
-    //     {
-    //         Orientation = Orientation.Horizontal,
-    //         Background = new SolidColorBrush(Colors.LightGray),
-    //         Margin = new Thickness(5)
-    //     };
-
-    //     // Beispieldaten für die Elemente der Kategorie
-    //     var dockItems = new List<DockItem>
-    // {
-    //     new DockItem { DisplayName = "Element in Kategorie", FilePath = "Pfad zu Element", Category = categoryItem.DisplayName }
-    // };
-
-    //     foreach (var item in dockItems)
-    //     {
-    //         if (item.Category == categoryItem.DisplayName)
-    //         {
-    //             var button = new Button
-    //             {
-    //                 Content = item.DisplayName,
-    //                 Tag = item,
-    //                 Margin = new Thickness(5)
-    //             };
-
-    //             button.Click += (s, e) =>
-    //             {
-    //                 string? filePath = item.FilePath;
-    //                 if (!string.IsNullOrEmpty(filePath))
-    //                 {
-    //                     Console.WriteLine("Button Click: " + filePath); // Debugging
-    //                     mainWindow.OpenFile(filePath); // Aufruf von OpenFile im MainWindow
-    //                 }
-    //             };
-
-    //             categoryDock.Children.Add(button);
-    //         }
-    //     }
-
-    //     mainWindow.ShowCategoryDockPanel(categoryDock); // Aufruf der Methode im MainWindow
-    // }
 
 
 

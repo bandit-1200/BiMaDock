@@ -1220,7 +1220,7 @@ namespace BiMaDock
 
             // Restlicher Code
             currentDockStatus |= DockStatus.CategoryElementClicked;
-            currentOpenCategory = categoryDock.Tag.ToString();
+            currentOpenCategory = categoryDock.Tag?.ToString() ?? string.Empty;
             CategoryDockContainer.Tag = currentOpenCategory;
             var items = SettingsManager.LoadSettings();
             foreach (var item in items)
@@ -1483,10 +1483,19 @@ namespace BiMaDock
 
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
+            Console.WriteLine($"Edit_Click... "); // Debugging
+
             try
             {
                 if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+
                 {
+                    Console.WriteLine($"Edit_Click Geklicktes Item: ID = {dockItem.Id}, Name = {dockItem.DisplayName} Ketegorie = {dockItem.IsCategory}");
+                    if (dockItem.IsCategory){
+
+                        HideCategoryDockPanel();
+                    }
+
                     // Alle Dock-Items laden
                     var dockItems = SettingsManager.LoadSettings() ?? new List<DockItem>();
 
