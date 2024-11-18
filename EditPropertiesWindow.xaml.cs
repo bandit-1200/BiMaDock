@@ -86,39 +86,51 @@ namespace BiMaDock
             Console.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
         }
 
-        public void InitializeIcons()
+public void InitializeIcons()
+{
+    Console.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
+    CreateAppDataIconDirectory();
+
+    if (DockItem != null)
+    {
+        Console.WriteLine($"ID: {DockItem.Id}");
+        Console.WriteLine($"Name: {DockItem.DisplayName}");
+        Console.WriteLine($"IconSource: {DockItem.IconSource}");
+        Console.WriteLine($"Kategorie: {DockItem.Category}");
+        Console.WriteLine($"Ist Kategorie: {DockItem.IsCategory}");
+
+        // Originalbild laden und in der Box anzeigen
+        var originalImage = IconHelper.GetIcon(DockItem.FilePath);
+        OriginalImage.Source = originalImage;
+        OriginalImage.Width = 48;
+        OriginalImage.Height = 48;
+        OriginalImage.Cursor = Cursors.Hand; // Zeiger ändern, um anklickbar zu zeigen
+        
+        // OriginalImage.Stretch = Stretch.None;
+        // OriginalImage.HorizontalAlignment = HorizontalAlignment.Center;
+        // OriginalImage.VerticalAlignment = VerticalAlignment.Center;
+                // Klick-Event für OriginalImage hinzufügen
+        OriginalImage.MouseLeftButtonUp += (s, e) => 
         {
-            Console.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
-            CreateAppDataIconDirectory();
+            SelectedIconImage.Source = originalImage;
+            DockItem.IconSource = "";
+            IconSourceTextBox.Text = "";
+        };
+    }
 
-            // Übergebene Werte per Konsole ausgeben
-            if (DockItem != null)
-            {
-                Console.WriteLine($"ID: {DockItem.Id}");
-                Console.WriteLine($"Name: {DockItem.DisplayName}");
-                Console.WriteLine($"IconSource: {DockItem.IconSource}");
-                Console.WriteLine($"Kategorie: {DockItem.Category}");
-                Console.WriteLine($"Ist Kategorie: {DockItem.IsCategory}");
-                // Weitere Werte hier ausgeben
+    // Zuerst Benutzer-Icons laden, wenn vorhanden, andernfalls Standard-Icons verwenden
+    if (!LoadIconsFromAppData())
+    {
+        Console.WriteLine("Keine Benutzer-Icons gefunden. Kopiere Standard-Icons.");
+        CopyDefaultIcons();
+        LoadIconsFromAppData(); // Versuche jetzt erneut, Icons zu laden
+    }
 
-                // Originalbild laden und anzeigen
-                string originalImagePath = DockItem?.IconSource ?? "Pfad/zum/Standardbild.png"; // Pfad zu deinem Standardbild
-                var originalImage = IconHelper.GetIcon(originalImagePath);
-                OriginalImage.Source = originalImage;
+    Console.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
+}
 
 
-            }
 
-            // Zuerst Benutzer-Icons laden, wenn vorhanden, andernfalls Standard-Icons verwenden
-            if (!LoadIconsFromAppData())
-            {
-                Console.WriteLine("Keine Benutzer-Icons gefunden. Kopiere Standard-Icons.");
-                CopyDefaultIcons();
-                LoadIconsFromAppData(); // Versuche jetzt erneut, Icons zu laden
-            }
-
-            Console.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
-        }
 
         private bool LoadIconsFromAppData()
         {
@@ -324,6 +336,17 @@ namespace BiMaDock
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+                // Speichern der Änderungen
+    if (DockItem != null)
+    {
+        DockItem.DisplayName = NameTextBox.Text;
+        DockItem.Category = CategoryTextBox.Text;
+        // DockItem.IsCategory = bool.Parse(IsCategoryTextBox.Text); // Je nach Datentyp anpassen
+        DockItem.IconSource = IconSourceTextBox2.Text;
+
+        // Weitere Änderungen speichern
+    }
+
             // Speichern der Änderungen
             this.DialogResult = true; // Schließen des Fensters mit Erfolg
         }
