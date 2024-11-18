@@ -1,36 +1,12 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\marco\\Documents\\code\\BiMaDock\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{8D970723-97B7-4F88-AD00-1D7DE3CD63A8}|BiMaDock.csproj|c:\\users\\marco\\documents\\code\\bimadock\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{8D970723-97B7-4F88-AD00-1D7DE3CD63A8}|BiMaDock.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    }
-  ],
+  "WorkspaceRootPath": "C:\\Users\\Marco\\Documents\\VisualStudioCode\\BiMaDock\\",
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": [
-        {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 0,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "MainWindow.xaml",
-              "DocumentMoniker": "C:\\Users\\marco\\Documents\\code\\BiMaDock\\MainWindow.xaml",
-              "RelativeDocumentMoniker": "MainWindow.xaml",
-              "ToolTip": "C:\\Users\\marco\\Documents\\code\\BiMaDock\\MainWindow.xaml",
-              "RelativeToolTip": "MainWindow.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-11-13T17:04:36.419Z",
-              "EditorCaption": ""
-            }
-          ]
-        }
-      ]
+      "DocumentGroups": []
     }
   ]
 }

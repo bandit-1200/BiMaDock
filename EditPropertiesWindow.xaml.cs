@@ -340,9 +340,9 @@ public void InitializeIcons()
     if (DockItem != null)
     {
         DockItem.DisplayName = NameTextBox.Text;
-        DockItem.Category = CategoryTextBox.Text;
+        //DockItem.Category = CategoryTextBox.Text;
         // DockItem.IsCategory = bool.Parse(IsCategoryTextBox.Text); // Je nach Datentyp anpassen
-        DockItem.IconSource = IconSourceTextBox2.Text;
+        DockItem.IconSource = IconSourceTextBox.Text;
 
         // Weitere Änderungen speichern
     }
