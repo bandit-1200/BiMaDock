@@ -16,7 +16,7 @@ namespace BiMaDock
     public partial class MainWindow : Window
     {
         // private GlobalMouseHook mouseHook;  // Deklariere die private Variable für den Hook
-
+        private GlobalMouseHook mouseHook;
         private DockManager dockManager;
         // private bool isDragging = false;
         public bool dockVisible = true;
@@ -61,6 +61,8 @@ namespace BiMaDock
         {
             InitializeComponent();
             CheckAutostart();
+            // GlobalMouseHook.SetHook();
+            mouseHook = new GlobalMouseHook(this);
 
             //  SettingsWindow.LoadSettings();
             SettingsWindow settingsWindow = new SettingsWindow(this);
