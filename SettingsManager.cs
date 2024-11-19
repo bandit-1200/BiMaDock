@@ -55,11 +55,11 @@ public class SettingsManager
 
     public static void SetColors(MainWindow mainWindow)
     {
-        Console.WriteLine("SetColors: Aufruf der Methode");
+        Debug.WriteLine("SetColors: Aufruf der Methode");
 
         // Greife auf die aktuellen Ressourcen zu
         // var primaryColor = Application.Current.Resources["PrimaryColor"];
-        // Console.WriteLine($"Test_Click: primaryColor {primaryColor}");
+        // Debug.WriteLine($"Test_Click: primaryColor {primaryColor}");
 
         // Ressourcen zur Laufzeit ändern TEST
         // Application.Current.Resources["PrimaryColor"] = new SolidColorBrush(Color.FromRgb(255, 0, 0)); // Rot

@@ -4,6 +4,7 @@ using System.Windows.Media;
 using Newtonsoft.Json;
 using System.IO;
 using System.Windows.Controls;
+using System.Diagnostics;
 
 
 
@@ -148,7 +149,7 @@ namespace BiMaDock
                     }
 
                     // Ausgabe des aktuellen SelectedIndex auf der Konsole
-                    Console.WriteLine($"SelectedIndex: {comboBox.SelectedIndex}");
+                    Debug.WriteLine($"SelectedIndex: {comboBox.SelectedIndex}");
                 }
             }
         }
@@ -457,8 +458,8 @@ namespace BiMaDock
             string informationalVersion = informationalVersionAttribute?.InformationalVersion ?? "Unbekannte Version";
             string clearVersion = informationalVersion.Split('+')[0];
 
-            System.Console.WriteLine($"Detaillierte Version: {informationalVersion}");
-            System.Console.WriteLine($"Klare Version: {clearVersion}");
+            Debug.WriteLine($"Detaillierte Version: {informationalVersion}");
+            Debug.WriteLine($"Klare Version: {clearVersion}");
         }
         public void LoadSettings()
         {
@@ -502,7 +503,7 @@ namespace BiMaDock
                         Application.Current.Resources["SecondaryColor"] = newSecondaryColor;
 
                         // Debugging
-                        Console.WriteLine($"LoadSettings: SecondaryColor {settings.SecondaryColor}");
+                        Debug.WriteLine($"LoadSettings: SecondaryColor {settings.SecondaryColor}");
                     }
 
 
@@ -577,7 +578,7 @@ namespace BiMaDock
             if (animationEffectComboBox != null && animationEffectComboBox.SelectedItem != null)
             {
                 var selectedEffectIndex = animationEffectComboBox.SelectedIndex;
-                Console.WriteLine($"SelectedEffectIndex in SaveButton_Click: {selectedEffectIndex}");
+                Debug.WriteLine($"SelectedEffectIndex in SaveButton_Click: {selectedEffectIndex}");
 
                 // Setze den festen Effektindex für jede Animation
                 scaleSettings.EffectIndex = 1;

@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Diagnostics;
 
 namespace BiMaDock
 {
@@ -27,7 +28,7 @@ namespace BiMaDock
 
             // Ändert die Margin von CategoryDockBorder im MainWindow
             mainWindow.CategoryDockBorder.Margin = new Thickness(testSliderValue, 0, 0, 0);
-            Console.WriteLine($"Slider_ValueChanged: mainWindow.CategoryDockBorder.Margin = { mainWindow.CategoryDockBorder.Margin}");
+            Debug.WriteLine($"Slider_ValueChanged: mainWindow.CategoryDockBorder.Margin = { mainWindow.CategoryDockBorder.Margin}");
 
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Diagnostics;
 
 namespace BiMaDock
 {
@@ -10,13 +11,13 @@ namespace BiMaDock
             base.OnStartup(e);
 
             // Debug-Ausgabe: Auflistung aller geladenen ResourceDictionaries
-            Console.WriteLine("App: Auflistung aller geladenen ResourceDictionaries...");
+            Debug.WriteLine("App: Auflistung aller geladenen ResourceDictionaries...");
             foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
             {
-                Console.WriteLine("App: ResourceDictionary gefunden.");
+                Debug.WriteLine("App: ResourceDictionary gefunden.");
                 foreach (var key in dictionary.Keys)
                 {
-                    Console.WriteLine("App: Schlüssel gefunden: " + key);
+                    Debug.WriteLine("App: Schlüssel gefunden: " + key);
                 }
             }
         }

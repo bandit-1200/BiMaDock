@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Input; // Dieser Namespace enthält die Cursors-Klasse
 using System.Windows.Media.Imaging;
+using System.Diagnostics;
 
 namespace BiMaDock
 {
@@ -38,17 +39,17 @@ namespace BiMaDock
             if (!Directory.Exists(iconDirectoryPath))
             {
                 Directory.CreateDirectory(iconDirectoryPath);
-                Console.WriteLine("CreateAppDataIconDirectory: Verzeichnis erstellt."); // Debugging Ausgabe
+                Debug.WriteLine("CreateAppDataIconDirectory: Verzeichnis erstellt."); // Debugging Ausgabe
             }
             else
             {
-                Console.WriteLine("CreateAppDataIconDirectory: Verzeichnis existiert bereits."); // Debugging Ausgabe
+                Debug.WriteLine("CreateAppDataIconDirectory: Verzeichnis existiert bereits."); // Debugging Ausgabe
             }
         }
 
         private async Task LoadIconsAsync()
         {
-            Console.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
+            Debug.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
 
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
@@ -73,31 +74,31 @@ namespace BiMaDock
                         image.MouseDown += Icon_Click;
 
                         SymbolPanel.Children.Add(image);
-                        Console.WriteLine($"LoadIconsAsync: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
+                        Debug.WriteLine($"LoadIconsAsync: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
                     });
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"LoadIconsAsync: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}"); // Debugging Ausgabe bei Fehler
+                    Debug.WriteLine($"LoadIconsAsync: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}"); // Debugging Ausgabe bei Fehler
                 }
             }
 
-            Console.WriteLine("LoadIconsAsync: abgeschlossen."); // Debugging Ausgabe
-            Console.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
+            Debug.WriteLine("LoadIconsAsync: abgeschlossen."); // Debugging Ausgabe
+            Debug.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
         }
 
 public void InitializeIcons()
 {
-    Console.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
+    Debug.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
     CreateAppDataIconDirectory();
 
     if (DockItem != null)
     {
-        Console.WriteLine($"ID: {DockItem.Id}");
-        Console.WriteLine($"Name: {DockItem.DisplayName}");
-        Console.WriteLine($"IconSource: {DockItem.IconSource}");
-        Console.WriteLine($"Kategorie: {DockItem.Category}");
-        Console.WriteLine($"Ist Kategorie: {DockItem.IsCategory}");
+        Debug.WriteLine($"ID: {DockItem.Id}");
+        Debug.WriteLine($"Name: {DockItem.DisplayName}");
+        Debug.WriteLine($"IconSource: {DockItem.IconSource}");
+        Debug.WriteLine($"Kategorie: {DockItem.Category}");
+        Debug.WriteLine($"Ist Kategorie: {DockItem.IsCategory}");
 
         // Originalbild laden und in der Box anzeigen
         var originalImage = IconHelper.GetIcon(DockItem.FilePath);
@@ -121,12 +122,12 @@ public void InitializeIcons()
     // Zuerst Benutzer-Icons laden, wenn vorhanden, andernfalls Standard-Icons verwenden
     if (!LoadIconsFromAppData())
     {
-        Console.WriteLine("Keine Benutzer-Icons gefunden. Kopiere Standard-Icons.");
+        Debug.WriteLine("Keine Benutzer-Icons gefunden. Kopiere Standard-Icons.");
         CopyDefaultIcons();
         LoadIconsFromAppData(); // Versuche jetzt erneut, Icons zu laden
     }
 
-    Console.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
+    Debug.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
 }
 
 
@@ -134,7 +135,7 @@ public void InitializeIcons()
 
         private bool LoadIconsFromAppData()
         {
-            Console.WriteLine("LoadIconsFromAppData: gestartet."); // Debugging Ausgabe
+            Debug.WriteLine("LoadIconsFromAppData: gestartet."); // Debugging Ausgabe
 
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
@@ -163,21 +164,21 @@ public void InitializeIcons()
                                 // Ereignis hinzufügen
                                 image.MouseDown += Icon_Click;
                                 SymbolPanel.Children.Add(image);
-                                Console.WriteLine($"LoadIconsFromAppData: Icon erfolgreich hinzugefügt: {iconPath}");
+                                Debug.WriteLine($"LoadIconsFromAppData: Icon erfolgreich hinzugefügt: {iconPath}");
                             });
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"LoadIconsFromAppData: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}");
+                            Debug.WriteLine($"LoadIconsFromAppData: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}");
                         }
                     }
 
-                    Console.WriteLine("LoadIconsFromAppData: abgeschlossen.");
+                    Debug.WriteLine("LoadIconsFromAppData: abgeschlossen.");
                     return true;
                 }
             }
 
-            Console.WriteLine("LoadIconsFromAppData: Keine Icons im AppData-Verzeichnis gefunden.");
+            Debug.WriteLine("LoadIconsFromAppData: Keine Icons im AppData-Verzeichnis gefunden.");
             return false; // Rückgabe false, wenn keine Icons gefunden wurden
         }
 
@@ -187,7 +188,7 @@ public void InitializeIcons()
             // var iconSourceTextBox = this.FindName("IconSourceTextBox") as TextBox;
             // var selectedIconImage = this.FindName("SelectedIconImage") as Image;
             IconSourceTextBox.Text = string.Empty;
-            Console.WriteLine("Icon_Click: IconSourceTextBox aktualisiert - " + IconSourceTextBox.Text);
+            Debug.WriteLine("Icon_Click: IconSourceTextBox aktualisiert - " + IconSourceTextBox.Text);
 
             // Bild im Vorschaufenster löschen
             SelectedIconImage.Source = null;
@@ -211,7 +212,7 @@ public void InitializeIcons()
             // Überprüfen, ob installationPath null ist
             if (string.IsNullOrEmpty(installationPath))
             {
-                Console.WriteLine("CopyDefaultIcons: Installationspfad konnte nicht ermittelt werden.");
+                Debug.WriteLine("CopyDefaultIcons: Installationspfad konnte nicht ermittelt werden.");
                 return; // Wenn der Pfad nicht ermittelt werden kann, abbrechen
             }
 
@@ -224,7 +225,7 @@ public void InitializeIcons()
                 resourceDirectoryPath = developmentIconPath;
             }
 
-            Console.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
+            Debug.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
 
             // Alle Standard-Icons aus dem Verzeichnis (Entwicklung oder Installation) kopieren
             var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
@@ -237,11 +238,11 @@ public void InitializeIcons()
                 if (!File.Exists(destinationPath))
                 {
                     File.Copy(iconPath, destinationPath);
-                    Console.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt.");
+                    Debug.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt.");
                 }
                 else
                 {
-                    Console.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis.");
+                    Debug.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis.");
                 }
             }
         }
@@ -254,7 +255,7 @@ public void InitializeIcons()
 
         private void UploadIcon()
         {
-            Console.WriteLine("UploadIcon: gestartet."); // Debugging Ausgabe
+            Debug.WriteLine("UploadIcon: gestartet."); // Debugging Ausgabe
 
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
@@ -283,25 +284,25 @@ public void InitializeIcons()
                     if (!File.Exists(destinationPath))
                     {
                         File.Copy(sourceFilePath, destinationPath);
-                        Console.WriteLine($"UploadIcon: {fileName} erfolgreich hochgeladen und hinzugefügt.");
+                        Debug.WriteLine($"UploadIcon: {fileName} erfolgreich hochgeladen und hinzugefügt.");
                     }
                     else
                     {
-                        Console.WriteLine($"UploadIcon: {fileName} existiert bereits im Verzeichnis.");
+                        Debug.WriteLine($"UploadIcon: {fileName} existiert bereits im Verzeichnis.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"UploadIcon: {sourceFilePath} hat ein nicht unterstütztes Format.");
+                    Debug.WriteLine($"UploadIcon: {sourceFilePath} hat ein nicht unterstütztes Format.");
                 }
             }
 
-            Console.WriteLine("UploadIcon: abgeschlossen.");
+            Debug.WriteLine("UploadIcon: abgeschlossen.");
         }
 
         private void DisplayIcons()
         {
-            Console.WriteLine("DisplayIcons: gestartet."); // Debugging Ausgabe
+            Debug.WriteLine("DisplayIcons: gestartet."); // Debugging Ausgabe
 
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
@@ -327,11 +328,11 @@ public void InitializeIcons()
                 // Ereignis hinzufügen
                 image.MouseDown += Icon_Click;
                 SymbolPanel.Children.Add(image);
-                Console.WriteLine($"DisplayIcons: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
+                Debug.WriteLine($"DisplayIcons: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
             }
 
-            Console.WriteLine("DisplayIcons: abgeschlossen."); // Debugging Ausgabe
-            Console.WriteLine($"DisplayIcons: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
+            Debug.WriteLine("DisplayIcons: abgeschlossen."); // Debugging Ausgabe
+            Debug.WriteLine($"DisplayIcons: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -379,11 +380,11 @@ public void InitializeIcons()
 
         private void Icon_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("Icon_Click: Methode aufgerufen");
+            Debug.WriteLine("Icon_Click: Methode aufgerufen");
 
             if (sender is Image image && image.Source is BitmapImage bitmap)
             {
-                Console.WriteLine("Icon_Click: Bildquelle gefunden - " + bitmap.UriSource.AbsolutePath);
+                Debug.WriteLine("Icon_Click: Bildquelle gefunden - " + bitmap.UriSource.AbsolutePath);
 
                 var iconSourceTextBox = this.FindName("IconSourceTextBox") as TextBox;
                 var selectedIconImage = this.FindName("SelectedIconImage") as Image;
@@ -392,22 +393,22 @@ public void InitializeIcons()
                 {
                     // IconSource im Kategorie-Element speichern
                     iconSourceTextBox.Text = bitmap.UriSource.AbsolutePath;
-                    Console.WriteLine("Icon_Click: IconSourceTextBox aktualisiert - " + iconSourceTextBox.Text);
+                    Debug.WriteLine("Icon_Click: IconSourceTextBox aktualisiert - " + iconSourceTextBox.Text);
                 }
 
                 if (selectedIconImage != null)
                 {
                     // Anzeigen des ausgewählten Symbols
                     selectedIconImage.Source = bitmap;
-                    Console.WriteLine("Icon_Click: SelectedIconImage aktualisiert - " + selectedIconImage.Source);
+                    Debug.WriteLine("Icon_Click: SelectedIconImage aktualisiert - " + selectedIconImage.Source);
                 }
             }
             else
             {
-                Console.WriteLine("Icon_Click: Kein gültiges Bild gefunden");
+                Debug.WriteLine("Icon_Click: Kein gültiges Bild gefunden");
             }
 
-            Console.WriteLine("Icon_Click: Methode beendet");
+            Debug.WriteLine("Icon_Click: Methode beendet");
         }
     }
 }

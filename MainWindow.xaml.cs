@@ -8,9 +8,6 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading; // Für den DispatcherTimer
 using System.Collections;
 
-
-
-
 namespace BiMaDock
 {
     public partial class MainWindow : Window
@@ -77,10 +74,10 @@ namespace BiMaDock
             ButtonAnimations.LoadSettings(); //Animation
             settingsWindow.LoadSettings();
             AllowDrop = true;
-            Console.WriteLine("Hauptfenster initialisiert."); // Debugging
+            Debug.WriteLine("Hauptfenster initialisiert."); // Debugging
             dockManager = new DockManager(DockPanel, CategoryDockContainer, this); // Übergeben von CategoryDockContainer
             dockManager.LoadDockItems();
-            Console.WriteLine("Dock-Elemente geladen."); // Debugging
+            Debug.WriteLine("Dock-Elemente geladen."); // Debugging
 
             // Timer initialisieren
             dockHideTimer = new DispatcherTimer();
@@ -164,7 +161,7 @@ namespace BiMaDock
             }
             else
             {
-                Console.WriteLine("CategoryDockContainer konnte nicht gefunden werden");
+                Debug.WriteLine("CategoryDockContainer konnte nicht gefunden werden");
             }
         }
         // Weitere Initialisierung
@@ -213,7 +210,7 @@ namespace BiMaDock
 
         private void DockPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            Console.WriteLine("Mouse Down Event ausgelöst"); // Debugging
+            Debug.WriteLine("Mouse Down Event ausgelöst"); // Debugging
             isDragging = true; // Dragging-Flag setzen
             var originalSource = e.OriginalSource as FrameworkElement;
             while (originalSource != null && !(originalSource is Button))
@@ -224,11 +221,11 @@ namespace BiMaDock
             {
                 dragStartPoint = e.GetPosition(DockPanel);
                 draggedButton = button;
-                // Console.WriteLine("DockPanel_MouseLeftButtonDown: Drag Start: " + draggedButton.Tag); // Debugging
+                // Debug.WriteLine("DockPanel_MouseLeftButtonDown: Drag Start: " + draggedButton.Tag); // Debugging
             }
             else
             {
-                // Console.WriteLine("DockPanel_MouseLeftButtonDown: Kein Button als Quelle gefunden"); // Debugging
+                // Debug.WriteLine("DockPanel_MouseLeftButtonDown: Kein Button als Quelle gefunden"); // Debugging
             }
         }
 
@@ -273,7 +270,7 @@ namespace BiMaDock
                 slideAnimation.Completed += (s, e) =>
                 {
                     DockPanel.Margin = new Thickness(0, 0, 0, 0);
-                    // Console.WriteLine("Dock vollständig eingeblendet"); // Debugging
+                    // Debug.WriteLine("Dock vollständig eingeblendet"); // Debugging
                 };
 
 
@@ -307,6 +304,7 @@ namespace BiMaDock
 
         public void HideDock()
         {
+            // HideCategoryDockPanel();
             currentDockStatus = DockStatus.None;
             if (dockVisible)
             {
@@ -325,7 +323,7 @@ namespace BiMaDock
                 slideAnimation.Completed += (s, e) =>
                 {
                     DockPanel.Margin = new Thickness(0, -DockPanel.ActualHeight + toValue, 0, 0);
-                    // Console.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
+                    // Debug.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
                 };
 
 
@@ -370,7 +368,7 @@ namespace BiMaDock
 
                 if (dockBounds.Contains(mousePos))  // Überprüfen, ob die Maus sich innerhalb der Grenzen des Docks befindet
                 {
-                    // Console.WriteLine("Mouse over DockPanel");  // Debug-Ausgabe
+                    // Debug.WriteLine("Mouse over DockPanel");  // Debug-Ausgabe
 
                     // Timer neu starten, wenn die Maus über dem Dock ist
                     // dockHideTimer.Stop();
@@ -381,14 +379,14 @@ namespace BiMaDock
                 }
                 else
                 {
-                    // Console.WriteLine("Mouse not over DockPanel");  // Debug-Ausgabe
+                    // Debug.WriteLine("Mouse not over DockPanel");  // Debug-Ausgabe
                     // HideDock();
 
                 }
             }
             else
             {
-                Console.WriteLine("Fehler: DockPanel oder EventArgs sind null.");  // Debug-Ausgabe
+                Debug.WriteLine("Fehler: DockPanel oder EventArgs sind null.");  // Debug-Ausgabe
             }
         }
 
@@ -430,18 +428,18 @@ namespace BiMaDock
         {
             RemoveCrrentPlaceholder();
             // Ausgabe im Klartext
-            Console.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
+            Debug.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
 
             if (currentDockStatus > 0) // Überprüft, ob irgendein Flag gesetzt ist
             {
-                // Console.WriteLine("Conditions met, showing dock."); // Debug-Ausgabe
+                // Debug.WriteLine("Conditions met, showing dock."); // Debug-Ausgabe
                 ShowDock();
                 categoryHideTimer.Stop();
                 dockHideTimer.Stop();
             }
             else
             {
-                // Console.WriteLine("Conditions not met, hiding dock."); // Debug-Ausgabe
+                // Debug.WriteLine("Conditions not met, hiding dock."); // Debug-Ausgabe
                 categoryHideTimer.Start();
                 dockHideTimer.Start();
             }
@@ -455,7 +453,7 @@ namespace BiMaDock
         public void CategoryDockContainer_MouseMove(object sender, MouseEventArgs e)
         {
 
-            Console.WriteLine($"CategoryDockContainer_MouseMove: gestartet"); // Debugging
+            Debug.WriteLine($"CategoryDockContainer_MouseMove: gestartet"); // Debugging
             if (dragStartPoint.HasValue && draggedButton != null)
             {
                 Point position = e.GetPosition(CategoryDockContainer);
@@ -465,7 +463,7 @@ namespace BiMaDock
                     (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                      Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
                 {
-                    Console.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
+                    Debug.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
                     DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
                     dragStartPoint = null;
                     draggedButton = null;
@@ -479,7 +477,7 @@ namespace BiMaDock
 
         public void CategoryDockContainer_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            Console.WriteLine("CategoryDockContainer_PreviewMouseLeftButtonDown aufgerufen"); // Debugging
+            Debug.WriteLine("CategoryDockContainer_PreviewMouseLeftButtonDown aufgerufen"); // Debugging
 
             if (sender is StackPanel categoryDock)
             {
@@ -487,7 +485,7 @@ namespace BiMaDock
                 if (e.OriginalSource is FrameworkElement element && element.DataContext is DockItem)
                 {
                     draggedButton = element as Button;
-                    Console.WriteLine($"Drag start point gesetzt: {dragStartPoint}, Element: {draggedButton?.Tag}"); // Debugging
+                    Debug.WriteLine($"Drag start point gesetzt: {dragStartPoint}, Element: {draggedButton?.Tag}"); // Debugging
                 }
             }
         }
@@ -511,7 +509,7 @@ namespace BiMaDock
                 if (mousePosition.X >= 0 && mousePosition.X <= DockPanel.ActualWidth &&
                     mousePosition.Y >= 0 && mousePosition.Y <= DockPanel.ActualHeight)
                 {
-                    Console.WriteLine($"DockPanel_PreviewGiveFeedback: Dragging: {draggedButton.Tag}, Effects: {e.Effects}, Mouse Position: {mousePosition}"); // Debugging
+                    Debug.WriteLine($"DockPanel_PreviewGiveFeedback: Dragging: {draggedButton.Tag}, Effects: {e.Effects}, Mouse Position: {mousePosition}"); // Debugging
 
                     var hitTestResult = VisualTreeHelper.HitTest(DockPanel, mousePosition);
                     if (hitTestResult != null)
@@ -521,7 +519,7 @@ namespace BiMaDock
                         {
                             if (overElement is Button button && button.Tag is DockItem dockItem)
                             {
-                                Console.WriteLine($"DockPanel_PreviewGiveFeedback: Über Element: {dockItem.DisplayName}, IsCategory: {dockItem.IsCategory}, Mouse Position: {mousePosition}"); // Debugging
+                                Debug.WriteLine($"DockPanel_PreviewGiveFeedback: Über Element: {dockItem.DisplayName}, IsCategory: {dockItem.IsCategory}, Mouse Position: {mousePosition}"); // Debugging
                                 if (dockItem.IsCategory)
                                 {
                                     // Visuelles Feedback für Kategorie-Elemente
@@ -530,22 +528,22 @@ namespace BiMaDock
                             }
                             else
                             {
-                                Console.WriteLine("DockPanel_PreviewGiveFeedback: Über einem unbekannten Element oder kein DockItem"); // Debugging
+                                Debug.WriteLine("DockPanel_PreviewGiveFeedback: Über einem unbekannten Element oder kein DockItem"); // Debugging
                             }
                         }
                         else
                         {
-                            Console.WriteLine("DockPanel_PreviewGiveFeedback: Keine Übereinstimmung mit einem Element im DockPanel"); // Debugging
+                            Debug.WriteLine("DockPanel_PreviewGiveFeedback: Keine Übereinstimmung mit einem Element im DockPanel"); // Debugging
                         }
                     }
                     else
                     {
-                        Console.WriteLine("DockPanel_PreviewGiveFeedback: HitTestResult ist null"); // Debugging
+                        Debug.WriteLine("DockPanel_PreviewGiveFeedback: HitTestResult ist null"); // Debugging
                     }
                 }
                 else
                 {
-                    Console.WriteLine("DockPanel_PreviewGiveFeedback: Mausposition außerhalb der Grenzen des DockPanels"); // Debugging
+                    Debug.WriteLine("DockPanel_PreviewGiveFeedback: Mausposition außerhalb der Grenzen des DockPanels"); // Debugging
                 }
             }
 
@@ -570,7 +568,7 @@ namespace BiMaDock
                     (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                      Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
                 {
-                    // Console.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
+                    // Debug.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
                     DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
                     dragStartPoint = null;
                     draggedButton = null;
@@ -590,12 +588,12 @@ namespace BiMaDock
 
                         if (elementRect.Contains(mousePosition))
                         {
-                            // Console.WriteLine($"Maus über Element: {button.Tag}, Position: {mousePosition}"); // Debugging
+                            // Debug.WriteLine($"Maus über Element: {button.Tag}, Position: {mousePosition}"); // Debugging
                             isOverElement = true;
 
                             // if (button.Tag is DockItem dockItem && dockItem.IsCategory)
                             // {
-                            //     Console.WriteLine("Kategorie-Element erkannt>: " + dockItem.DisplayName); // Debugging
+                            //     Debug.WriteLine("Kategorie-Element erkannt>: " + dockItem.DisplayName); // Debugging
                             //     ShowCategoryDockPanel(new StackPanel
                             //     {
                             //         Name = dockItem.DisplayName,
@@ -611,7 +609,7 @@ namespace BiMaDock
 
                 if (!isOverElement)
                 {
-                    // Console.WriteLine($"Maus über Dock ohne Element, Position: {mousePosition}"); // Debugging
+                    // Debug.WriteLine($"Maus über Dock ohne Element, Position: {mousePosition}"); // Debugging
                 }
             }
         }
@@ -624,7 +622,7 @@ namespace BiMaDock
             dragStartPoint = null;
             draggedButton = null;
             isDragging = false; // Dragging-Flag zurücksetzen
-            Console.WriteLine("Drag End"); // Debugging
+            Debug.WriteLine("Drag End"); // Debugging
 
             // Dock wieder ausblenden, falls die Maus außerhalb ist
             var mousePos = Mouse.GetPosition(this);
@@ -640,19 +638,19 @@ namespace BiMaDock
         private void DockPanel_DragEnter(object sender, DragEventArgs e)
         {
 
-            Console.WriteLine("DockPanel_DragEnter: Aufgerufen"); // Debug-Ausgabe
+            Debug.WriteLine("DockPanel_DragEnter: Aufgerufen"); // Debug-Ausgabe
             currentDockStatus |= DockStatus.DraggingToDock;  // Flag setzen
             CheckAllConditions();
 
             // Position des Drag-Elements im DockPanel ermitteln
             Point dropPosition = e.GetPosition(DockPanel);
-            Console.WriteLine($"DockPanel_DragEnter: Drop-Position: X={dropPosition.X}, Y={dropPosition.Y}"); // Debug-Ausgabe der Position
+            Debug.WriteLine($"DockPanel_DragEnter: Drop-Position: X={dropPosition.X}, Y={dropPosition.Y}"); // Debug-Ausgabe der Position
 
             // Entferne vorhandene Platzhalter, bevor der neue erstellt wird
             if (currentPlaceholder != null)
             {
                 DockPanel.Children.Remove(currentPlaceholder);
-                Console.WriteLine("DockPanel_DragEnter: Vorhandenen Platzhalter entfernt.");
+                Debug.WriteLine("DockPanel_DragEnter: Vorhandenen Platzhalter entfernt.");
             }
 
             // Verzögerte Erstellung des Platzhalters
@@ -680,23 +678,27 @@ namespace BiMaDock
                         double elementCenterX = elementPosition.X + (button.RenderSize.Width / 2);
                         Rect elementRect = new Rect(elementPosition, button.RenderSize);
 
-                        Console.WriteLine($"DockPanel_DragEnter: Element {i} - Position: X={elementPosition.X}, Y={elementPosition.Y}, CenterX={elementCenterX}"); // Debug-Ausgabe der Position des Elements
+                        Debug.WriteLine($"DockPanel_DragEnter: Element {i} - Position: X={elementPosition.X}, Y={elementPosition.Y}, CenterX={elementCenterX}"); // Debug-Ausgabe der Position des Elements
 
                         // Überprüfen, ob die Maus auf dem aktuellen Element ist
                         if (elementRect.Contains(dropPosition))
                         {
-                            Console.WriteLine($"DockPanel_DragEnter: Maus auf Element: DisplayName = {dockItem.DisplayName}, ID = {dockItem.Id}, Ketegorie = {dockItem.Category}, IsCategory = {dockItem.IsCategory}");
+                            Debug.WriteLine($"DockPanel_DragEnter: Maus auf Element: DisplayName = {dockItem.DisplayName}, ID = {dockItem.Id}, Ketegorie = {dockItem.Category}, IsCategory = {dockItem.IsCategory}");
                             isMouseOnElement = true;
 
                             if (dockItem.IsCategory)
                             {
-                                Console.WriteLine($"DockPanel_DragEnter: öffne KategorieDock = {dockItem.DisplayName}, ID = {dockItem.Id}");
+                                Debug.WriteLine($"DockPanel_DragEnter: öffne KategorieDock = {dockItem.DisplayName}, ID = {dockItem.Id}");
                                 // Kategoriedock öffnen
                                 ShowCategoryDockPanel(new StackPanel
                                 {
                                     Tag = dockItem.Id
                                 });
-                                // isCategoryDockDragOpen = true;
+                                // Manuelles Auslösen von CategoryDockContainer_DragEnter
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    CategoryDockContainer_DragEnter(CategoryDockContainer, e);
+                                });
 
                             }
                             else
@@ -719,7 +721,7 @@ namespace BiMaDock
                             {
                                 currentPlaceholderIndex = i; // Update den Platzhalter-Index
                                 DockPanel.Children.Insert(i, currentPlaceholder);
-                                Console.WriteLine($"DockPanel_DragEnter: Platzhalter zwischen Element {i - 1} und Element {i} hinzugefügt.");
+                                Debug.WriteLine($"DockPanel_DragEnter: Platzhalter zwischen Element {i - 1} und Element {i} hinzugefügt.");
 
 
 
@@ -729,13 +731,13 @@ namespace BiMaDock
                     }
                     else
                     {
-                        Console.WriteLine($"DockPanel_DragEnter: Element {i} ist kein Button, sondern ein {DockPanel.Children[i].GetType().Name}.");
+                        Debug.WriteLine($"DockPanel_DragEnter: Element {i} ist kein Button, sondern ein {DockPanel.Children[i].GetType().Name}.");
                     }
                 }
 
                 if (!isMouseOnElement)
                 {
-                    Console.WriteLine("DockPanel_DragEnter: Maus zwischen Elementen oder außerhalb von Elementen.");
+                    Debug.WriteLine("DockPanel_DragEnter: Maus zwischen Elementen oder außerhalb von Elementen.");
                 }
             }));
 
@@ -744,19 +746,19 @@ namespace BiMaDock
             {
                 e.Effects = DragDropEffects.Move;
                 DockPanel.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
-                Console.WriteLine("DockPanel_DragEnter: Element über dem Hauptdock erkannt"); // Debug-Ausgabe
+                Debug.WriteLine("DockPanel_DragEnter: Element über dem Hauptdock erkannt"); // Debug-Ausgabe
             }
             else
             {
                 e.Effects = DragDropEffects.None;
-                Console.WriteLine("DockPanel_DragEnter: Kein Element erkannt oder DockPanel ist null"); // Debug-Ausgabe
+                Debug.WriteLine("DockPanel_DragEnter: Kein Element erkannt oder DockPanel ist null"); // Debug-Ausgabe
             }
 
             // Sicherstellen, dass alle Platzhalter entfernt werden, wenn der Drag-Vorgang beendet ist
             if (currentPlaceholder != null)
             {
                 DockPanel?.Children.Remove(currentPlaceholder);
-                Console.WriteLine("DockPanel_DragEnter: Platzhalter nach Verlassen der Methode entfernt.");
+                Debug.WriteLine("DockPanel_DragEnter: Platzhalter nach Verlassen der Methode entfernt.");
                 currentPlaceholder = null; // Rücksetzen der Referenz
             }
         }
@@ -765,7 +767,7 @@ namespace BiMaDock
 
         private void DockPanel_DragLeave(object sender, DragEventArgs e)
         {
-            Console.WriteLine("DockPanel_DragLeave: Aufgerufen"); // Debug-Ausgabe
+            Debug.WriteLine("DockPanel_DragLeave: Aufgerufen"); // Debug-Ausgabe
 
 
             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
@@ -776,7 +778,7 @@ namespace BiMaDock
             if (currentPlaceholder != null)
             {
                 DockPanel.Children.Remove(currentPlaceholder);
-                Console.WriteLine("DockPanel_DragLeave: Platzhalter entfernt.");
+                Debug.WriteLine("DockPanel_DragLeave: Platzhalter entfernt.");
                 currentPlaceholder = null; // Setze die Platzhalter-Referenz zurück
                 currentPlaceholderIndex = -1; // Zurücksetzen des Platzhalter-Index
             }
@@ -786,44 +788,9 @@ namespace BiMaDock
             if (brush != null)
             {
                 DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
-                Console.WriteLine("DockPanel_DragLeave: Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
+                Debug.WriteLine("DockPanel_DragLeave: Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
             }
         }
-
-
-
-        // private void DockPanel_Drop(object sender, DragEventArgs e)
-        // {
-        //     Console.WriteLine("DockPanel_Drop: Aufgerufen"); // Debug-Ausgabe
-
-        //     // Entferne den Platzhalter, wenn das Element abgelegt wird
-        //     if (currentPlaceholder != null)
-        //     {
-        //         DockPanel.Children.Remove(currentPlaceholder);
-        //         Console.WriteLine("DockPanel_Drop: Platzhalter entfernt.");
-        //         currentPlaceholder = null; // Setze die Platzhalter-Referenz zurück
-        //         currentPlaceholderIndex = -1; // Zurücksetzen des Platzhalter-Index
-        //     }
-
-        //     // Weitere Logik für das Ablegen des Elements hier einfügen
-        //     // Zum Beispiel: das tatsächliche Hinzufügen des Drag-Elements an die Position des Platzhalters
-        // }
-
-        // original Methode
-        // private void DockPanel_DragLeave(object sender, DragEventArgs e)
-        // {
-        //     Console.WriteLine("DockPanel_DragLeave: Aufgerufen"); // Debug-Ausgabe
-        //     currentDockStatus &= ~DockStatus.DraggingToDock;
-        //     CheckAllConditions();
-
-        //     // Visuelles Feedback zurücksetzen
-        //     var brush = (SolidColorBrush)FindResource("PrimaryColor");
-        //     if (brush != null)
-        //     {
-        //         DockPanel.Background = brush; // Setze auf die ursprüngliche Farbe zurück
-        //         Console.WriteLine("DockPanel_DragLeave: Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
-        //     }
-        // }
 
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -853,11 +820,11 @@ namespace BiMaDock
 
                 // Aktualisiere die Position des Dock-Items
                 dockManager.UpdateDockItemLocation(button, currentCategory); // currentCategory mitgeben
-                Console.WriteLine($"UpdateDockItemLocation: DockItem {dockItem.DisplayName} aktualisiert und gespeichert"); // Debug-Ausgabe
+                Debug.WriteLine($"UpdateDockItemLocation: DockItem {dockItem.DisplayName} aktualisiert und gespeichert"); // Debug-Ausgabe
             }
             else
             {
-                Console.WriteLine("UpdateDockItemLocation: DockItem ist null"); // Debug-Ausgabe
+                Debug.WriteLine("UpdateDockItemLocation: DockItem ist null"); // Debug-Ausgabe
             }
         }
 
@@ -867,7 +834,7 @@ namespace BiMaDock
 
         public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
-            Console.WriteLine("CategoryDockContainer_Drop aufgerufen"); // Debug-Ausgabe
+            Debug.WriteLine("CategoryDockContainer_Drop aufgerufen"); // Debug-Ausgabe
 
 
             if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
@@ -971,50 +938,258 @@ namespace BiMaDock
 
 
 
-        public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
+// public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
+// {
+//     Debug.WriteLine("CategoryDockContainer_Drop aufgerufen"); // Debug-Ausgabe
+
+//     // Überprüfen, ob eine Datei fallen gelassen wird
+//     if (e.Data.GetDataPresent(DataFormats.FileDrop))
+//     {
+//         string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+//         foreach (string file in files)
+//         {
+//             Debug.WriteLine($"CategoryDockContainer_Drop: Datei erkannt: {file}");
+
+//             // Überprüfen, ob die Datei eine Verknüpfung ist (LNK-Datei)
+//             if (System.IO.Path.GetExtension(file).ToLower() == ".lnk")
+//             {
+//                 Debug.WriteLine($"CategoryDockContainer_Drop: Verknüpfung erkannt: {file}");
+//                 // Hier könntest du zusätzliche Logik hinzufügen, um die Verknüpfung zu verarbeiten
+//             }
+//             else
+//             {
+//                 Debug.WriteLine($"CategoryDockContainer_Drop: Nicht-Verknüpfungsdatei erkannt: {file}");
+//                 // Logik für andere Dateitypen
+//             }
+//         }
+//     }
+//     else if (e.Data.GetDataPresent(DataFormats.Serializable))
+//     {
+//         var button = e.Data.GetData(DataFormats.Serializable) as Button;
+//         if (button != null)
+//         {
+//             var droppedItem = button.Tag as DockItem;
+//             if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
+//             {
+//                 // Überprüfung auf Kategorie
+//                 if (droppedItem.IsCategory)
+//                 {
+//                     if (!isCategoryMessageShown)
+//                     {
+//                         // MessageBox.Show("Kategorie-Elemente können nicht in das Kategorie-Dock verschoben werden.", "Verschieben nicht erlaubt", MessageBoxButton.OK, MessageBoxImage.Information);
+//                         isCategoryMessageShown = true; // Nachricht wurde gezeigt
+//                         HideDock();
+//                         HideCategoryDockPanel();
+//                     }
+//                     return; // Abbrechen, wenn es eine Kategorie ist
+//                 }
+
+//                 // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
+//                 if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
+//                 {
+//                     // Entferne das Element nicht, wenn es vom Hauptdock kommt und keine Kategorie hat
+//                     if (!string.IsNullOrEmpty(droppedItem.Category))
+//                     {
+//                         var parent = VisualTreeHelper.GetParent(button) as Panel;
+//                         if (parent != null)
+//                         {
+//                             parent.Children.Remove(button);
+//                         }
+//                     }
+
+//                     droppedItem.Category = currentOpenCategory;
+
+//                     // Logische Trennung durchführen, bevor das Element hinzugefügt wird
+//                     if (button.Parent != null)
+//                     {
+//                         var logicalParent = LogicalTreeHelper.GetParent(button) as Panel;
+//                         if (logicalParent != null)
+//                         {
+//                             logicalParent.Children.Remove(button);
+//                         }
+//                     }
+
+//                     // Position innerhalb des Kategorie-Docks bestimmen
+//                     Point dropPosition = e.GetPosition(CategoryDockContainer);
+//                     double dropCenterX = dropPosition.X;
+//                     int newIndex = 0;
+//                     bool inserted = false;
+//                     for (int i = 0; i < CategoryDockContainer.Children.Count; i++)
+//                     {
+//                         if (CategoryDockContainer.Children[i] is Button existingButton)
+//                         {
+//                             Point elementPosition = existingButton.TranslatePoint(new Point(0, 0), CategoryDockContainer);
+//                             double elementCenterX = elementPosition.X + (existingButton.ActualWidth / 2);
+
+//                             if (dropCenterX < elementCenterX)
+//                             {
+//                                 CategoryDockContainer.Children.Insert(i, button);
+//                                 inserted = true;
+//                                 break;
+//                             }
+//                         }
+//                         newIndex++;
+//                     }
+//                     if (!inserted)
+//                     {
+//                         CategoryDockContainer.Children.Add(button);
+//                     }
+
+//                     // Visuelles Feedback zurücksetzen
+//                     CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"]; 
+
+//                     // Aktualisiere die interne Struktur oder Daten, falls nötig
+//                     UpdateDockItemLocation(button);
+
+//                     // Dock-Items speichern
+//                     Debug.WriteLine($"CategoryDockContainer_Drop: Dock-Items für Kategorie {currentOpenCategory} gespeichert.");
+//                     dockManager.SaveDockItems(currentOpenCategory); 
+//                 }
+//             }
+//         }
+//     }
+//     else
+//     {
+//         e.Handled = true; 
+//     }
+
+//     // Visuelles Feedback zurücksetzen
+//     CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
+//     CheckAllConditions();
+// }
+
+
+
+
+
+// public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
+// {
+//     Debug.WriteLine("CategoryDockContainer_DragEnter aufgerufen");
+
+//     // Debug-Ausgabe aller vorhandenen Datenformate
+//     var formats = e.Data.GetFormats();
+//     Debug.WriteLine("CategoryDockContainer_DragEnter Vorhandene Datenformate:");
+//     foreach (var format in formats)
+//     {
+//         Debug.WriteLine($" - {format}");
+//     }
+
+//     // Überprüfen, ob eines der Datenformate übereinstimmt
+//     if (e.Data.GetDataPresent(DataFormats.Serializable))
+//     {
+//         e.Effects = DragDropEffects.Move;
+//         CategoryDockContainer.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback Farbe
+//         Debug.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt");
+
+//         // Den Tag der geöffneten Kategorie lesen
+//         var categoryName = CategoryDockContainer.Tag as string;
+
+//         Debug.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete categoryName: {categoryName}");
+
+//         if (!string.IsNullOrEmpty(categoryName))
+//         {
+//             currentOpenCategory = categoryName;
+//             Debug.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete Kategorie: {currentOpenCategory}");
+//         }
+//     }
+//     else
+//     {
+//         e.Effects = DragDropEffects.None;
+//         Debug.WriteLine("CategoryDockContainer_DragEnter: Kein Button erkannt");
+//     }
+//     CheckAllConditions();
+// }
+
+// public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
+// {
+//     Debug.WriteLine("CategoryDockContainer_DragEnter aufgerufen");
+
+//     // Debug-Ausgabe aller vorhandenen Datenformate
+//     var formats = e.Data.GetFormats();
+//     Debug.WriteLine("CategoryDockContainer_DragEnter: Vorhandene Datenformate:");
+//     foreach (var format in formats)
+//     {
+//         Debug.WriteLine($" - {format}");
+//     }
+
+//     // Überprüfen, ob eines der bekannten Datenformate übereinstimmt
+//     if (e.Data.GetDataPresent(DataFormats.FileDrop) || e.Data.GetDataPresent("Shell IDList Array") || e.Data.GetDataPresent(DataFormats.Serializable))
+//     {
+//         e.Effects = DragDropEffects.Move;
+//         CategoryDockContainer.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback Farbe
+//         Debug.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt");
+
+//         // Den Tag der geöffneten Kategorie lesen
+//         var categoryName = CategoryDockContainer.Tag as string;
+
+//         Debug.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete categoryName: {categoryName}");
+
+//         if (!string.IsNullOrEmpty(categoryName))
+//         {
+//             currentOpenCategory = categoryName;
+//             Debug.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete Kategorie: {currentOpenCategory}");
+//         }
+//     }
+//     else
+//     {
+//         e.Effects = DragDropEffects.None;
+//         Debug.WriteLine("CategoryDockContainer_DragEnter: Kein passendes Datenformat erkannt");
+//     }
+//     CheckAllConditions();
+// }
+
+
+public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
+{
+    Console.WriteLine("CategoryDockContainer_DragEnter aufgerufen");
+
+    // Debug-Ausgabe aller vorhandenen Datenformate
+    var formats = e.Data.GetFormats();
+    Console.WriteLine("Vorhandene Datenformate:");
+    foreach (var format in formats)
+    {
+        Console.WriteLine($" - {format}");
+    }
+
+    // Überprüfen, ob eines der relevanten Datenformate übereinstimmt
+    if (e.Data.GetDataPresent("Shell IDList Array") || e.Data.GetDataPresent("FileDrop") || e.Data.GetDataPresent("FileNameW") || e.Data.GetDataPresent("FileName") || e.Data.GetDataPresent("FileGroupDescriptorW") || e.Data.GetDataPresent("FileContents") || e.Data.GetDataPresent(DataFormats.Serializable))
+    {
+        e.Effects = DragDropEffects.Move;
+        CategoryDockContainer.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback Farbe
+        Console.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt");
+
+        // Den Tag der geöffneten Kategorie lesen
+        var categoryName = CategoryDockContainer.Tag as string;
+
+        Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete categoryName: {categoryName}");
+
+        if (!string.IsNullOrEmpty(categoryName))
         {
-            Console.WriteLine("CategoryDockContainer_DragEnter aufgerufen"); // Debug-Ausgabe
-
-            if (e.Data.GetDataPresent(DataFormats.Serializable))
-            {
-                e.Effects = DragDropEffects.Move;
-                CategoryDockContainer.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback Farbe
-                Console.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt"); // Debug-Ausgabe
-
-                // Den Tag der geöffneten Kategorie lesen
-                var categoryName = CategoryDockContainer.Tag as string;
-
-                Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete categoryName: {categoryName}");
-
-                if (!string.IsNullOrEmpty(categoryName))
-                {
-                    currentOpenCategory = categoryName;
-                    Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete Kategorie: {currentOpenCategory}"); // Debug-Ausgabe
-                }
-            }
-            else
-            {
-                e.Effects = DragDropEffects.None;
-                Console.WriteLine("CategoryDockContainer_DragEnter: Kein Button erkannt"); // Debug-Ausgabe
-            }
-            CheckAllConditions();
+            currentOpenCategory = categoryName;
+            Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete Kategorie: {currentOpenCategory}");
         }
-
-
+    }
+    else
+    {
+        e.Effects = DragDropEffects.None;
+        Console.WriteLine("CategoryDockContainer_DragEnter: Kein passendes Datenformat erkannt");
+    }
+    CheckAllConditions();
+}
 
         public void CategoryDockContainer_DragLeave(object sender, DragEventArgs e)
         {
-            Console.WriteLine("CategoryDockContainer_DragLeave aufgerufen"); // Debug-Ausgabe
+            Debug.WriteLine("CategoryDockContainer_DragLeave aufgerufen"); // Debug-Ausgabe
 
             // Kategorie-Status nur zurücksetzen, wenn keine anderen Elemente gerade gezogen werden
             if (draggedButton == null)
             {
                 currentOpenCategory = "";
-                Console.WriteLine("Geöffnete Kategorie zurückgesetzt"); // Debug-Ausgabe
+                Debug.WriteLine("Geöffnete Kategorie zurückgesetzt"); // Debug-Ausgabe
             }
             CategoryDockBorder.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
             // CategoryDockContainer.Background = new SolidColorBrush(Colors.Transparent); // Visuelles Feedback zurücksetzen Farbe
-            Console.WriteLine("Element hat das Kategoriedock verlassen"); // Debug-Ausgabe
+            Debug.WriteLine("Element hat das Kategoriedock verlassen"); // Debug-Ausgabe
         }
 
 
@@ -1026,15 +1201,15 @@ namespace BiMaDock
 
         public void OpenDockItem(DockItem dockItem)
         {
-            Console.WriteLine($"OpenDockItem aufgerufen"); // Debug-Ausgabe
+            Debug.WriteLine($"OpenDockItem aufgerufen"); // Debug-Ausgabe
             if (!string.IsNullOrEmpty(dockItem.FilePath))
             {
-                Console.WriteLine($"OpenDockItem aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
+                Debug.WriteLine($"OpenDockItem aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
                 OpenFile(dockItem.FilePath);
             }
             else
             {
-                Console.WriteLine("OpenDockItem aufgerufen, Kategorie"); // Debug-Ausgabe
+                Debug.WriteLine("OpenDockItem aufgerufen, Kategorie"); // Debug-Ausgabe
                 // if (isCategoryDockOpen && currentOpenCategory == dockItem.DisplayName)
                 if (isCategoryDockOpen && currentOpenCategory == dockItem.Id)
                 {
@@ -1045,7 +1220,7 @@ namespace BiMaDock
                     currentDockStatus &= ~DockStatus.CategoryElementClicked; // Flag zurücksetzen
 
                     isCategoryDockOpen = false;
-                    Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} ID: {dockItem.Id} geschlossen"); // Debug-Ausgabe
+                    Debug.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} ID: {dockItem.Id} geschlossen"); // Debug-Ausgabe
                     isCategoryDockOpenID = "";
                 }
                 else
@@ -1071,7 +1246,7 @@ namespace BiMaDock
 
                     currentDockStatus |= DockStatus.CategoryElementClicked; // Flag setzen
                     isCategoryDockOpen = true;
-                    Console.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} ID: {dockItem.Id} geöffnet"); // Debug-Ausgabe
+                    Debug.WriteLine($"OpenDockItem Kategoriedock {dockItem.DisplayName} ID: {dockItem.Id} geöffnet"); // Debug-Ausgabe
                     isCategoryDockOpenID = dockItem.Id;
                 }
             }
@@ -1100,18 +1275,18 @@ namespace BiMaDock
                         FileName = filePath,
                         UseShellExecute = true
                     });
-                    Console.WriteLine($"Dateipfad: {filePath}"); // Debug-Ausgabe
+                    Debug.WriteLine($"Dateipfad: {filePath}"); // Debug-Ausgabe
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Fehler beim Öffnen der Datei: {ex.Message}"); // Debug-Ausgabe
+                    Debug.WriteLine($"Fehler beim Öffnen der Datei: {ex.Message}"); // Debug-Ausgabe
                 }
             }
             else
             {
-                Console.WriteLine("Fehler: Kein Dateipfad bereitgestellt"); // Debug-Ausgabe
+                Debug.WriteLine("Fehler: Kein Dateipfad bereitgestellt"); // Debug-Ausgabe
             }
-            Console.WriteLine("OpenFile: Dock schließen");
+            Debug.WriteLine("OpenFile: Dock schließen");
             HideCategoryDockPanel();
             HideDock();
             currentDockStatus = DockStatus.None;
@@ -1159,70 +1334,6 @@ namespace BiMaDock
             }
         }
 
-
-
-        // public void ShowCategoryDockPanel(StackPanel categoryDock)
-        // {
-        //     // Setzt die grundlegenden Eigenschaften und fügt das CategoryDock hinzu
-        //     CategoryDockContainer.Children.Clear();
-        //     CategoryDockContainer.Children.Add(categoryDock);
-        //     CategoryDockContainer.Visibility = Visibility.Visible;
-        //     CategoryDockBorder.Visibility = Visibility.Visible;
-        //     OverlayCanvas.Visibility = Visibility.Visible;
-
-        //     // Verwende Dispatcher, um den Margin-Wert nach dem Rendern zu setzen
-        //     Application.Current.Dispatcher.InvokeAsync(() =>
-        //     {
-        //         if (CategoryDockBorder.ActualWidth > 0)
-        //         {
-        //             double MainStackPanelMitte = MainStackPanel.ActualWidth / 2;
-
-
-        //             Console.WriteLine($"Nach dem Rendern MainStackPanelMitte: {MainStackPanelMitte}"); // Debugging
-
-
-        //             // double MainStackPanelWidth =0;
-
-
-        //             // // MainStackPanel.ActualWidth;
-        //             Console.WriteLine($"Nach dem Rendern MainStackPanel.ActualWidth: {MainStackPanel.ActualWidth}"); // Debugging
-        //             Console.WriteLine($"Nach dem Rendern mousePositionSave: {dockManager.mousePositionSave}"); // Debugging
-        //             // Console.WriteLine($"Nach dem Rendern CategoryDockBorder.ActualWidth: {CategoryDockBorder.ActualWidth / 2}"); // Debugging
-        //             // Console.WriteLine($"Nach dem Rendern categoryDockPositionX: {categoryDockPositionX}"); // Debugging
-
-        //             // double screenPositionX = this.Left + (dockManager.mousePositionSave - MainStackPanelWidth );
-        //             // Console.WriteLine($"Nach dem Rendern screenPositionX: {screenPositionX}"); // Debugging
-
-        //             // CategoryDockBorder.Margin = new Thickness(screenPositionX, 0, 0, 0);
-
-        //             double categoryDockPositionX = 45 + dockManager.mousePositionSave - CategoryDockBorder.ActualWidth / 2;
-        //             Console.WriteLine($"Nach dem Rendern categoryDockPositionX: {categoryDockPositionX}"); // Debugging
-        //             CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
-
-        //             double overlayPositionX = dockManager.mousePositionSave - 16;
-
-        //             Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
-
-        //         }
-        //     }, System.Windows.Threading.DispatcherPriority.Loaded);
-
-        //     // Restlicher Code
-        //     currentDockStatus |= DockStatus.CategoryElementClicked;
-        //     currentOpenCategory = categoryDock.Name;
-        //     CategoryDockContainer.Tag = currentOpenCategory;
-        //     var items = SettingsManager.LoadSettings();
-        //     foreach (var item in items)
-        //     {
-        //         if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
-        //         {
-        //             dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
-        //         }
-        //     }
-
-        //     MainStackPanel.Margin = new Thickness(0);
-        //     categoryHideTimer.Start();
-        //     CheckAllConditions();
-        // }
         public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
             // Setzt die grundlegenden Eigenschaften und fügt das CategoryDock hinzu
@@ -1239,12 +1350,12 @@ namespace BiMaDock
                 {
                     double MainStackPanelMitte = MainStackPanel.ActualWidth / 2;
 
-                    Console.WriteLine($"Nach dem Rendern MainStackPanelMitte: {MainStackPanelMitte}"); // Debugging
-                    Console.WriteLine($"Nach dem Rendern MainStackPanel.ActualWidth: {MainStackPanel.ActualWidth}"); // Debugging
-                    Console.WriteLine($"Nach dem Rendern mousePositionSave: {dockManager.mousePositionSave}"); // Debugging
+                    Debug.WriteLine($"Nach dem Rendern MainStackPanelMitte: {MainStackPanelMitte}"); // Debugging
+                    Debug.WriteLine($"Nach dem Rendern MainStackPanel.ActualWidth: {MainStackPanel.ActualWidth}"); // Debugging
+                    Debug.WriteLine($"Nach dem Rendern mousePositionSave: {dockManager.mousePositionSave}"); // Debugging
 
                     double categoryDockPositionX = 45 + dockManager.mousePositionSave - CategoryDockBorder.ActualWidth / 2;
-                    Console.WriteLine($"Nach dem Rendern categoryDockPositionX: {categoryDockPositionX}"); // Debugging
+                    Debug.WriteLine($"Nach dem Rendern categoryDockPositionX: {categoryDockPositionX}"); // Debugging
                     CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
 
                     double overlayPositionX = dockManager.mousePositionSave - 16;
@@ -1278,7 +1389,7 @@ namespace BiMaDock
         public void HideCategoryDockPanel()
         {
             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
-            // Console.WriteLine("HideCategoryDockPanel aufgerufen"); // Debugging
+            // Debug.WriteLine("HideCategoryDockPanel aufgerufen"); // Debugging
             CategoryDockContainer.Visibility = Visibility.Collapsed;
             CategoryDockBorder.Visibility = Visibility.Collapsed; // Sichtbarkeit der CategoryDockBorder ändern
             OverlayCanvas.Visibility = Visibility.Collapsed;
@@ -1288,374 +1399,19 @@ namespace BiMaDock
 
             // Timer stoppen
             categoryHideTimer.Stop();
-            // Console.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
+            // Debug.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
             // CheckAllConditions();
             isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
         }
 
 
-
-        // private void Edit_Click(object sender, RoutedEventArgs e)
-        // {
-        //     try
-        //     {
-        //         if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
-        //         {
-        //             // Alle Dock-Items laden
-        //             var dockItems = SettingsManager.LoadSettings() ?? new List<DockItem>();
-
-        //             // Prüfen, ob das aktuelle Item eine Kategorie ist
-        //             var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
-        //             if (settings == null)
-        //             {
-        //                 MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        //                 return;
-        //             }
-
-        //             // Edit-Dialog initialisieren
-        //             EditPropertiesWindow editWindow = new EditPropertiesWindow
-        //             {
-        //                 Owner = this,
-        //                 NameTextBox = { Text = settings.DisplayName },
-        //                 IconSourceTextBox = { Text = settings.IconSource } // Hinzufügen des Bildpfads
-        //             };
-
-        //             bool? dialogResult = editWindow.ShowDialog();
-        //             if (dialogResult == true)
-        //             {
-        //                 string newName = editWindow.NameTextBox.Text.Trim();
-        //                 string newIconPath = editWindow.IconSourceTextBox.Text.Trim(); // Neues Bildpfad
-
-        //                 // Neuen Namen validieren
-        //                 if (string.IsNullOrEmpty(newName))
-        //                 {
-        //                     MessageBox.Show("Name darf nicht leer sein.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-        //                     return;
-        //                 }
-
-        //                 // Prüfen, ob der neue Name bereits für eine andere Kategorie verwendet wird
-        //                 if (dockItems.Any(di => di.IsCategory && di.DisplayName == newName && di.Id != settings.Id)) // Sicherstellen, dass es nicht dasselbe ist
-        //                 {
-        //                     MessageBox.Show("Eine Kategorie mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-        //                     return;
-        //                 }
-
-        //                 // Prüfen, ob der Kategoriename geändert wurde
-        //                 bool nameChanged = settings.DisplayName != newName;
-
-        //                 // Falls es eine Kategorie ist
-        //                 if (settings.IsCategory)
-        //                 {
-        //                     if (nameChanged)
-        //                     {
-        //                         string oldCategory = settings.DisplayName;
-        //                         settings.DisplayName = newName;
-
-        //                         // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören
-        //                         foreach (var item in dockItems)
-        //                         {
-        //                             if (!item.IsCategory && item.Category == oldCategory)
-        //                             {
-        //                                 item.Category = newName;
-        //                             }
-        //                         }
-
-        //                         // Aktualisiere den Button-Text
-        //                         var textBlock = new TextBlock
-        //                         {
-        //                             Text = newName,
-        //                             TextAlignment = TextAlignment.Center,
-        //                             TextWrapping = TextWrapping.Wrap,
-        //                             Width = 60,
-        //                             Margin = new Thickness(5)
-        //                         };
-
-        //                         var stackPanel = button.Content as StackPanel;
-        //                         if (stackPanel != null)
-        //                         {
-        //                             stackPanel.Children.RemoveAt(1);
-        //                             stackPanel.Children.Add(textBlock);
-        //                         }
-        //                     }
-
-        //                     // Wenn der Name nicht geändert wurde, nur das Symbol aktualisieren
-        //                     if (!string.IsNullOrEmpty(newIconPath))
-        //                     {
-        //                         settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
-        //                     }
-
-        //                     button.Tag = dockItem;
-
-        //                     // Speichern der aktualisierten Einstellungen
-        //                     SettingsManager.SaveSettings(dockItems);
-        //                     dockManager.LoadDockItems();
-        //                 }
-        //                 else
-        //                 {
-        //                     MessageBox.Show("Dieses Element ist keine Kategorie.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        //                 }
-        //             }
-        //         }
-        //         else
-        //         {
-        //             MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         MessageBox.Show($"Ein unerwarteter Fehler ist aufgetreten: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        //     }
-        // }
-
-
-        // private SettingsWindow settingsWindow = new SettingsWindow();
-
-
-        // private void Edit_Click(object sender, RoutedEventArgs e)
-        // {
-        //     try
-        //     {
-        //         if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
-        //         {
-        //             // Alle Dock-Items laden
-        //             var dockItems = SettingsManager.LoadSettings() ?? new List<DockItem>();
-
-        //             // Prüfen, ob das aktuelle Item existiert
-        //             var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
-        //             if (settings == null)
-        //             {
-        //                 MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        //                 return;
-        //             }
-
-        //             // Edit-Dialog initialisieren
-        //             EditPropertiesWindow editWindow = new EditPropertiesWindow
-        //             {
-        //                 Owner = this,
-        //                 IdTextBox = { Text = settings.Id },
-        //                 NameTextBox = { Text = settings.DisplayName },
-        //                 IconSourceTextBox = { Text = settings.IconSource } // Hinzufügen des Bildpfads
-        //             };
-
-        //             bool? dialogResult = editWindow.ShowDialog();
-        //             if (dialogResult == true)
-        //             {
-        //                 string newName = editWindow.NameTextBox.Text.Trim();
-        //                 string newIconPath = editWindow.IconSourceTextBox.Text.Trim(); // Neues Bildpfad
-
-        //                 // Neuen Namen validieren
-        //                 if (string.IsNullOrEmpty(newName))
-        //                 {
-        //                     MessageBox.Show("Name darf nicht leer sein.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-        //                     return;
-        //                 }
-
-        //                 // Prüfen, ob der neue Name bereits für ein anderes Element verwendet wird
-        //                 if (dockItems.Any(di => di.DisplayName == newName && di.Id != settings.Id)) // Sicherstellen, dass es nicht dasselbe ist
-        //                 {
-        //                     MessageBox.Show("Ein Element mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-        //                     return;
-        //                 }
-
-        //                 // Prüfen, ob der Name geändert wurde
-        //                 bool nameChanged = settings.DisplayName != newName;
-
-        //                 if (nameChanged)
-        //                 {
-        //                     string oldCategory = settings.DisplayName;
-        //                     settings.DisplayName = newName;
-
-        //                     // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören, falls das Element eine Kategorie ist
-        //                     foreach (var item in dockItems)
-        //                     {
-        //                         if (item.Category == oldCategory)
-        //                         {
-        //                             item.Category = newName;
-        //                         }
-        //                     }
-
-        //                     // Aktualisiere den Button-Text
-        //                     var textBlock = new TextBlock
-        //                     {
-        //                         Text = newName,
-        //                         TextAlignment = TextAlignment.Center,
-        //                         TextWrapping = TextWrapping.Wrap,
-        //                         Width = 60,
-        //                         Margin = new Thickness(5)
-        //                     };
-
-        //                     var stackPanel = button.Content as StackPanel;
-        //                     if (stackPanel != null)
-        //                     {
-        //                         stackPanel.Children.RemoveAt(1);
-        //                         stackPanel.Children.Add(textBlock);
-        //                     }
-        //                 }
-
-        //                 // Wenn der Name nicht geändert wurde oder das Symbol aktualisiert werden muss
-        //                 if (!string.IsNullOrEmpty(newIconPath))
-        //                 {
-        //                     settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
-        //                 }
-
-        //                 button.Tag = dockItem;
-
-        //                 // Speichern der aktualisierten Einstellungen
-        //                 SettingsManager.SaveSettings(dockItems);
-        //                 dockManager.LoadDockItems();
-        //             }
-        //         }
-        //         else
-        //         {
-        //             MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         MessageBox.Show($"Ein unerwarteter Fehler ist aufgetreten: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        //     }
-        // }
-
-        // private void Edit_Click(object sender, RoutedEventArgs e)
-        // {
-        //     Console.WriteLine($"Edit_Click... "); // Debugging
-
-        //     try
-        //     {
-        //         if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
-
-        //         {
-        //             Console.WriteLine($"Edit_Click Geklicktes Item: ID = {dockItem.Id}, Name = {dockItem.DisplayName} Ketegorie = {dockItem.IsCategory}");
-        //             Console.WriteLine($"Edit_Click Geklicktes Item: ID = {dockItem.Id}, Name = {dockItem.DisplayName} Ketegorie = {dockItem.IsCategory}");
-
-
-        //             if (dockItem.IsCategory)
-        //             {
-
-        //                 HideCategoryDockPanel();
-        //             }
-
-        //             // Alle Dock-Items laden
-        //             var dockItems = SettingsManager.LoadSettings() ?? new List<DockItem>();
-
-        //             // Prüfen, ob das aktuelle Item existiert
-        //             var settings = dockItems.FirstOrDefault(di => di.Id == dockItem.Id);
-        //             if (settings == null)
-        //             {
-        //                 MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        //                 return;
-        //             }
-
-        //             // Edit-Dialog initialisieren
-        //             EditPropertiesWindow editWindow = new EditPropertiesWindow
-        //             {
-        //                 Owner = this,
-        //                 IdTextBox = { Text = settings.Id },
-        //                 NameTextBox = { Text = settings.DisplayName },
-        //                 IconSourceTextBox = { Text = settings.IconSource } // Hinzufügen des Bildpfads
-        //             };
-
-        //             bool? dialogResult = editWindow.ShowDialog();
-        //             if (dialogResult == true)
-        //             {
-        //                 string newName = editWindow.NameTextBox.Text.Trim();
-        //                 string newIconPath = editWindow.IconSourceTextBox.Text.Trim(); // Neues Bildpfad
-
-        //                 // Neuen Namen validieren
-        //                 if (string.IsNullOrEmpty(newName))
-        //                 {
-        //                     MessageBox.Show("Name darf nicht leer sein.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-        //                     return;
-        //                 }
-
-        //                 // Prüfen, ob der neue Name bereits für ein anderes Element verwendet wird
-        //                 // if (dockItems.Any(di => di.DisplayName == newName && di.Id != settings.Id)) // Sicherstellen, dass es nicht dasselbe ist
-        //                 // {
-        //                 //     MessageBox.Show("Ein Element mit diesem Namen existiert bereits.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-        //                 //     return;
-        //                 // }
-
-        //                 // Prüfen, ob der Name geändert wurde
-        //                 bool nameChanged = settings.DisplayName != newName;
-
-        //                 if (nameChanged)
-        //                 {
-        //                     string oldCategory = settings.DisplayName;
-        //                     settings.DisplayName = newName;
-
-        //                     // Aktualisiere alle untergeordneten Elemente, die zur alten Kategorie gehören, falls das Element eine Kategorie ist
-        //                     foreach (var item in dockItems)
-        //                     {
-        //                         if (item.Category == oldCategory)
-        //                         {
-        //                             item.Category = newName;
-        //                         }
-        //                     }
-
-        //                     // Aktualisiere den Button-Text
-        //                     var textBlock = new TextBlock
-        //                     {
-        //                         Text = newName,
-        //                         TextAlignment = TextAlignment.Center,
-        //                         TextWrapping = TextWrapping.Wrap,
-        //                         Width = 60,
-        //                         Margin = new Thickness(5)
-        //                     };
-
-        //                     var stackPanel = button.Content as StackPanel;
-        //                     if (stackPanel != null)
-        //                     {
-        //                         stackPanel.Children.RemoveAt(1);
-        //                         stackPanel.Children.Add(textBlock);
-        //                     }
-        //                 }
-
-        //                 // Wenn der Name nicht geändert wurde oder das Symbol aktualisiert werden muss
-        //                 if (!string.IsNullOrEmpty(newIconPath))
-        //                 {
-        //                     settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
-        //                 }
-
-        //                 button.Tag = dockItem;
-
-        //                 // Speichern der aktualisierten Einstellungen
-        //                 SettingsManager.SaveSettings(dockItems);
-
-
-        //                 dockManager.LoadDockItems();
-        //                 // Console.WriteLine($"Edit_Click Geklicktes Item: ID = {dockItem.Id}, Name = {dockItem.DisplayName} Ketegorie = {dockItem.IsCategory}");
-        //                 // if (dockItem.Category == dockItem.Id)
-        //                 // {
-        //                 //     HideCategoryDockPanel();
-        //                 //     // ShowCategoryDockPanel(new StackPanel
-        //                 //     // {
-        //                 //     //     Tag = dockItem.Id
-        //                 //     //     // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
-        //                 //     // });
-
-
-
-        //                 // }
-
-        //             }
-        //         }
-        //         else
-        //         {
-        //             MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         MessageBox.Show($"Ein unerwarteter Fehler ist aufgetreten: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        //     }
-        // }
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
                 {
-                    Console.WriteLine($"Edit_Click Geklicktes Item: ID = {dockItem.Id}, Name = {dockItem.DisplayName} Category= {dockItem.Category}");
+                    Debug.WriteLine($"Edit_Click Geklicktes Item: ID = {dockItem.Id}, Name = {dockItem.DisplayName} Category= {dockItem.Category}");
 
                     if (dockItem.IsCategory)
                     {
@@ -1686,7 +1442,7 @@ namespace BiMaDock
                         IsCategoryTextBox = { Text = settings.IsCategory.ToString() },
                         DockItem = settings
                     };
-                    Console.WriteLine($"Edit_Click: Übergebenes DockItem: ID = {settings.Id}, Name = {settings.DisplayName}, IconSource = {settings.IconSource}, Kategorie = {settings.Category}, Ist Kategorie = {settings.IsCategory}");
+                    Debug.WriteLine($"Edit_Click: Übergebenes DockItem: ID = {settings.Id}, Name = {settings.DisplayName}, IconSource = {settings.IconSource}, Kategorie = {settings.Category}, Ist Kategorie = {settings.IsCategory}");
 
                     bool? dialogResult = editWindow.ShowDialog();
                     if (dialogResult == true)
@@ -1814,7 +1570,7 @@ namespace BiMaDock
             if (currentPlaceholder != null)
             {
                 DockPanel.Children.Remove(currentPlaceholder);
-                Console.WriteLine("DockPanel_DragEnter: Vorhandenen Platzhalter entfernt.");
+                Debug.WriteLine("DockPanel_DragEnter: Vorhandenen Platzhalter entfernt.");
             }
         }
 
@@ -1835,7 +1591,7 @@ namespace BiMaDock
             Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Colors.Green);
 
             // Debugging-Ausgabe
-            Console.WriteLine("Test_Click: Aufruf der Methode");
+            Debug.WriteLine("Test_Click: Aufruf der Methode");
 
             // // Wenn du die Farbe später erneut ändern möchtest
             // if (Application.Current.Resources["PrimaryColor"] is SolidColorBrush primaryBrush)
@@ -1860,14 +1616,14 @@ namespace BiMaDock
                 if (dictionary.Contains("PrimaryColor"))
                 {
                     dictionary["PrimaryColor"] = newColorBrush;
-                    Console.WriteLine("PrimaryColor direkt im ResourceDictionary aktualisiert.");
+                    Debug.WriteLine("PrimaryColor direkt im ResourceDictionary aktualisiert.");
                 }
             }
 
             // Überprüfen, ob die Änderung sichtbar ist
             this.Resources["PrimaryColor"] = newColorBrush;
             DockPanel.Background = newColorBrush;
-            Console.WriteLine("PrimaryColor im UI aktualisiert.");
+            Debug.WriteLine("PrimaryColor im UI aktualisiert.");
         }
 
 
@@ -1882,14 +1638,14 @@ namespace BiMaDock
                 if (dictionary.Contains("SecondaryColor"))
                 {
                     dictionary["SecondaryColor"] = newColorBrush;
-                    Console.WriteLine("SecondaryColor direkt im ResourceDictionary aktualisiert.");
+                    Debug.WriteLine("SecondaryColor direkt im ResourceDictionary aktualisiert.");
                 }
             }
 
             // Überprüfen, ob die Änderung sichtbar ist
             this.Resources["SecondaryColor"] = newColorBrush;
             DockPanel.Background = newColorBrush;
-            Console.WriteLine("PrimaryColor im UI aktualisiert.");
+            Debug.WriteLine("PrimaryColor im UI aktualisiert.");
         }
 
 

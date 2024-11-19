@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 public class ButtonAnimations
 {
@@ -30,7 +31,7 @@ public class ButtonAnimations
     // Methode zum Laden von SelectedEffectIndex
     public static void LoadSettings()
     {
-        Console.WriteLine("Einstellungen werden geladen...");
+        Debug.WriteLine("Einstellungen werden geladen...");
 
         // Hole den Pfad zum AppData\Local\BiMaDock Ordner
         string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -49,7 +50,7 @@ public class ButtonAnimations
                 if (settings?.SelectedEffectIndex != null)
                 {
                     SelectedEffectIndex = (int)settings.SelectedEffectIndex;
-                    // Console.WriteLine($"SelectedEffectIndex geladen: {SelectedEffectIndex}");
+                    // Debug.WriteLine($"SelectedEffectIndex geladen: {SelectedEffectIndex}");
                 }
 
                 // Lade die Einstellungen für Scale
@@ -60,7 +61,7 @@ public class ButtonAnimations
                     if (settings.Scale?.AutoReverse != null) ScaleSettings.AutoReverse = (bool)settings.Scale.AutoReverse;
                     if (settings.Scale?.EffectIndex != null) ScaleSettings.EffectIndex = (int)settings.Scale.EffectIndex;
 
-                    // Console.WriteLine($"Scale Einstellungen geladen: Duration={ScaleSettings.Duration}, ScaleFactor={ScaleSettings.ScaleFactor}, AutoReverse={ScaleSettings.AutoReverse}");
+                    // Debug.WriteLine($"Scale Einstellungen geladen: Duration={ScaleSettings.Duration}, ScaleFactor={ScaleSettings.ScaleFactor}, AutoReverse={ScaleSettings.AutoReverse}");
                 }
 
                 // Lade die Einstellungen für Rotate
@@ -71,7 +72,7 @@ public class ButtonAnimations
                     if (settings.Rotate?.AutoReverse != null) RotateSettings.AutoReverse = (bool)settings.Rotate.AutoReverse;
                     if (settings.Rotate?.EffectIndex != null) RotateSettings.EffectIndex = (int)settings.Rotate.EffectIndex;
 
-                    // Console.WriteLine($"Rotate Einstellungen geladen: Duration={RotateSettings.Duration}, Angle={RotateSettings.Angle}, AutoReverse={RotateSettings.AutoReverse}");
+                    // Debug.WriteLine($"Rotate Einstellungen geladen: Duration={RotateSettings.Duration}, Angle={RotateSettings.Angle}, AutoReverse={RotateSettings.AutoReverse}");
                 }
 
                 // Lade die Einstellungen für Translate
@@ -83,17 +84,17 @@ public class ButtonAnimations
                     if (settings.Translate?.AutoReverse != null) TranslateSettings.AutoReverse = (bool)settings.Translate.AutoReverse;
                     if (settings.Translate?.EffectIndex != null) TranslateSettings.EffectIndex = (int)settings.Translate.EffectIndex;
 
-                    // Console.WriteLine($"Translate Einstellungen geladen: Duration={TranslateSettings.Duration}, TranslateX={TranslateSettings.TranslateX}, TranslateY={TranslateSettings.TranslateY}, AutoReverse={TranslateSettings.AutoReverse}");
+                    // Debug.WriteLine($"Translate Einstellungen geladen: Duration={TranslateSettings.Duration}, TranslateX={TranslateSettings.TranslateX}, TranslateY={TranslateSettings.TranslateY}, AutoReverse={TranslateSettings.AutoReverse}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Fehler beim Laden der Einstellungen: {ex.Message}");
+                Debug.WriteLine($"Fehler beim Laden der Einstellungen: {ex.Message}");
             }
         }
         else
         {
-            Console.WriteLine("Einstellungsdatei nicht gefunden, Standardwerte werden verwendet.");
+            Debug.WriteLine("Einstellungsdatei nicht gefunden, Standardwerte werden verwendet.");
         }
     }
 
@@ -180,7 +181,7 @@ public class ButtonAnimations
     }
     public static void AnimatTranslateTransform(Button button)
     {
-         Console.WriteLine("AnimatTranslateTransform geladen...");
+         Debug.WriteLine("AnimatTranslateTransform geladen...");
         var translateTransform = new TranslateTransform();
         button.RenderTransformOrigin = new Point(0.5, 0.5);
         button.RenderTransform = translateTransform;
@@ -233,25 +234,25 @@ public class ButtonAnimations
     {
         // int? choice = SelectedEffectIndex;
         int animationChoice = SelectedEffectIndex;
-        // Console.WriteLine($"AnimateButtonByChoice aufgerufen mit Button: {button.Name}, Choice: {animationChoice}");
+        // Debug.WriteLine($"AnimateButtonByChoice aufgerufen mit Button: {button.Name}, Choice: {animationChoice}");
 
         switch (animationChoice)
         {
             case 1:
-                Console.WriteLine("Starte Scale");
+                Debug.WriteLine("Starte Scale");
                 AnimatScaleTransform(button);
                 break;
             case 2:
-                Console.WriteLine("Starte Rotate");
+                Debug.WriteLine("Starte Rotate");
                 AnimatRotateTransform(button);
                 break;
 
             case 3:
-                Console.WriteLine("Starte Translate");
+                Debug.WriteLine("Starte Translate");
                 AnimatTranslateTransform(button);
                 break;
             default:
-                Console.WriteLine("Keine Animation - NotAnimate wird aufgerufen");
+                Debug.WriteLine("Keine Animation - NotAnimate wird aufgerufen");
                 NotAnimate(button);
                 break;
         }
