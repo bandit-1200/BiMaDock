@@ -683,8 +683,22 @@ namespace BiMaDock
                         // Überprüfen, ob die Maus auf dem aktuellen Element ist
                         if (elementRect.Contains(dropPosition))
                         {
-                            Console.WriteLine($"DockPanel_DragEnter: Maus auf Element: DisplayName = {dockItem.DisplayName}, IsCategory = {dockItem.IsCategory}");
+                            Console.WriteLine($"DockPanel_DragEnter: Maus auf Element: DisplayName = {dockItem.DisplayName}, ID = {dockItem.Id}, Ketegorie = {dockItem.Category}, IsCategory = {dockItem.IsCategory}");
                             isMouseOnElement = true;
+
+                            if (dockItem.IsCategory)
+                            {
+                                Console.WriteLine($"DockPanel_DragEnter: öffne KategorieDock = {dockItem.DisplayName}, ID = {dockItem.Id}");
+                                // Kategoriedock öffnen
+                                ShowCategoryDockPanel(new StackPanel
+                                {
+                                    Tag = dockItem.Id
+                                    // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
+                                });
+
+                            }
+
+
                             break;
                         }
 
