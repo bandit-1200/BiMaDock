@@ -428,7 +428,7 @@ namespace BiMaDock
         {
             RemoveCrrentPlaceholder();
             // Ausgabe im Klartext
-            // Console.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
+            Console.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
 
             if (currentDockStatus > 0) // Überprüft, ob irgendein Flag gesetzt ist
             {
@@ -693,9 +693,16 @@ namespace BiMaDock
                                 ShowCategoryDockPanel(new StackPanel
                                 {
                                     Tag = dockItem.Id
-                                    // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
                                 });
+                                // isCategoryDockDragOpen = true;
 
+                            }
+                            else
+                            {
+
+
+                                HideCategoryDockPanel();
+                                currentDockStatus &= ~DockStatus.CategoryElementClicked;
                             }
 
 
@@ -711,6 +718,9 @@ namespace BiMaDock
                                 currentPlaceholderIndex = i; // Update den Platzhalter-Index
                                 DockPanel.Children.Insert(i, currentPlaceholder);
                                 Console.WriteLine($"DockPanel_DragEnter: Platzhalter zwischen Element {i - 1} und Element {i} hinzugefügt.");
+
+
+
                             }
                             break; // Hier kannst du weitere Logik hinzufügen, um das Element zu platzieren
                         }
@@ -754,6 +764,9 @@ namespace BiMaDock
         private void DockPanel_DragLeave(object sender, DragEventArgs e)
         {
             Console.WriteLine("DockPanel_DragLeave: Aufgerufen"); // Debug-Ausgabe
+
+
+            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
             currentDockStatus &= ~DockStatus.DraggingToDock;  // Flag zurücksetzen, wenn der Drag-Vorgang das DockPanel verlässt
             CheckAllConditions();
 
@@ -951,6 +964,7 @@ namespace BiMaDock
             // CategoryDockContainer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E")); // Sicherstellen, dass das Kategorie-Dock korrekt zurückgesetzt wird
             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
             CheckAllConditions();
+            // HideCategoryDockPanel();
         }
 
 
@@ -1261,6 +1275,7 @@ namespace BiMaDock
 
         public void HideCategoryDockPanel()
         {
+            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
             // Console.WriteLine("HideCategoryDockPanel aufgerufen"); // Debugging
             CategoryDockContainer.Visibility = Visibility.Collapsed;
             CategoryDockBorder.Visibility = Visibility.Collapsed; // Sichtbarkeit der CategoryDockBorder ändern
