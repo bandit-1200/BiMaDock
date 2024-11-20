@@ -64,7 +64,7 @@ namespace BiMaDock
             //  SettingsWindow.LoadSettings();
             SettingsWindow settingsWindow = new SettingsWindow(this);
             double screenWidth = SystemParameters.PrimaryScreenWidth;
-            this.Width = screenWidth * 1.0;  // 100% der Bildschirmbreite
+            // this.Width = screenWidth * 1.0;  // 100% der Bildschirmbreite
                                              // GlobalMouseHook mouseHook = new GlobalMouseHook(this); // 'this' bezieht sich auf das MainWindow
 
             // mouseHook = new GlobalMouseHook();
@@ -304,7 +304,7 @@ namespace BiMaDock
 
         public void HideDock()
         {
-            // HideCategoryDockPanel();
+            HideCategoryDockPanel();
             currentDockStatus = DockStatus.None;
             if (dockVisible)
             {
@@ -639,6 +639,7 @@ namespace BiMaDock
         {
 
             Debug.WriteLine("DockPanel_DragEnter: Aufgerufen"); // Debug-Ausgabe
+            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
             currentDockStatus |= DockStatus.DraggingToDock;  // Flag setzen
             CheckAllConditions();
 
@@ -1173,6 +1174,8 @@ public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
     {
         e.Effects = DragDropEffects.None;
         Console.WriteLine("CategoryDockContainer_DragEnter: Kein passendes Datenformat erkannt");
+        CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
+
     }
     CheckAllConditions();
 }

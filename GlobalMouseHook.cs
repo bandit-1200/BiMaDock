@@ -29,84 +29,79 @@ public class GlobalMouseHook
         UnhookWindowsHookEx(_hookID);
     }
 
-    private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+{
+    if (nCode >= 0 && (MouseMessages)wParam == MouseMessages.WM_LBUTTONDOWN)
     {
-        // Überprüfen, ob der nCode größer oder gleich 0 ist und es sich um einen Mausklick handelt
-        if (nCode >= 0 && (MouseMessages)wParam == MouseMessages.WM_LBUTTONDOWN)
+        var hookStruct = Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+
+        if (hookStruct != null)
         {
-            // Mausklick-Ereignis erkannt
+            MSLLHOOKSTRUCT msllHookStruct = (MSLLHOOKSTRUCT)hookStruct;
+            Point mousePosition = new Point(msllHookStruct.pt.x, msllHookStruct.pt.y);
 
-            // Marshal.PtrToStructure könnte null zurückgeben, daher Null-Überprüfung
-            var hookStruct = Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
-
-            // Sicherstellen, dass die Struktur nicht null ist
-            if (hookStruct != null)
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                MSLLHOOKSTRUCT msllHookStruct = (MSLLHOOKSTRUCT)hookStruct;
-                Point mousePosition = new Point(msllHookStruct.pt.x, msllHookStruct.pt.y);
+                var window = mainWindow;
+                Rect windowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
 
-                // Überprüfen, ob der Klick innerhalb des Anwendungsfensters ist
-                Application.Current.Dispatcher.Invoke(() =>
+                if (!windowRect.Contains(mousePosition))
                 {
-                    var window = mainWindow;
-                    Rect windowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
+                    // Mausklick außerhalb der Anwendung erkannt
+                    window.HideDock();
+                    window.HideCategoryDockPanel(); // Schließt das Kategoriedock
+                    Console.WriteLine("Klick außerhalb der Anwendung erkannt!");
+                }
+                else
+                {
+                    Point relativePoint = window.PointFromScreen(mousePosition);
+                    HitTestResult result = VisualTreeHelper.HitTest(window, relativePoint);
 
-                    if (!windowRect.Contains(mousePosition))
+                    if (result != null)
                     {
-                        // Ereignis auslösen, da der Klick außerhalb des Fensters ist
-                        window.HideDock();
-                        // Debug.WriteLine("Klick außerhalb der Anwendung!");
-                    }
-                    else
-                    {
-                        // Debug.WriteLine("Klick innerhalb der Anwendung!");
-
-                        // Hit-Test, um das angeklickte Element zu bestimmen
-                        Point relativePoint = window.PointFromScreen(mousePosition);
-                        HitTestResult result = VisualTreeHelper.HitTest(window, relativePoint);
-
-                        if (result != null)
+                        var element = result.VisualHit as FrameworkElement;
+                        if (element != null)
                         {
-                            var element = result.VisualHit as FrameworkElement;
-                            if (element != null)
+                            // Überprüfen, ob das Element innerhalb des Hauptdocks oder Kategoriedocks ist
+                            if (!IsElementChildOf(element, window.MainGrid))
                             {
-                                // Überprüfe die Sichtbarkeit des Elements
-                                if (element.Visibility == Visibility.Visible)
-                                {
-                                    // Debug.WriteLine($"Element unter der Maus: {element.Name}, Typ: {element.GetType().Name}, Sichtbar");
-                                    if (element.GetType().Name == "Border")
-                                    {
-                                        // Debug.WriteLine($"Element unter der Maus ist ein Border:");
-                                        mainWindow.HideCategoryDockPanel();
-                                        mainWindow.HideDock();
-                                    }
-                                }
-                                else
-                                {
-                                    // Debug.WriteLine($"Element unter der Maus: {element.Name}, Typ: {element.GetType().Name}, Nicht sichtbar");
-                                }
+                                // Klick außerhalb des ersten Grids erkannt
+                                window.HideDock();
+                                window.HideCategoryDockPanel();
+                                Console.WriteLine("Klick außerhalb des ersten Grids erkannt!");
                             }
                         }
                     }
-                });
-            }
-            else
-            {
-                // Fehlerbehandlung, falls hookStruct null ist
-                // Debug.WriteLine("Fehler: Die Struktur konnte nicht erstellt werden (lParam ungültig).");
-            }
+                }
+            });
         }
-
-        // Ruf den nächsten Hook auf, um sicherzustellen, dass das Hook-System weiter funktioniert
-        return CallNextHookEx(_hookID, nCode, wParam, lParam);
+        else
+        {
+            Debug.WriteLine("Fehler: Die Struktur konnte nicht erstellt werden (lParam ungültig).");
+        }
     }
 
+    return CallNextHookEx(_hookID, nCode, wParam, lParam);
+}
 
-    private void OnClickOutside()
+private bool IsElementChildOf(DependencyObject element, DependencyObject parent)
+{
+    while (element != null)
     {
-        // Hier kannst du die Logik einfügen, die ausgeführt werden soll, wenn der Klick außerhalb der Anwendung stattfindet
-        // Debug.WriteLine("Ereignis: Klick außerhalb der Anwendung erkannt!");
+        if (element == parent)
+            return true;
+
+        element = VisualTreeHelper.GetParent(element);
     }
+    return false;
+}
+
+
+private void OnClickOutsideGrid()
+{
+    Debug.WriteLine("Klick außerhalb des ersten Grids erkannt!");
+    mainWindow.HideDock();
+}
 
     // Struktur für Mausinformationen
     [StructLayout(LayoutKind.Sequential)]
