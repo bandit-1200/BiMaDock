@@ -66,8 +66,8 @@ private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
                             if (!IsElementChildOf(element, window.MainGrid))
                             {
                                 // Klick außerhalb des ersten Grids erkannt
-                                window.HideDock();
-                                window.HideCategoryDockPanel();
+                                // window.HideDock();
+                                // window.HideCategoryDockPanel();
                                 Console.WriteLine("Klick außerhalb des ersten Grids erkannt!");
                             }
                         }
