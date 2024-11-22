@@ -1211,53 +1211,50 @@ namespace BiMaDock
             }
         }
 
-        public void ShowCategoryDockPanel(StackPanel categoryDock)
+public void ShowCategoryDockPanel(StackPanel categoryDock)
+{
+    // Setzt die grundlegenden Eigenschaften und fügt das CategoryDock hinzu
+    CategoryDockContainer.Children.Clear();
+    CategoryDockContainer.Children.Add(categoryDock);
+    CategoryDockContainer.Visibility = Visibility.Visible;
+    CategoryDockBorder.Visibility = Visibility.Visible;
+    OverlayCanvas.Visibility = Visibility.Visible;
+
+    // Verwende Dispatcher, um den Margin-Wert nach dem Rendern zu setzen
+    Application.Current.Dispatcher.InvokeAsync(() =>
+    {
+        if (CategoryDockBorder.ActualWidth > 0)
         {
-            // Setzt die grundlegenden Eigenschaften und fügt das CategoryDock hinzu
-            CategoryDockContainer.Children.Clear();
-            CategoryDockContainer.Children.Add(categoryDock);
-            CategoryDockContainer.Visibility = Visibility.Visible;
-            CategoryDockBorder.Visibility = Visibility.Visible;
-            OverlayCanvas.Visibility = Visibility.Visible;
+            double elementCenterX = dockManager.mousePositionSave;
 
-            // Verwende Dispatcher, um den Margin-Wert nach dem Rendern zu setzen
-            Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                if (CategoryDockBorder.ActualWidth > 0)
-                {
-                    double MainStackPanelMitte = MainStackPanel.ActualWidth / 2;
+            // Berechne die neue Position für CategoryDockBorder
+            double categoryDockPositionX = elementCenterX - (CategoryDockBorder.ActualWidth / 2);
 
-                    Debug.WriteLine($"Nach dem Rendern MainStackPanelMitte: {MainStackPanelMitte}"); // Debugging
-                    Debug.WriteLine($"Nach dem Rendern MainStackPanel.ActualWidth: {MainStackPanel.ActualWidth}"); // Debugging
-                    Debug.WriteLine($"Nach dem Rendern mousePositionSave: {dockManager.mousePositionSave}"); // Debugging
+            // Setze die neue Position
+            CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
 
-                    double categoryDockPositionX = 45 + dockManager.mousePositionSave - CategoryDockBorder.ActualWidth / 2;
-                    Debug.WriteLine($"Nach dem Rendern categoryDockPositionX: {categoryDockPositionX}"); // Debugging
-                    CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
-
-                    double overlayPositionX = dockManager.mousePositionSave - 16;
-                    Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
-                }
-            }, System.Windows.Threading.DispatcherPriority.Loaded);
-
-            // Restlicher Code
-            currentDockStatus |= DockStatus.CategoryElementClicked;
-            currentOpenCategory = categoryDock.Tag?.ToString() ?? string.Empty;
-            CategoryDockContainer.Tag = currentOpenCategory;
-            var items = SettingsManager.LoadSettings();
-            foreach (var item in items)
-            {
-                if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
-                {
-                    dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
-                }
-            }
-
-            MainStackPanel.Margin = new Thickness(0);
-            categoryHideTimer.Start();
-            CheckAllConditions();
+            double overlayPositionX = elementCenterX - 16;
+            Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
         }
+    }, System.Windows.Threading.DispatcherPriority.Loaded);
 
+    // Restlicher Code
+    currentDockStatus |= DockStatus.CategoryElementClicked;
+    currentOpenCategory = categoryDock.Tag?.ToString() ?? string.Empty;
+    CategoryDockContainer.Tag = currentOpenCategory;
+    var items = SettingsManager.LoadSettings();
+    foreach (var item in items)
+    {
+        if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+        {
+            dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
+        }
+    }
+
+    MainStackPanel.Margin = new Thickness(0);
+    categoryHideTimer.Start();
+    CheckAllConditions();
+}
 
 
         // Hilfsmethode zum Generieren eines gültigen Namens
@@ -1459,71 +1456,79 @@ namespace BiMaDock
         }
 
 
+private void Test_Click(object sender, RoutedEventArgs e)
+{
+    // Erstelle eine Instanz des TestWindow
+    TestWindow testWindow = new TestWindow(this);
+
+    // Zeige das Fenster an
+    testWindow.Show();
+}
 
 
 
-        private void Test_Click(object sender, RoutedEventArgs e)
-        {
-            // Ersetze die Ressource direkt mit einer neuen Brush
-            Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Colors.Green);
+        // private void Test_Click(object sender, RoutedEventArgs e)
+        // {
+        //     // Ersetze die Ressource direkt mit einer neuen Brush
+        //     Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Colors.Green);
 
-            // Debugging-Ausgabe
-            Debug.WriteLine("Test_Click: Aufruf der Methode");
+        //     // Debugging-Ausgabe
+        //     Debug.WriteLine("Test_Click: Aufruf der Methode");
 
-            // // Wenn du die Farbe später erneut ändern möchtest
-            // if (Application.Current.Resources["PrimaryColor"] is SolidColorBrush primaryBrush)
-            // {
-            //     // Clone erstellen, um schreibgeschützte Brushes zu vermeiden
-            //     var newBrush = primaryBrush.Clone();
-            //     newBrush.Color = Colors.Red; // Ändere zu Rot
-            //     Application.Current.Resources["PrimaryColor"] = newBrush;
-            // }
-        }
+        //     // // Wenn du die Farbe später erneut ändern möchtest
+        //     // if (Application.Current.Resources["PrimaryColor"] is SolidColorBrush primaryBrush)
+        //     // {
+        //     //     // Clone erstellen, um schreibgeschützte Brushes zu vermeiden
+        //     //     var newBrush = primaryBrush.Clone();
+        //     //     newBrush.Color = Colors.Red; // Ändere zu Rot
+        //     //     Application.Current.Resources["PrimaryColor"] = newBrush;
+        //     // }
+        // }
 
 
 
         // Methode zur direkten Änderung der PrimaryColor
-        private void UpdatePrimaryColor(Color newColor)
-        {
-            var newColorBrush = new SolidColorBrush(newColor);
+        // private void UpdatePrimaryColor(Color newColor)
+        // {
+        //     var newColorBrush = new SolidColorBrush(newColor);
 
-            // Direkte Aktualisierung des ResourceDictionary
-            foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
-            {
-                if (dictionary.Contains("PrimaryColor"))
-                {
-                    dictionary["PrimaryColor"] = newColorBrush;
-                    Debug.WriteLine("PrimaryColor direkt im ResourceDictionary aktualisiert.");
-                }
-            }
+        //     // Direkte Aktualisierung des ResourceDictionary
+        //     foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+        //     {
+        //         if (dictionary.Contains("PrimaryColor"))
+        //         {
+        //             dictionary["PrimaryColor"] = newColorBrush;
+        //             Debug.WriteLine("PrimaryColor direkt im ResourceDictionary aktualisiert.");
+        //         }
+        //     }
 
-            // Überprüfen, ob die Änderung sichtbar ist
-            this.Resources["PrimaryColor"] = newColorBrush;
-            DockPanel.Background = newColorBrush;
-            Debug.WriteLine("PrimaryColor im UI aktualisiert.");
-        }
+        //     // Überprüfen, ob die Änderung sichtbar ist
+        //     this.Resources["PrimaryColor"] = newColorBrush;
+        //     DockPanel.Background = newColorBrush;
+        //     Debug.WriteLine("PrimaryColor im UI aktualisiert.");
+        // }
 
 
 
-        private void UpdateSecondaryColor(Color newColor)
-        {
-            var newColorBrush = new SolidColorBrush(newColor);
+        // private void UpdateSecondaryColor(Color newColor)
+        // {
+        //     var newColorBrush = new SolidColorBrush(newColor);
 
-            // Direkte Aktualisierung des ResourceDictionary
-            foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
-            {
-                if (dictionary.Contains("SecondaryColor"))
-                {
-                    dictionary["SecondaryColor"] = newColorBrush;
-                    Debug.WriteLine("SecondaryColor direkt im ResourceDictionary aktualisiert.");
-                }
-            }
+        //     // Direkte Aktualisierung des ResourceDictionary
+        //     foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+        //     {
+        //         if (dictionary.Contains("SecondaryColor"))
+        //         {
+        //             dictionary["SecondaryColor"] = newColorBrush;
+        //             Debug.WriteLine("SecondaryColor direkt im ResourceDictionary aktualisiert.");
+        //         }
+        //     }
 
-            // Überprüfen, ob die Änderung sichtbar ist
-            this.Resources["SecondaryColor"] = newColorBrush;
-            DockPanel.Background = newColorBrush;
-            Debug.WriteLine("PrimaryColor im UI aktualisiert.");
-        }
+        //     // Überprüfen, ob die Änderung sichtbar ist
+        //     this.Resources["SecondaryColor"] = newColorBrush;
+        //     DockPanel.Background = newColorBrush;
+        //     Debug.WriteLine("PrimaryColor im UI aktualisiert.");
+        // }
 
 
 
