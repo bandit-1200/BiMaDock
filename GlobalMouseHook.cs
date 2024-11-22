@@ -100,11 +100,11 @@ public class GlobalMouseHook
     }
 
 
-    private void OnClickOutsideGrid()
-    {
-        Debug.WriteLine("Klick außerhalb des ersten Grids erkannt!");
-        mainWindow.HideDock();
-    }
+    // private void OnClickOutsideGrid()
+    // {
+    //     Debug.WriteLine("Klick außerhalb des ersten Grids erkannt!");
+    //     mainWindow.HideDock();
+    // }
 
     // Struktur für Mausinformationen
     [StructLayout(LayoutKind.Sequential)]
