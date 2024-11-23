@@ -1293,7 +1293,7 @@ namespace BiMaDock
                     Canvas.SetTop(OverlayCanvasHorizontalLine, overlayPositionY);
                     Panel.SetZIndex(OverlayCanvasHorizontalLine, 1000); // Höherer Wert bringt es in den Vordergrund
 
-                    Debug.WriteLine($"ShowCategoryDockPanel: Neue Position für OverlayCanvasHorizontalLine gesetzt = {overlayPositionX}");
+                    // Debug.WriteLine($"ShowCategoryDockPanel: Neue Position für OverlayCanvasHorizontalLine gesetzt = {overlayPositionX}");
                 }
                 else
                 {
