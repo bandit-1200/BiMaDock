@@ -799,6 +799,7 @@ public class DockManager
                 {
                     dockPanel.Children.Remove(child);
                     Debug.WriteLine("DockPanel_Drop: Platzhalter entfernt.");
+                     
                 }
             }
 
@@ -818,7 +819,9 @@ public class DockManager
             mainWindow.SetDragging(false);
 
             Debug.WriteLine("DockPanel_Drop: Drop-Vorgang abgeschlossen");
+            // LoadDockItems();
         }
+       
     }
 
 

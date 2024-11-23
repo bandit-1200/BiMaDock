@@ -72,12 +72,13 @@ namespace BiMaDock
 
             // LoadSettings()
             ButtonAnimations.LoadSettings(); //Animation
-            settingsWindow.LoadSettings();
+            settingsWindow.LoadSettings(); // Einstellungen laden
             AllowDrop = true;
             Debug.WriteLine("Hauptfenster initialisiert."); // Debugging
             dockManager = new DockManager(DockPanel, CategoryDockContainer, this); // Übergeben von CategoryDockContainer
             dockManager.LoadDockItems();
             Debug.WriteLine("Dock-Elemente geladen."); // Debugging
+
 
             // Timer initialisieren
             dockHideTimer = new DispatcherTimer();
@@ -164,6 +165,10 @@ namespace BiMaDock
             {
                 Debug.WriteLine("CategoryDockContainer konnte nicht gefunden werden");
             }
+
+            HideCategoryDockPanel();
+            HideDock();
+
         }
         // Weitere Initialisierung
 
@@ -640,7 +645,7 @@ namespace BiMaDock
         {
 
             Debug.WriteLine("DockPanel_DragEnter: Aufgerufen"); // Debug-Ausgabe
-            
+
             Point mousePosition = e.GetPosition(DockPanel);
             dockManager.LogMousePositionAndElements(mousePosition);
 
@@ -1229,6 +1234,8 @@ namespace BiMaDock
             CategoryDockContainer.Visibility = Visibility.Visible;
             CategoryDockBorder.Visibility = Visibility.Visible;
             OverlayCanvas.Visibility = Visibility.Visible;
+            Panel.SetZIndex(OverlayCanvas, 1000);
+            Panel.SetZIndex(CategoryDockBorder, 0);
 
             // Debug.WriteLine("ShowCategoryDockPanel: Kategorie-Dock hinzugefügt und sichtbar gemacht");
 
@@ -1256,12 +1263,12 @@ namespace BiMaDock
                     double mainWindowCenterX = Application.Current.MainWindow.ActualWidth / 2;
                     double mainStackPanelCenterX = MainStackPanel.ActualWidth / 2;
                     double elementCenterX = dockManager.mousePositionSave + mainStackPanelCenterX;
-                    Debug.WriteLine($"ShowCategoryDockPanel: dockManager.mousePositionSave = {dockManager.mousePositionSave}");
-                    Debug.WriteLine($"ShowCategoryDockPanel: MainStackPanel.ActualWidth = {MainStackPanel.ActualWidth}");
-                    Debug.WriteLine($"ShowCategoryDockPanel: dockManager.mousePositionSaveleft = {dockManager.mousePositionSaveleft}");
+                    // Debug.WriteLine($"ShowCategoryDockPanel: dockManager.mousePositionSave = {dockManager.mousePositionSave}");
+                    // Debug.WriteLine($"ShowCategoryDockPanel: MainStackPanel.ActualWidth = {MainStackPanel.ActualWidth}");
+                    // Debug.WriteLine($"ShowCategoryDockPanel: dockManager.mousePositionSaveleft = {dockManager.mousePositionSaveleft}");
                     // Debug.WriteLine($"ShowCategoryDockPanel: mainStackPanelCenterX = {mainStackPanelCenterX}");
                     // Debug.WriteLine($"ShowCategoryDockPanel: elementCenterX (inkl. mainStackPanelCenterX) = {elementCenterX}");
-                    Debug.WriteLine($"ShowCategoryDockPanel: CategoryDockBorder.ActualWidth = {CategoryDockBorder.ActualWidth}");
+                    // Debug.WriteLine($"ShowCategoryDockPanel: CategoryDockBorder.ActualWidth = {CategoryDockBorder.ActualWidth}");
 
                     // Berechne die neue Position für CategoryDockBorder relativ zur Mitte des MainWindow
                     // double categoryDockPositionX = elementCenterX - (CategoryDockBorder.ActualWidth / 2);
@@ -1270,16 +1277,22 @@ namespace BiMaDock
 
                     // Setze die neue Position
                     CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
-                    Debug.WriteLine($"ShowCategoryDockPanel: Neue Margin für CategoryDockBorder gesetzt = {CategoryDockBorder.Margin}");
+                    // Debug.WriteLine($"ShowCategoryDockPanel: Neue Margin für CategoryDockBorder gesetzt = {CategoryDockBorder.Margin}");
 
                     // Debug-Ausgaben zur Überprüfung der Position relativ zur Mitte des MainWindow
                     double categoryDockCenterX = categoryDockPositionX + (CategoryDockBorder.ActualWidth / 2);
                     double positionRelativeToCenter = categoryDockCenterX - mainWindowCenterX;
                     // Debug.WriteLine($"ShowCategoryDockPanel: Position der Mitte des CategoryDock relativ zur Mitte des MainWindow = {positionRelativeToCenter}");
 
-                    double overlayPositionX = dockManager.mousePositionSaveleft - 16;
+                    double overlayPositionX = dockManager.mousePositionSaveleft - 10;
+                    double overlayPositionY = 80;
+
+                    // OverlayCanvasHorizontalLine.Stroke = new SolidColorBrush(Colors.Red);
 
                     Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
+                    Canvas.SetTop(OverlayCanvasHorizontalLine, overlayPositionY);
+                    Panel.SetZIndex(OverlayCanvasHorizontalLine, 1000); // Höherer Wert bringt es in den Vordergrund
+
                     Debug.WriteLine($"ShowCategoryDockPanel: Neue Position für OverlayCanvasHorizontalLine gesetzt = {overlayPositionX}");
                 }
                 else

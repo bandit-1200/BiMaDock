@@ -6,32 +6,37 @@
         VerticalAlignment="Top" AllowsTransparency="True" Background="Transparent"
         AllowDrop="True"
         ShowInTaskbar="False">
-
-    <Grid Background="#00FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Top" >
-        <StackPanel x:Name="MainStackPanel" Orientation="Vertical" HorizontalAlignment="Center" Background="#00FFFFFF">
-            <Grid x:Name="MainGrid" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0">
+    
+    <!-- Sicherstellen, dass das Haupt-Grid den niedrigsten Z-Index hat -->
+    <Grid Background="#00FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Top" Panel.ZIndex="0">
+        <StackPanel x:Name="MainStackPanel" Orientation="Vertical" HorizontalAlignment="Center" Background="#00FFFFFF" Panel.ZIndex="1">
+            <Grid x:Name="MainGrid" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0" Panel.ZIndex="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="10"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="10"/>
                 </Grid.ColumnDefinitions>
-                <Border x:Name="LeftEndCap" Width="10" Height="80" Background="{DynamicResource PrimaryColor}" CornerRadius="7,0,0,7" BorderBrush="{DynamicResource SecondaryColor}" BorderThickness="0" Grid.Column="0">
+
+                <!-- Linke Abschlusskappe -->
+                <Border x:Name="LeftEndCap" Width="10" Height="80" Background="{DynamicResource PrimaryColor}" CornerRadius="7,0,0,7" BorderBrush="{DynamicResource SecondaryColor}" BorderThickness="0" Grid.Column="0" Panel.ZIndex="3">
                     <Border.RenderTransform>
                         <TranslateTransform/>
                     </Border.RenderTransform>
                 </Border>
+
+                <!-- Dock-Panel -->
                 <StackPanel Orientation="Horizontal" x:Name="DockPanel"
                             AllowDrop="True" Style="{DynamicResource MainDockStyle}"
                             HorizontalAlignment="Center"
                             MinWidth="60"
                             Visibility="Visible"
-                            Canvas.Top="0" Grid.Column="1">
+                            Canvas.Top="0" Grid.Column="1" Panel.ZIndex="4">
                     <StackPanel.RenderTransform>
                         <TranslateTransform/>
                     </StackPanel.RenderTransform>
-                    <StackPanel x:Name="CategoryElementContainer" Orientation="Horizontal"/>
+                    <StackPanel x:Name="CategoryElementContainer" Orientation="Horizontal" Panel.ZIndex="5"/>
                     <StackPanel.ContextMenu>
-                        <ContextMenu x:Name="DockContextMenu">
+                        <ContextMenu x:Name="DockContextMenu" Panel.ZIndex="6">
                             <MenuItem x:Name="OpenMenuItem" Header="Öffnen" Click="Open_Click"/>
                             <MenuItem x:Name="DeleteMenuItem" Header="Löschen" Click="Delete_Click"/>
                             <MenuItem x:Name="EditMenuItem" Header="Eigenschaften bearbeiten" Click="Edit_Click"/>
@@ -46,7 +51,6 @@
                                         Content="Autostart aktivieren" 
                                          Checked="AutostartCheckBox_Checked" 
                                          Unchecked="AutostartCheckBox_Unchecked"/>
-
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
@@ -54,29 +58,19 @@
                         </ContextMenu>
                     </StackPanel.ContextMenu>
                 </StackPanel>
-                <Border x:Name="RightEndCap" Width="10" Height="80" Background="{DynamicResource PrimaryColor}" CornerRadius="0,7,7,0" BorderBrush="{DynamicResource SecondaryColor}" BorderThickness="0" Grid.Column="2">
+
+                <!-- Overlay für die Lücke am oberen Rand -->
+                <Canvas x:Name="OverlayCanvas" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Panel.ZIndex="1000">
+                    <Line x:Name="OverlayCanvasHorizontalLine" X1="27" Y1="1" X2="94" Y2="1" Stroke="Red" StrokeThickness="2" Canvas.Left="0"/>
+                </Canvas>
+
+                <!-- Rechte Abschlusskappe -->
+                <Border x:Name="RightEndCap" Width="10" Height="80" Background="{DynamicResource PrimaryColor}" CornerRadius="0,7,7,0" BorderBrush="{DynamicResource SecondaryColor}" BorderThickness="0" Grid.Column="2" Panel.ZIndex="7">
                     <Border.RenderTransform>
                         <TranslateTransform/>
                     </Border.RenderTransform>
                 </Border>
             </Grid>
-
-            
-                <!-- Overlay für die Lücke am oberen Rand mit Path und Geometry -->
-                <Canvas x:Name="OverlayCanvas" HorizontalAlignment="Left" VerticalAlignment="Top"  Visibility="Collapsed" Panel.ZIndex="1">
-                    <!-- Linke vertikale blaue Linie -->
-                    <!-- <Line x:Name="OverlayCanvasLeftLine" X1="26" Y1="-19" X2="26" Y2="1" Stroke="#0078D4" StrokeThickness="1" Canvas.Left="0"/> -->
-                    <!-- Rechte vertikale blaue Linie -->
-                    <!-- <Line x:Name="OverlayCanvasRightLine" X1="95" Y1="-19" X2="95" Y2="1" Stroke="#0078D4" StrokeThickness="1" Canvas.Left="0"/> -->
-                    <!-- Horizontale rote Linie -->
-                    <Line x:Name="OverlayCanvasHorizontalLine" X1="27" Y1="1" X2="94" Y2="1" Stroke="{DynamicResource SecondaryColor}" StrokeThickness="2" Canvas.Left="0"/>
-                </Canvas>
-
-
-
-
-
-
 
             <!-- Kategorie-Dock Panel -->
             <Border x:Name="CategoryDockBorder" 
@@ -85,11 +79,10 @@
                 BorderThickness="2" 
                 CornerRadius="5" 
                 Padding="10" 
-                Visibility="Collapsed" 
+                Visibility="Visible" 
                 HorizontalAlignment="Center"
-                Margin="0,0,0,0">
-
-                <!-- StackPanel, das den `CategoryDockContainer` enthält -->
+                Margin="0,0,0,0"
+                Panel.ZIndex="8">
                 <StackPanel x:Name="CategoryDockContainer" 
                             Background="Transparent" 
                             Tag="KategorieDockContainer"
@@ -100,8 +93,6 @@
                             MouseLeave="CategoryDockContainer_MouseLeave" 
                             MouseMove="CategoryDockContainer_MouseMove"/>
             </Border>
-            
-
         </StackPanel>
     </Grid>
 </Window>
