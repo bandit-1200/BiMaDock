@@ -640,6 +640,12 @@ namespace BiMaDock
         {
 
             Debug.WriteLine("DockPanel_DragEnter: Aufgerufen"); // Debug-Ausgabe
+            
+            Point mousePosition = e.GetPosition(DockPanel);
+            dockManager.LogMousePositionAndElements(mousePosition);
+
+
+            // dockManager.LogMousePositionAndElements();
             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
             currentDockStatus |= DockStatus.DraggingToDock;  // Flag setzen
             CheckAllConditions();

@@ -173,7 +173,7 @@ public class DockManager
 
 
     // Vorherige Methodenf
-    private void LogMousePositionAndElements(Point mousePosition)
+    public void LogMousePositionAndElements(Point mousePosition)
     {
         // Debug.WriteLine($"LogMousePositionAndElements: Aktuelle Mausposition: {mousePosition}");
 
