@@ -13,6 +13,7 @@ using System.Windows.Media.Animation;
 public class DockManager
 {
     public double mousePositionSave = 0;
+    public double mousePositionSaveleft = 0;
 
     private StackPanel dockPanel;
     private StackPanel? categoryDockContainer; // Referenz zu CategoryDockContainer
@@ -222,10 +223,17 @@ public class DockManager
                     // Debug.WriteLine($"LogMousePositionAndElements: Element MainStackPanel  {mainWindow.MainStackPanel}");
                     // Debug.WriteLine($"LogMousePositionAndElements: Element MainWindow Left {mainWindow.Left}");
 
+                    double mainWindowCenterX = mainWindow.ActualWidth / 2;
+                    double positionRelativeToCenter = elementCenterX - mainWindowCenterX;
+                    // Debug.WriteLine($"LogMousePositionAndElements: Button ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position relativ zur Mitte des MainWindow = {positionRelativeToCenter}");
+
+
                     //  isCategoryDockOpenID
                     if (dockItem.IsCategory)
                     {
-                        mousePositionSave = elementRect.X;
+                        mousePositionSaveleft = elementRect.X;
+                        mousePositionSave = positionRelativeToCenter;
+
                     }
 
                     if (dockItem.Id == mainWindow.isCategoryDockOpenID)

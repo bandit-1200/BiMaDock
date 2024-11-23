@@ -97,3 +97,5 @@ ehthumbs.db
 
 # Windows shortcuts
 *.lnk
+
+.fake

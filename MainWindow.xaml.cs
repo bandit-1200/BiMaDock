@@ -1188,6 +1188,9 @@ namespace BiMaDock
 
                     // Übergabe der Kategorie an RemoveDockItem
                     dockManager.RemoveDockItem(button, currentCategory);
+
+                    HideCategoryDockPanel();
+
                 }
             }
         }
@@ -1211,53 +1214,81 @@ namespace BiMaDock
             }
         }
 
-public void ShowCategoryDockPanel(StackPanel categoryDock)
-{
-    // Setzt die grundlegenden Eigenschaften und fügt das CategoryDock hinzu
-    CategoryDockContainer.Children.Clear();
-    CategoryDockContainer.Children.Add(categoryDock);
-    CategoryDockContainer.Visibility = Visibility.Visible;
-    CategoryDockBorder.Visibility = Visibility.Visible;
-    OverlayCanvas.Visibility = Visibility.Visible;
-
-    // Verwende Dispatcher, um den Margin-Wert nach dem Rendern zu setzen
-    Application.Current.Dispatcher.InvokeAsync(() =>
-    {
-        if (CategoryDockBorder.ActualWidth > 0)
+        public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
-            double elementCenterX = dockManager.mousePositionSave;
+            // Debug.WriteLine("ShowCategoryDockPanel: Methode aufgerufen");
 
-            // Berechne die neue Position für CategoryDockBorder
-            double categoryDockPositionX = elementCenterX - (CategoryDockBorder.ActualWidth / 2);
+            CategoryDockContainer.Children.Clear();
+            CategoryDockContainer.Children.Add(categoryDock);
+            CategoryDockContainer.Visibility = Visibility.Visible;
+            CategoryDockBorder.Visibility = Visibility.Visible;
+            OverlayCanvas.Visibility = Visibility.Visible;
 
-            // Setze die neue Position
-            CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
+            // Debug.WriteLine("ShowCategoryDockPanel: Kategorie-Dock hinzugefügt und sichtbar gemacht");
 
-            double overlayPositionX = elementCenterX - 16;
-            Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
+            currentDockStatus |= DockStatus.CategoryElementClicked;
+            currentOpenCategory = categoryDock.Tag?.ToString() ?? string.Empty;
+            CategoryDockContainer.Tag = currentOpenCategory;
+            // Debug.WriteLine($"ShowCategoryDockPanel: currentOpenCategory = {currentOpenCategory}");
+
+            var items = SettingsManager.LoadSettings();
+            foreach (var item in items)
+            {
+                if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+                {
+                    dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
+                    // Debug.WriteLine($"ShowCategoryDockPanel: DockItem {item.DisplayName} zur Kategorie {currentOpenCategory} hinzugefügt");
+                }
+            }
+
+            Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                // Debug.WriteLine("ShowCategoryDockPanel: Dispatcher aufgerufen");
+
+                if (CategoryDockBorder.ActualWidth > 0)
+                {
+                    double mainWindowCenterX = Application.Current.MainWindow.ActualWidth / 2;
+                    double mainStackPanelCenterX = MainStackPanel.ActualWidth / 2;
+                    double elementCenterX = dockManager.mousePositionSave + mainStackPanelCenterX;
+                    Debug.WriteLine($"ShowCategoryDockPanel: dockManager.mousePositionSave = {dockManager.mousePositionSave}");
+                    Debug.WriteLine($"ShowCategoryDockPanel: MainStackPanel.ActualWidth = {MainStackPanel.ActualWidth}");
+                    Debug.WriteLine($"ShowCategoryDockPanel: dockManager.mousePositionSaveleft = {dockManager.mousePositionSaveleft}");
+                    // Debug.WriteLine($"ShowCategoryDockPanel: mainStackPanelCenterX = {mainStackPanelCenterX}");
+                    // Debug.WriteLine($"ShowCategoryDockPanel: elementCenterX (inkl. mainStackPanelCenterX) = {elementCenterX}");
+                    Debug.WriteLine($"ShowCategoryDockPanel: CategoryDockBorder.ActualWidth = {CategoryDockBorder.ActualWidth}");
+
+                    // Berechne die neue Position für CategoryDockBorder relativ zur Mitte des MainWindow
+                    // double categoryDockPositionX = elementCenterX - (CategoryDockBorder.ActualWidth / 2);
+                    double categoryDockPositionX = dockManager.mousePositionSave + dockManager.mousePositionSave;
+                    // Debug.WriteLine($"ShowCategoryDockPanel: Berechnete Position categoryDockPositionX = {categoryDockPositionX}");
+
+                    // Setze die neue Position
+                    CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
+                    Debug.WriteLine($"ShowCategoryDockPanel: Neue Margin für CategoryDockBorder gesetzt = {CategoryDockBorder.Margin}");
+
+                    // Debug-Ausgaben zur Überprüfung der Position relativ zur Mitte des MainWindow
+                    double categoryDockCenterX = categoryDockPositionX + (CategoryDockBorder.ActualWidth / 2);
+                    double positionRelativeToCenter = categoryDockCenterX - mainWindowCenterX;
+                    // Debug.WriteLine($"ShowCategoryDockPanel: Position der Mitte des CategoryDock relativ zur Mitte des MainWindow = {positionRelativeToCenter}");
+
+                    double overlayPositionX = dockManager.mousePositionSaveleft - 16;
+
+                    Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
+                    Debug.WriteLine($"ShowCategoryDockPanel: Neue Position für OverlayCanvasHorizontalLine gesetzt = {overlayPositionX}");
+                }
+                else
+                {
+                    // Debug.WriteLine("ShowCategoryDockPanel: CategoryDockBorder.ActualWidth ist 0 oder kleiner");
+                }
+            }, System.Windows.Threading.DispatcherPriority.Loaded);
+
+            MainStackPanel.Margin = new Thickness(0);
+            categoryHideTimer.Start();
+            CheckAllConditions();
+            // Debug.WriteLine("ShowCategoryDockPanel: Methode abgeschlossen");
         }
-    }, System.Windows.Threading.DispatcherPriority.Loaded);
-
-    // Restlicher Code
-    currentDockStatus |= DockStatus.CategoryElementClicked;
-    currentOpenCategory = categoryDock.Tag?.ToString() ?? string.Empty;
-    CategoryDockContainer.Tag = currentOpenCategory;
-    var items = SettingsManager.LoadSettings();
-    foreach (var item in items)
-    {
-        if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
-        {
-            dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
-        }
-    }
-
-    MainStackPanel.Margin = new Thickness(0);
-    categoryHideTimer.Start();
-    CheckAllConditions();
-}
 
 
-        // Hilfsmethode zum Generieren eines gültigen Namens
 
 
         public void HideCategoryDockPanel()
@@ -1456,14 +1487,14 @@ public void ShowCategoryDockPanel(StackPanel categoryDock)
         }
 
 
-private void Test_Click(object sender, RoutedEventArgs e)
-{
-    // Erstelle eine Instanz des TestWindow
-    TestWindow testWindow = new TestWindow(this);
+        private void Test_Click(object sender, RoutedEventArgs e)
+        {
+            // Erstelle eine Instanz des TestWindow
+            TestWindow testWindow = new TestWindow(this);
 
-    // Zeige das Fenster an
-    testWindow.Show();
-}
+            // Zeige das Fenster an
+            testWindow.Show();
+        }
 
 
 
