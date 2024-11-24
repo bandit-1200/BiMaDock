@@ -432,14 +432,14 @@ namespace BiMaDock
 
         public void CheckAllConditions()
         {
-            RemoveCrrentPlaceholder();
+            // RemoveCrrentPlaceholder();
             // Ausgabe im Klartext
             Debug.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
 
             if (currentDockStatus > 0) // Überprüft, ob irgendein Flag gesetzt ist
             {
                 // Debug.WriteLine("Conditions met, showing dock."); // Debug-Ausgabe
-                ShowDock();
+                // ShowDock();
                 categoryHideTimer.Stop();
                 dockHideTimer.Stop();
             }
@@ -565,6 +565,16 @@ namespace BiMaDock
 
         private void DockPanel_MouseMove(object sender, MouseEventArgs e)
         {
+            Debug.WriteLine($"DockPanel_MouseMove: aufgerufen"); // Debugging
+
+            // Entferne gnadenlos alle Platzhalter, bevor der neue erstellt wird
+            var allPlaceholders = DockPanel.Children.OfType<Border>().Where(border => border.Tag as string == "Placeholder").ToList();
+            foreach (var placeholder in allPlaceholders)
+            {
+                DockPanel.Children.Remove(placeholder);
+                Debug.WriteLine($"DockPanel_MouseMove: Entferne Platzhalter mit ID {placeholder.Uid}.");
+            }
+
             if (dragStartPoint.HasValue && draggedButton != null)
             {
                 Point position = e.GetPosition(DockPanel);
@@ -643,15 +653,12 @@ namespace BiMaDock
 
         private void DockPanel_DragEnter(object sender, DragEventArgs e)
         {
-
             Debug.WriteLine("DockPanel_DragEnter: Aufgerufen"); // Debug-Ausgabe
 
             Point mousePosition = e.GetPosition(DockPanel);
             dockManager.LogMousePositionAndElements(mousePosition);
 
-
-            // dockManager.LogMousePositionAndElements();
-            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
+            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
             currentDockStatus |= DockStatus.DraggingToDock;  // Flag setzen
             CheckAllConditions();
 
@@ -659,23 +666,26 @@ namespace BiMaDock
             Point dropPosition = e.GetPosition(DockPanel);
             Debug.WriteLine($"DockPanel_DragEnter: Drop-Position: X={dropPosition.X}, Y={dropPosition.Y}"); // Debug-Ausgabe der Position
 
-            // Entferne vorhandene Platzhalter, bevor der neue erstellt wird
-            if (currentPlaceholder != null)
-            {
-                DockPanel.Children.Remove(currentPlaceholder);
-                Debug.WriteLine("DockPanel_DragEnter: Vorhandenen Platzhalter entfernt.");
-            }
-
             // Verzögerte Erstellung des Platzhalters
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                // Platzhalter-Element (z.B. transparentes Border)
+                // Entferne gnadenlos alle Platzhalter, bevor der neue erstellt wird
+                var allPlaceholders = DockPanel.Children.OfType<Border>().Where(border => border.Tag as string == "Placeholder").ToList();
+                foreach (var placeholder in allPlaceholders)
+                {
+                    DockPanel.Children.Remove(placeholder);
+                    Debug.WriteLine($"DockPanel_DragEnter: Entferne Platzhalter mit ID {placeholder.Uid}.");
+                }
+
+                // Platzhalter-Element (z.B. transparentes Border) mit eindeutiger ID
                 currentPlaceholder = new Border
                 {
                     Background = new SolidColorBrush(Colors.LightGray),
                     Opacity = 0.0,
                     Height = 0.0, // Höhe des Platzhalters
                     Width = 10, // Breite des Platzhalters
+                    Tag = "Placeholder",
+                    Uid = Guid.NewGuid().ToString() // Eindeutige ID hinzufügen
                 };
 
                 bool isMouseOnElement = false;
@@ -696,7 +706,7 @@ namespace BiMaDock
                         // Überprüfen, ob die Maus auf dem aktuellen Element ist
                         if (elementRect.Contains(dropPosition))
                         {
-                            Debug.WriteLine($"DockPanel_DragEnter: Maus auf Element: DisplayName = {dockItem.DisplayName}, ID = {dockItem.Id}, Ketegorie = {dockItem.Category}, IsCategory = {dockItem.IsCategory}");
+                            Debug.WriteLine($"DockPanel_DragEnter: Maus auf Element: DisplayName = {dockItem.DisplayName}, ID = {dockItem.Id}, Kategorie = {dockItem.Category}, IsCategory = {dockItem.IsCategory}");
                             isMouseOnElement = true;
 
                             if (dockItem.IsCategory)
@@ -712,16 +722,12 @@ namespace BiMaDock
                                 {
                                     CategoryDockContainer_DragEnter(CategoryDockContainer, e);
                                 });
-
                             }
                             else
                             {
-
-
                                 HideCategoryDockPanel();
                                 currentDockStatus &= ~DockStatus.CategoryElementClicked;
                             }
-
 
                             break;
                         }
@@ -729,17 +735,11 @@ namespace BiMaDock
                         // Überprüfen, ob die Drop-Position vor oder nach dem aktuellen Element ist
                         if (dropPosition.X < elementCenterX)
                         {
-                            // Wenn der Platzhalter-Index nicht übereinstimmt, füge den Platzhalter an der neuen Position ein
-                            if (currentPlaceholderIndex != i)
-                            {
-                                currentPlaceholderIndex = i; // Update den Platzhalter-Index
-                                DockPanel.Children.Insert(i, currentPlaceholder);
-                                Debug.WriteLine($"DockPanel_DragEnter: Platzhalter zwischen Element {i - 1} und Element {i} hinzugefügt.");
-
-
-
-                            }
-                            break; // Hier kannst du weitere Logik hinzufügen, um das Element zu platzieren
+                            // Platzhalter immer hinzufügen, auch wenn der Index gleich ist
+                            currentPlaceholderIndex = i; // Update den Platzhalter-Index
+                            DockPanel.Children.Insert(i, currentPlaceholder);
+                            Debug.WriteLine($"DockPanel_DragEnter: Platzhalter zwischen Element {i - 1} und Element {i} hinzugefügt.");
+                            break;
                         }
                     }
                     else
@@ -766,15 +766,9 @@ namespace BiMaDock
                 e.Effects = DragDropEffects.None;
                 Debug.WriteLine("DockPanel_DragEnter: Kein Element erkannt oder DockPanel ist null"); // Debug-Ausgabe
             }
-
-            // Sicherstellen, dass alle Platzhalter entfernt werden, wenn der Drag-Vorgang beendet ist
-            if (currentPlaceholder != null)
-            {
-                DockPanel?.Children.Remove(currentPlaceholder);
-                Debug.WriteLine("DockPanel_DragEnter: Platzhalter nach Verlassen der Methode entfernt.");
-                currentPlaceholder = null; // Rücksetzen der Referenz
-            }
         }
+
+
 
 
 
@@ -782,19 +776,20 @@ namespace BiMaDock
         {
             Debug.WriteLine("DockPanel_DragLeave: Aufgerufen"); // Debug-Ausgabe
 
-
-            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
+            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"]; // Visuelles Feedback zurücksetzen Farbe
             currentDockStatus &= ~DockStatus.DraggingToDock;  // Flag zurücksetzen, wenn der Drag-Vorgang das DockPanel verlässt
             CheckAllConditions();
 
-            // Entferne den Platzhalter, wenn der Drag-Vorgang das DockPanel verlässt
-            if (currentPlaceholder != null)
-            {
-                DockPanel.Children.Remove(currentPlaceholder);
-                Debug.WriteLine("DockPanel_DragLeave: Platzhalter entfernt.");
-                currentPlaceholder = null; // Setze die Platzhalter-Referenz zurück
-                currentPlaceholderIndex = -1; // Zurücksetzen des Platzhalter-Index
-            }
+            // Entferne alle Platzhalter, wenn der Drag-Vorgang das DockPanel verlässt
+            // for (int i = 0; i < DockPanel.Children.Count; i++)
+            // {
+            //     if (DockPanel.Children[i] is Border border && border.Tag as string == "Placeholder")
+            //     {
+            //         Debug.WriteLine($"DockPanel_DragEnter: Platzhalter Lösche Platzhalter Border bei Index {i}");
+            //         DockPanel.Children.Remove(border);
+            //         i--; // Index anpassen, da ein Element entfernt wurde
+            //     }
+            // }
 
             // Visuelles Feedback zurücksetzen
             var brush = (SolidColorBrush)FindResource("PrimaryColor");
@@ -804,6 +799,12 @@ namespace BiMaDock
                 Debug.WriteLine("DockPanel_DragLeave: Element hat das Hauptdock verlassen und Hintergrund zurückgesetzt"); // Debug-Ausgabe
             }
         }
+
+
+
+
+
+
 
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -1488,15 +1489,20 @@ namespace BiMaDock
             StartupManager.AddToStartup(false);
         }
 
-        private void RemoveCrrentPlaceholder()
+        private void RemoveCurrentPlaceholder()
         {
-            // Entferne vorhandene Platzhalter, bevor der neue erstellt wird
-            if (currentPlaceholder != null)
+            for (int i = 0; i < DockPanel?.Children?.Count; i++)
             {
-                DockPanel.Children.Remove(currentPlaceholder);
-                Debug.WriteLine("DockPanel_DragEnter: Vorhandenen Platzhalter entfernt.");
+                if (DockPanel.Children[i] is Border border && border.Tag as string == "Placeholder")
+                {
+                    Debug.WriteLine($"RemoveCurrentPlaceholder: Lösche Platzhalter Border bei Index {i}");
+                    DockPanel.Children.Remove(border);
+                    i--; // Index anpassen, da ein Element entfernt wurde
+                }
             }
         }
+
+
 
 
         protected override void OnClosed(EventArgs e)
