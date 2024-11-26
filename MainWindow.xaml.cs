@@ -565,7 +565,7 @@ namespace BiMaDock
 
         private void DockPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            Debug.WriteLine($"DockPanel_MouseMove: aufgerufen"); // Debugging
+            // Debug.WriteLine($"DockPanel_MouseMove: aufgerufen"); // Debugging
 
             // Entferne gnadenlos alle Platzhalter, bevor der neue erstellt wird
             var allPlaceholders = DockPanel.Children.OfType<Border>().Where(border => border.Tag as string == "Placeholder").ToList();
@@ -1022,6 +1022,7 @@ namespace BiMaDock
             // Visuelles Feedback zurücksetzen
             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
             CheckAllConditions();
+            HideCategoryDockPanel();
             Debug.WriteLine("CategoryDockContainer_Drop: Kategorie-Dock korrekt zurückgesetzt um {DateTime.Now}"); // Debug-Ausgabe mit Zeitstempel
         }
 

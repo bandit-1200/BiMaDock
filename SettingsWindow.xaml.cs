@@ -49,6 +49,7 @@ namespace BiMaDock
         }
 
         private ComboBox? animationEffectComboBox;
+        private int animationEffectComboBoxIndex = 0;
         private Slider? scaleFactorSlider;
         private Slider? angleSlider;
         private Slider? translateXSlider;
@@ -85,13 +86,14 @@ namespace BiMaDock
             translateYSlider = new Slider();
             animationEffectComboBox = new ComboBox();
 
-            CreateAnimationEffectDropdown();
+
             // animationEffectComboBox = new ComboBox();
             settingsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "StyleSettings.json");
-
+            CreateAnimationEffectDropdown();
             ShowVersionInConsole();
             AutoStartCheckBox.IsChecked = StartupManager.IsInStartup();
             LoadSettings();
+
         }
 
 
@@ -109,12 +111,13 @@ namespace BiMaDock
             animationEffectComboBox.Items.Add("Scale");
             animationEffectComboBox.Items.Add("Rotate");
             animationEffectComboBox.Items.Add("Translate");
-            animationEffectComboBox.SelectedIndex = 0;  // Setze den initialen Index auf "Kein Effekt"
+            animationEffectComboBox.Items.Add("Swing");
+            animationEffectComboBox.SelectedIndex = animationEffectComboBoxIndex;  // Setze den initialen Index auf "Kein Effekt"
             animationEffectComboBox.SelectionChanged += AnimationEffectComboBox_SelectionChanged;
             AnimationSettingsPanel.Children.Add(animationEffectComboBox);
 
             // Initiale Einstellungen erstellen (z.B. Scale)
-            CreateScaleAnimationSettings();
+            // CreateScaleAnimationSettings();
         }
 
 
@@ -123,48 +126,67 @@ namespace BiMaDock
         {
             if (sender is ComboBox comboBox)
             {
-                // Überprüfe, ob SelectedItem nicht null ist
-                string? selectedEffect = comboBox.SelectedItem?.ToString();
+                int selectedIndex = comboBox.SelectedIndex;
 
-                if (!string.IsNullOrEmpty(selectedEffect))
+                // Überprüfe, ob ein gültiger Index ausgewählt wurde
+                if (selectedIndex >= 0)
                 {
-                    // Entferne nur die dynamisch erstellten Kinder, nicht das Dropdown-Menü
-                    while (AnimationSettingsPanel.Children.Count > 2) // Da das Dropdown-Menü das zweite Element ist
-                    {
-                        AnimationSettingsPanel.Children.RemoveAt(2);
-                    }
-
-                    // Logik zur Erstellung der Animationseinstellungen basierend auf der Auswahl
-                    if (selectedEffect == "Scale")
-                    {
-                        CreateScaleAnimationSettings();
-                    }
-                    else if (selectedEffect == "Rotate")
-                    {
-                        CreateRotateAnimationSettings();
-                    }
-                    else if (selectedEffect == "Translate")
-                    {
-                        CreateTranslateAnimationSettings();
-                    }
-
-                    // Ausgabe des aktuellen SelectedIndex auf der Konsole
-                    Debug.WriteLine($"SelectedIndex: {comboBox.SelectedIndex}");
+                    // Verwende die neue Methode, um die Animationseinstellungen zu aktualisieren
+                    UpdateAnimationSettings(selectedIndex);
                 }
             }
         }
 
 
+
+
+        private void UpdateAnimationSettings(int selectedIndex)
+        {
+            // Entferne nur die dynamisch erstellten Kinder, nicht das Dropdown-Menü
+            while (AnimationSettingsPanel.Children.Count > 1) // Da das Dropdown-Menü das zweite Element ist
+            {
+                AnimationSettingsPanel.Children.RemoveAt(1);
+            }
+
+            // Logik zur Erstellung der Animationseinstellungen basierend auf dem Index
+            switch (selectedIndex)
+            {
+                case 1: // Index für Scale
+                    CreateScaleAnimationSettings();
+                    break;
+                case 2: // Index für Rotate
+                    CreateRotateAnimationSettings();
+                    break;
+                case 3: // Index für Translate
+                    CreateTranslateAnimationSettings();
+                    break;
+                case 4: // Index für Swing
+                        // CreateSwingAnimationSettings();
+                    break;
+                default:
+                    Debug.WriteLine($"Kein gültiger Effekt ausgewählt: {selectedIndex}");
+                    break;
+            }
+
+            // Ausgabe des aktuellen SelectedIndex auf der Konsole
+            Debug.WriteLine($"SelectedIndex: {selectedIndex}");
+        }
+
+
+
+
+
+
         private void CreateScaleAnimationSettings()
         {
             // Slider für die Animationsdauer
-            TextBlock durationTextBlock = new TextBlock
+            TextBlock scaleDurationTextBlock = new TextBlock
             {
-                Text = "Dauer (in Sekunden):",
+                Text = "Dauer (in Sekunden scale):",
                 Foreground = Brushes.White,
                 Margin = new Thickness(0, 0, 0, 5)
             };
-            AnimationSettingsPanel.Children.Add(durationTextBlock);
+            AnimationSettingsPanel.Children.Add(scaleDurationTextBlock);
 
             // Initialisiere und speichere die Referenz auf den globalen Slider für die Dauer
             scaleDurationSlider = new Slider
@@ -191,6 +213,7 @@ namespace BiMaDock
             scaleDurationSlider.ValueChanged += (s, e) =>
             {
                 durationValueTextBlock.Text = $"Aktuelle Dauer: {scaleDurationSlider.Value} s";
+                scaleSettings.Duration = scaleDurationSlider.Value;
             };
 
             // Slider für den Skalierungsfaktor
@@ -227,6 +250,7 @@ namespace BiMaDock
             scaleFactorSlider.ValueChanged += (s, e) =>
             {
                 scaleFactorValueTextBlock.Text = $"Aktueller Skalierungsfaktor: {scaleFactorSlider.Value}";
+                scaleSettings.ScaleFactor = scaleFactorSlider.Value;
             };
 
             // Initialisiere und speichere die Referenz auf die globale CheckBox für AutoReverse
@@ -237,20 +261,34 @@ namespace BiMaDock
                 IsChecked = scaleSettings.AutoReverse, // Wert aus den Einstellungen laden
                 Margin = new Thickness(0, 0, 0, 20)
             };
-            AnimationSettingsPanel.Children.Add(scaleAutoReverseCheckBox);
-        }
 
+            // Gemeinsamen Event-Handler für Checked und Unchecked hinzufügen
+            scaleAutoReverseCheckBox.Checked += (s, e) =>
+            {
+                scaleSettings.AutoReverse = true;
+                Debug.WriteLine("Scale AutoReverse aktiviert");
+            };
+
+            scaleAutoReverseCheckBox.Unchecked += (s, e) =>
+            {
+                scaleSettings.AutoReverse = false;
+                Debug.WriteLine("Scale AutoReverse deaktiviert");
+            };
+
+            AnimationSettingsPanel.Children.Add(scaleAutoReverseCheckBox);
+
+        }
 
         private void CreateRotateAnimationSettings()
         {
             // Slider für die Animationsdauer
-            TextBlock durationTextBlock = new TextBlock
+            TextBlock rotateDurationTextBlock = new TextBlock
             {
-                Text = "Dauer (in Sekunden):",
+                Text = "Dauer (in Sekunden CreateRotateAnimationSettings):",
                 Foreground = Brushes.White,
                 Margin = new Thickness(0, 0, 0, 5)
             };
-            AnimationSettingsPanel.Children.Add(durationTextBlock);
+            AnimationSettingsPanel.Children.Add(rotateDurationTextBlock);
 
             // Initialisiere und speichere die Referenz auf den globalen Slider für die Dauer
             rotateDurationSlider = new Slider
@@ -330,13 +368,13 @@ namespace BiMaDock
         private void CreateTranslateAnimationSettings()
         {
             // Slider für die Animationsdauer
-            TextBlock durationTextBlock = new TextBlock
+            TextBlock translateDurationTextBlock = new TextBlock
             {
-                Text = "Dauer (in Sekunden):",
+                Text = "Dauer (in Sekunden CreateTranslateAnimationSettings):",
                 Foreground = Brushes.White,
                 Margin = new Thickness(0, 0, 0, 5)
             };
-            AnimationSettingsPanel.Children.Add(durationTextBlock);
+            AnimationSettingsPanel.Children.Add(translateDurationTextBlock);
 
             // Initialisiere und speichere die Referenz auf den globalen Slider für die Dauer
             translateDurationSlider = new Slider
@@ -539,7 +577,9 @@ namespace BiMaDock
                         var selectedEffectIndex = (int)settings.SelectedEffectIndex;
                         if (animationEffectComboBox != null)
                         {
-                            animationEffectComboBox.SelectedIndex = selectedEffectIndex;
+                            animationEffectComboBoxIndex = selectedEffectIndex;
+                            animationEffectComboBox.SelectedIndex = animationEffectComboBoxIndex;
+                            UpdateAnimationSettings(animationEffectComboBoxIndex);
                         }
                     }
                 }
@@ -547,33 +587,33 @@ namespace BiMaDock
         }
 
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
             var secondaryColor = SecondaryColorPicker.SelectedColor ?? Colors.Transparent;
 
             // Aktualisiere die Variablen mit den Werten der Steuerelemente
-            if (scaleDurationSlider != null) scaleSettings.Duration = scaleDurationSlider.Value;
-            if (scaleFactorSlider != null) scaleSettings.ScaleFactor = scaleFactorSlider.Value;
+            // if (scaleDurationSlider != null) scaleSettings.Duration = scaleDurationSlider.Value;
+            // if (scaleFactorSlider != null) scaleSettings.ScaleFactor = scaleFactorSlider.Value;
 
-            // Hier speziell die CheckBox für Scale verwenden
-            var scaleAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Scale AutoReverse");
-            if (scaleAutoReverseCheckBox != null) scaleSettings.AutoReverse = scaleAutoReverseCheckBox.IsChecked ?? true;
+            // // Hier speziell die CheckBox für Scale verwenden
+            // var scaleAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Scale AutoReverse");
+            // if (scaleAutoReverseCheckBox != null) scaleSettings.AutoReverse = scaleAutoReverseCheckBox.IsChecked ?? true;
 
-            if (rotateDurationSlider != null) rotateSettings.Duration = rotateDurationSlider.Value;
-            if (angleSlider != null) rotateSettings.Angle = angleSlider.Value;
+            // if (rotateDurationSlider != null) rotateSettings.Duration = rotateDurationSlider.Value;
+            // if (angleSlider != null) rotateSettings.Angle = angleSlider.Value;
 
-            // Hier speziell die CheckBox für Rotate verwenden
-            var rotateAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Rotate AutoReverse");
-            if (rotateAutoReverseCheckBox != null) rotateSettings.AutoReverse = rotateAutoReverseCheckBox.IsChecked ?? true;
+            // // Hier speziell die CheckBox für Rotate verwenden
+            // var rotateAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Rotate AutoReverse");
+            // if (rotateAutoReverseCheckBox != null) rotateSettings.AutoReverse = rotateAutoReverseCheckBox.IsChecked ?? true;
 
-            if (translateDurationSlider != null) translateSettings.Duration = translateDurationSlider.Value;
-            if (translateXSlider != null) translateSettings.TranslateX = translateXSlider.Value;
-            if (translateYSlider != null) translateSettings.TranslateY = translateYSlider.Value;
+            // if (translateDurationSlider != null) translateSettings.Duration = translateDurationSlider.Value;
+            // if (translateXSlider != null) translateSettings.TranslateX = translateXSlider.Value;
+            // if (translateYSlider != null) translateSettings.TranslateY = translateYSlider.Value;
 
-            // Hier speziell die CheckBox für Translate verwenden
-            var translateAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Translate AutoReverse");
-            if (translateAutoReverseCheckBox != null) translateSettings.AutoReverse = translateAutoReverseCheckBox.IsChecked ?? true;
+            // // Hier speziell die CheckBox für Translate verwenden
+            // var translateAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Translate AutoReverse");
+            // if (translateAutoReverseCheckBox != null) translateSettings.AutoReverse = translateAutoReverseCheckBox.IsChecked ?? true;
 
             if (animationEffectComboBox != null && animationEffectComboBox.SelectedItem != null)
             {
@@ -600,7 +640,7 @@ namespace BiMaDock
                 string directoryPath = Path.Combine(appDataPath, "BiMaDock");
 
                 Directory.CreateDirectory(directoryPath);
-                File.WriteAllText(Path.Combine(directoryPath, "StyleSettings.json"), json);
+                await File.WriteAllTextAsync(Path.Combine(directoryPath, "StyleSettings.json"), json);
 
                 // Schließen des Fensters
                 ButtonAnimations.LoadSettings();
@@ -610,9 +650,9 @@ namespace BiMaDock
             {
                 MessageBox.Show("AnimationEffectComboBox oder dessen SelectedItem ist null.");
             }
+
             LoadSettings();
         }
-
 
 
         // private void SaveEffectSettings(string filename, object effectSettings)
