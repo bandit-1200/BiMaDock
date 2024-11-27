@@ -352,7 +352,7 @@ namespace BiMaDock
             angleSlider.ValueChanged += (s, e) =>
             {
                 angleValueTextBlock.Text = $"Aktueller Winkel: {angleSlider.Value}°";
-                rotateSettings.Angle =angleSlider.Value;
+                rotateSettings.Angle = angleSlider.Value;
             };
 
             // Initialisiere und speichere die Referenz auf die globale CheckBox für AutoReverse
@@ -418,7 +418,7 @@ namespace BiMaDock
             translateDurationSlider.ValueChanged += (s, e) =>
             {
                 durationValueTextBlock.Text = $"Aktuelle Dauer: {translateDurationSlider.Value} s";
-                translateSettings.Duration  = translateDurationSlider.Value;
+                translateSettings.Duration = translateDurationSlider.Value;
             };
 
             // Slider für die X-Achsen-Translation
@@ -626,6 +626,17 @@ namespace BiMaDock
             var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
             var secondaryColor = SecondaryColorPicker.SelectedColor ?? Colors.Transparent;
 
+            // Überprüfen und Alpha-Wert auf mindestens 1 setzen
+            if (primaryColor.A < 1)
+            {
+                primaryColor.A = 1;
+            }
+
+            if (secondaryColor.A < 1)
+            {
+                secondaryColor.A = 1;
+            }
+
             // Aktualisiere die Variablen mit den Werten der Steuerelemente
             // if (scaleDurationSlider != null) scaleSettings.Duration = scaleDurationSlider.Value;
             // if (scaleFactorSlider != null) scaleSettings.ScaleFactor = scaleFactorSlider.Value;
@@ -706,10 +717,19 @@ namespace BiMaDock
         {
             if (e.NewValue.HasValue)
             {
-                PrimaryColorPicker.Background = new SolidColorBrush(e.NewValue.Value);
-                PrimaryColorPreview.Background = new SolidColorBrush(e.NewValue.Value);
+                var selectedColor = e.NewValue.Value;
+
+                // Überprüfen, ob der Alpha-Wert mindestens 1 ist
+                if (selectedColor.A < 1)
+                {
+                    selectedColor.A = 1; // Mindestwert der Alpha-Komponente auf 1 setzen
+                }
+
+                PrimaryColorPicker.Background = new SolidColorBrush(selectedColor);
+                PrimaryColorPreview.Background = new SolidColorBrush(selectedColor);
             }
         }
+
 
 
 
@@ -719,10 +739,19 @@ namespace BiMaDock
         {
             if (e.NewValue.HasValue)
             {
-                SecondaryColorPicker.Background = new SolidColorBrush(e.NewValue.Value);
-                SecondaryColorPreview.Background = new SolidColorBrush(e.NewValue.Value);
+                var selectedColor = e.NewValue.Value;
+
+                // Überprüfen, ob der Alpha-Wert mindestens 1 ist
+                if (selectedColor.A < 1)
+                {
+                    selectedColor.A = 1; // Mindestwert der Alpha-Komponente auf 1 setzen
+                }
+
+                SecondaryColorPicker.Background = new SolidColorBrush(selectedColor);
+                SecondaryColorPreview.Background = new SolidColorBrush(selectedColor);
             }
         }
+
 
         private void ShowVersionButton_Click(object sender, RoutedEventArgs e)
         {
