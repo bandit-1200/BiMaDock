@@ -315,6 +315,7 @@ namespace BiMaDock
             rotateDurationSlider.ValueChanged += (s, e) =>
             {
                 durationValueTextBlock.Text = $"Aktuelle Dauer: {rotateDurationSlider.Value} s";
+                rotateSettings.Duration = rotateDurationSlider.Value;
             };
 
             // Slider für den Rotationswinkel
@@ -351,6 +352,7 @@ namespace BiMaDock
             angleSlider.ValueChanged += (s, e) =>
             {
                 angleValueTextBlock.Text = $"Aktueller Winkel: {angleSlider.Value}°";
+                rotateSettings.Angle =angleSlider.Value;
             };
 
             // Initialisiere und speichere die Referenz auf die globale CheckBox für AutoReverse
@@ -361,6 +363,21 @@ namespace BiMaDock
                 IsChecked = rotateSettings.AutoReverse, // Wert aus den Einstellungen laden
                 Margin = new Thickness(0, 0, 0, 20)
             };
+
+            // Gemeinsamen Event-Handler für Checked und Unchecked hinzufügen
+            rotateAutoReverseCheckBox.Checked += (s, e) =>
+            {
+                rotateSettings.AutoReverse = true;
+                Debug.WriteLine("rotate AutoReverse aktiviert");
+            };
+
+            rotateAutoReverseCheckBox.Unchecked += (s, e) =>
+            {
+                rotateSettings.AutoReverse = false;
+                Debug.WriteLine("rotate AutoReverse deaktiviert");
+            };
+
+
             AnimationSettingsPanel.Children.Add(rotateAutoReverseCheckBox);
         }
 
@@ -401,6 +418,7 @@ namespace BiMaDock
             translateDurationSlider.ValueChanged += (s, e) =>
             {
                 durationValueTextBlock.Text = $"Aktuelle Dauer: {translateDurationSlider.Value} s";
+                translateSettings.Duration  = translateDurationSlider.Value;
             };
 
             // Slider für die X-Achsen-Translation
@@ -437,6 +455,7 @@ namespace BiMaDock
             translateXSlider.ValueChanged += (s, e) =>
             {
                 translateXValueTextBlock.Text = $"Aktuelle X-Translation: {translateXSlider.Value} px";
+                translateSettings.TranslateX = translateXSlider.Value;
             };
 
             // Slider für die Y-Achsen-Translation
@@ -473,15 +492,30 @@ namespace BiMaDock
             translateYSlider.ValueChanged += (s, e) =>
             {
                 translateYValueTextBlock.Text = $"Aktuelle Y-Translation: {translateYSlider.Value} px";
+                translateSettings.TranslateY = translateYSlider.Value;
+
             };
 
             // Initialisiere und speichere die Referenz auf die globale CheckBox für AutoReverse
             var translateAutoReverseCheckBox = new CheckBox
             {
-                Content = "Translate AutoReverse", // Benennen der CheckBox für späteren Zugriff
+                Content = "translate AutoReverse", // Benennen der CheckBox für späteren Zugriff
                 Foreground = Brushes.White,
                 IsChecked = translateSettings.AutoReverse, // Wert aus den Einstellungen laden
                 Margin = new Thickness(0, 0, 0, 20)
+            };
+
+            // Gemeinsamen Event-Handler für Checked und Unchecked hinzufügen
+            translateAutoReverseCheckBox.Checked += (s, e) =>
+            {
+                translateSettings.AutoReverse = true;
+                Debug.WriteLine("translate AutoReverse aktiviert");
+            };
+
+            translateAutoReverseCheckBox.Unchecked += (s, e) =>
+            {
+                translateSettings.AutoReverse = false;
+                Debug.WriteLine("translate AutoReverse deaktiviert");
             };
             AnimationSettingsPanel.Children.Add(translateAutoReverseCheckBox);
         }
