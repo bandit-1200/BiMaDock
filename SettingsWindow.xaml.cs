@@ -745,6 +745,24 @@ namespace BiMaDock
                 PrimaryColorPreview.Background = new SolidColorBrush(selectedColor);
             }
         }
+        private void AccentColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        {
+            if (e.NewValue.HasValue)
+            {
+                var selectedColor = e.NewValue.Value;
+                Debug.WriteLine($"AccentColorPicker_SelectedColorChanged: {selectedColor}");
+
+                // // Überprüfen, ob der Alpha-Wert mindestens 1 ist
+                // if (selectedColor.A < 1)
+                // {
+                //     selectedColor.A = 1; // Mindestwert der Alpha-Komponente auf 1 setzen
+                // }
+
+                // SecondaryColorPicker.Background = new SolidColorBrush(selectedColor);
+                // SecondaryColorPreview.Background = new SolidColorBrush(selectedColor);
+            }
+        }
+
 
 
 
