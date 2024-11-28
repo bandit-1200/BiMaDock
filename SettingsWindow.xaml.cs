@@ -65,6 +65,7 @@ namespace BiMaDock
         public SettingsWindow(MainWindow window)
         {
             InitializeComponent();
+            ShowVersion();
 
             mainWindow = window;
 
@@ -533,6 +534,21 @@ namespace BiMaDock
             Debug.WriteLine($"Detaillierte Version: {informationalVersion}");
             Debug.WriteLine($"Klare Version: {clearVersion}");
         }
+
+        private void ShowVersion()
+        {
+            var informationalVersionAttribute = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+
+            string informationalVersion = informationalVersionAttribute?.InformationalVersion ?? "Unbekannte Version";
+            string clearVersion = informationalVersion.Split('+')[0];
+
+            VersionTextBox.Text = $"Detaillierte Version: {informationalVersion}\nKlare Version: {clearVersion}";
+        }
+
+
+
+
         public void LoadSettings()
         {
             if (File.Exists(settingsFilePath))
