@@ -210,6 +210,26 @@ public class ButtonAnimations
     }
 
 
+public static void AnimatSwingTransform(Button button)
+{
+    var rotateTransform = new RotateTransform();
+    button.RenderTransformOrigin = new Point(0.5, 0.0); // Ursprung oben mitte
+    button.RenderTransform = rotateTransform;
+
+    var swingAnimation = new DoubleAnimationUsingKeyFrames();
+    swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0))));
+    swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(30, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.5))));
+    swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(-30, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(1))));
+    swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(20, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(1.5))));
+    swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(-20, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(2))));
+    swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(10, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(2.5))));
+    swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(-10, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(3))));
+    swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(3.5))));
+
+    // Füge die Animation hinzu
+    rotateTransform.BeginAnimation(RotateTransform.AngleProperty, swingAnimation);
+}
+
 
     // public static void AnimatRotateTransform(Button button)
     // {
@@ -251,6 +271,13 @@ public class ButtonAnimations
                 Debug.WriteLine("Starte Translate");
                 AnimatTranslateTransform(button);
                 break;
+            case 4:
+                Debug.WriteLine("Starte Swing");
+                AnimatSwingTransform(button);
+                break;
+
+
+
             default:
                 Debug.WriteLine("Keine Animation - NotAnimate wird aufgerufen");
                 NotAnimate(button);
