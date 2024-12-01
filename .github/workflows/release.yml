@@ -34,14 +34,18 @@ jobs:
         & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "./BiMaDock.iss"
 
     - name: Create Release
-      id: create_release
-      uses: ncipollo/release-action@v2
+      uses: marvinpinto/action-automatic-releases@latest
       with:
-        tag_name: ${{ github.ref_name }}
-        release_name: Release ${{ github.ref_name }}
-        body: "Changes in this release"
-        draft: false
-        prerelease: false
-        artifacts: ./publish/BiMaDockSetup.exe
+        tag: ${{ github.ref_name }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: ./publish/BiMaDockSetup.exe
+
+    - name: Upload Release
+      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./publish/BiMaDockSetup.exe
+        asset_name: BiMaDockSetup.exe
+        asset_content_type: application/octet-stream
