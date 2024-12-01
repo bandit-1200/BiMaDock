@@ -195,8 +195,11 @@ namespace BiMaDock
             SelectedIconBorder.Visibility = Visibility.Collapsed;
         }
 
+        
+
         private async Task CopyDefaultIcons()
         {
+            string logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "log.txt");
             try
             {
                 string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -214,12 +217,16 @@ namespace BiMaDock
                 // Überprüfen, ob installationPath null ist
                 if (string.IsNullOrEmpty(installationPath))
                 {
-                    Debug.WriteLine("CopyDefaultIconsAsync: Installationspfad konnte nicht ermittelt werden.");
+                    LogToFile(logFilePath, "CopyDefaultIcons: Installationspfad konnte nicht ermittelt werden.");
                     return; // Wenn der Pfad nicht ermittelt werden kann, abbrechen
                 }
 
                 // Pfad zu den Icons im Installationsverzeichnis
                 string resourceDirectoryPath = Path.Combine(installationPath, "Resources", "Icons");
+
+                // Debugging-Ausgabe des Installationspfades
+                LogToFile(logFilePath, $"Installationspfad: {installationPath}");
+                LogToFile(logFilePath, $"Resource Verzeichnis: {resourceDirectoryPath}");
 
                 // Wenn der Installationspfad nicht existiert, benutze den Entwicklungsverzeichnis-Pfad
                 if (!Directory.Exists(resourceDirectoryPath))
@@ -227,7 +234,7 @@ namespace BiMaDock
                     resourceDirectoryPath = developmentIconPath;
                 }
 
-                Debug.WriteLine($"CopyDefaultIconsAsync: Resource Verzeichnis: {resourceDirectoryPath}");
+                LogToFile(logFilePath, $"CopyDefaultIcons: Resource Verzeichnis nach Überprüfung: {resourceDirectoryPath}");
 
                 // Alle Standard-Icons aus dem Verzeichnis (Entwicklung oder Installation) kopieren
                 var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
@@ -244,20 +251,27 @@ namespace BiMaDock
                         {
                             await sourceStream.CopyToAsync(destinationStream);
                         }
-                        Debug.WriteLine($"CopyDefaultIconsAsync: {fileName} hinzugefügt.");
+                        LogToFile(logFilePath, $"CopyDefaultIcons: {fileName} hinzugefügt.");
                     }
                     else
                     {
-                        Debug.WriteLine($"CopyDefaultIconsAsync: {fileName} existiert bereits im Verzeichnis.");
+                        LogToFile(logFilePath, $"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"CopyDefaultIconsAsync: Fehler beim Kopieren der Icons. {ex.Message}");
+                LogToFile(logFilePath, $"CopyDefaultIcons: Fehler beim Kopieren der Icons. {ex.Message}");
             }
         }
 
+        private void LogToFile(string logFilePath, string message)
+        {
+            using (StreamWriter writer = new StreamWriter(logFilePath, true))
+            {
+                writer.WriteLine($"{DateTime.Now}: {message}");
+            }
+        }
 
         private void UploadIcon_Click(object sender, RoutedEventArgs e)
         {

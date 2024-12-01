@@ -94,6 +94,7 @@ ehthumbs.db
 *.msi
 *.msm
 *.msp
+/setup/
 
 # Windows shortcuts
 *.lnk
