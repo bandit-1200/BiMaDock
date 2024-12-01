@@ -87,48 +87,48 @@ namespace BiMaDock
             Debug.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
         }
 
-public void InitializeIcons()
-{
-    Debug.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
-    CreateAppDataIconDirectory();
-
-    if (DockItem != null)
-    {
-        Debug.WriteLine($"ID: {DockItem.Id}");
-        Debug.WriteLine($"Name: {DockItem.DisplayName}");
-        Debug.WriteLine($"IconSource: {DockItem.IconSource}");
-        Debug.WriteLine($"Kategorie: {DockItem.Category}");
-        Debug.WriteLine($"Ist Kategorie: {DockItem.IsCategory}");
-
-        // Originalbild laden und in der Box anzeigen
-        var originalImage = IconHelper.GetIcon(DockItem.FilePath);
-        OriginalImage.Source = originalImage;
-        OriginalImage.Width = 48;
-        OriginalImage.Height = 48;
-        OriginalImage.Cursor = Cursors.Hand; // Zeiger ändern, um anklickbar zu zeigen
-        
-        // OriginalImage.Stretch = Stretch.None;
-        // OriginalImage.HorizontalAlignment = HorizontalAlignment.Center;
-        // OriginalImage.VerticalAlignment = VerticalAlignment.Center;
-                // Klick-Event für OriginalImage hinzufügen
-        OriginalImage.MouseLeftButtonUp += (s, e) => 
+        public void InitializeIcons()
         {
-            SelectedIconImage.Source = originalImage;
-            DockItem.IconSource = "";
-            IconSourceTextBox.Text = "";
-        };
-    }
+            Debug.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
+            CreateAppDataIconDirectory();
 
-    // Zuerst Benutzer-Icons laden, wenn vorhanden, andernfalls Standard-Icons verwenden
-    if (!LoadIconsFromAppData())
-    {
-        Debug.WriteLine("Keine Benutzer-Icons gefunden. Kopiere Standard-Icons.");
-        CopyDefaultIcons();
-        LoadIconsFromAppData(); // Versuche jetzt erneut, Icons zu laden
-    }
+            if (DockItem != null)
+            {
+                Debug.WriteLine($"ID: {DockItem.Id}");
+                Debug.WriteLine($"Name: {DockItem.DisplayName}");
+                Debug.WriteLine($"IconSource: {DockItem.IconSource}");
+                Debug.WriteLine($"Kategorie: {DockItem.Category}");
+                Debug.WriteLine($"Ist Kategorie: {DockItem.IsCategory}");
 
-    Debug.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
-}
+                // Originalbild laden und in der Box anzeigen
+                var originalImage = IconHelper.GetIcon(DockItem.FilePath);
+                OriginalImage.Source = originalImage;
+                OriginalImage.Width = 48;
+                OriginalImage.Height = 48;
+                OriginalImage.Cursor = Cursors.Hand; // Zeiger ändern, um anklickbar zu zeigen
+
+                // OriginalImage.Stretch = Stretch.None;
+                // OriginalImage.HorizontalAlignment = HorizontalAlignment.Center;
+                // OriginalImage.VerticalAlignment = VerticalAlignment.Center;
+                // Klick-Event für OriginalImage hinzufügen
+                OriginalImage.MouseLeftButtonUp += (s, e) =>
+                {
+                    SelectedIconImage.Source = originalImage;
+                    DockItem.IconSource = "";
+                    IconSourceTextBox.Text = "";
+                };
+            }
+
+            // Zuerst Benutzer-Icons laden, wenn vorhanden, andernfalls Standard-Icons verwenden
+            if (!LoadIconsFromAppData())
+            {
+                Debug.WriteLine("Keine Benutzer-Icons gefunden. Kopiere Standard-Icons.");
+                CopyDefaultIcons();
+                LoadIconsFromAppData(); // Versuche jetzt erneut, Icons zu laden
+            }
+
+            Debug.WriteLine("InitializeIcons: abgeschlossen."); // Debugging Ausgabe
+        }
 
 
 
@@ -197,55 +197,63 @@ public void InitializeIcons()
 
         private void CopyDefaultIcons()
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
-
-            // Sicherstellen, dass das Verzeichnis existiert
-            Directory.CreateDirectory(iconDirectoryPath);
-
-            // Der relative Pfad zum Entwicklungsverzeichnis
-            string developmentIconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Resources\Icons");
-
-            // Der Pfad zum Installationsverzeichnis zur Laufzeit
-            string? installationPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
-            // Überprüfen, ob installationPath null ist
-            if (string.IsNullOrEmpty(installationPath))
+            try
             {
-                Debug.WriteLine("CopyDefaultIcons: Installationspfad konnte nicht ermittelt werden.");
-                return; // Wenn der Pfad nicht ermittelt werden kann, abbrechen
-            }
+                string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
 
-            // Pfad zu den Icons im Installationsverzeichnis
-            string resourceDirectoryPath = Path.Combine(installationPath, "Resources", "Icons");
+                // Sicherstellen, dass das Verzeichnis existiert
+                Directory.CreateDirectory(iconDirectoryPath);
 
-            // Wenn der Installationspfad nicht existiert, benutze den Entwicklungsverzeichnis-Pfad
-            if (!Directory.Exists(resourceDirectoryPath))
-            {
-                resourceDirectoryPath = developmentIconPath;
-            }
+                // Der relative Pfad zum Entwicklungsverzeichnis
+                string developmentIconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Resources\Icons");
 
-            Debug.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
+                // Der Pfad zum Installationsverzeichnis zur Laufzeit
+                string? installationPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-            // Alle Standard-Icons aus dem Verzeichnis (Entwicklung oder Installation) kopieren
-            var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
-            foreach (var iconPath in defaultIcons)
-            {
-                string fileName = Path.GetFileName(iconPath);
-                string destinationPath = Path.Combine(iconDirectoryPath, fileName);
-
-                // Wenn das Icon noch nicht existiert, kopiere es
-                if (!File.Exists(destinationPath))
+                // Überprüfen, ob installationPath null ist
+                if (string.IsNullOrEmpty(installationPath))
                 {
-                    File.Copy(iconPath, destinationPath);
-                    Debug.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt.");
+                    Debug.WriteLine("CopyDefaultIcons: Installationspfad konnte nicht ermittelt werden.");
+                    return; // Wenn der Pfad nicht ermittelt werden kann, abbrechen
                 }
-                else
+
+                // Pfad zu den Icons im Installationsverzeichnis
+                string resourceDirectoryPath = Path.Combine(installationPath, "Resources", "Icons");
+
+                // Wenn der Installationspfad nicht existiert, benutze den Entwicklungsverzeichnis-Pfad
+                if (!Directory.Exists(resourceDirectoryPath))
                 {
-                    Debug.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis.");
+                    resourceDirectoryPath = developmentIconPath;
                 }
+
+                Debug.WriteLine($"CopyDefaultIcons: Resource Verzeichnis: {resourceDirectoryPath}");
+
+                // Alle Standard-Icons aus dem Verzeichnis (Entwicklung oder Installation) kopieren
+                var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
+                foreach (var iconPath in defaultIcons)
+                {
+                    string fileName = Path.GetFileName(iconPath);
+                    string destinationPath = Path.Combine(iconDirectoryPath, fileName);
+
+                    // Wenn das Icon noch nicht existiert, kopiere es
+                    if (!File.Exists(destinationPath))
+                    {
+                        File.Copy(iconPath, destinationPath);
+                        Debug.WriteLine($"CopyDefaultIcons: {fileName} hinzugefügt.");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"CopyDefaultIcons: Fehler beim Kopieren der Icons. {ex.Message}");
             }
         }
+
 
         private void UploadIcon_Click(object sender, RoutedEventArgs e)
         {
@@ -337,16 +345,16 @@ public void InitializeIcons()
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-                // Speichern der Änderungen
-    if (DockItem != null)
-    {
-        DockItem.DisplayName = NameTextBox.Text;
-        //DockItem.Category = CategoryTextBox.Text;
-        // DockItem.IsCategory = bool.Parse(IsCategoryTextBox.Text); // Je nach Datentyp anpassen
-        DockItem.IconSource = IconSourceTextBox.Text;
+            // Speichern der Änderungen
+            if (DockItem != null)
+            {
+                DockItem.DisplayName = NameTextBox.Text;
+                //DockItem.Category = CategoryTextBox.Text;
+                // DockItem.IsCategory = bool.Parse(IsCategoryTextBox.Text); // Je nach Datentyp anpassen
+                DockItem.IconSource = IconSourceTextBox.Text;
 
-        // Weitere Änderungen speichern
-    }
+                // Weitere Änderungen speichern
+            }
 
             // Speichern der Änderungen
             this.DialogResult = true; // Schließen des Fensters mit Erfolg
