@@ -1,6 +1,6 @@
 [Setup]
 AppName=BiMaDock
-AppVersion=1.0.1-beta
+AppVersion=1.0.2-beta
 DefaultDirName={commonpf}\BiMaDock
 DefaultGroupName=BiMaDock
 OutputDir=D:\a\BiMaDock\BiMaDock\publish
@@ -12,7 +12,7 @@ AppPublisher=Marco Bilz
 
 [Files]
 Source: "D:\a\BiMaDock\BiMaDock\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\BiMaDock\BiMaDock\Resources\Icons\*"; DestDir: "{app}\Icons"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\BiMaDock\BiMaDock\Resources\Icons\*"; DestDir: "{localappdata}\BiMaDock\Icons"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\BiMaDock"; Filename: "{app}\BiMaDock.exe"
@@ -30,4 +30,4 @@ Filename: "{app}\BiMaDock.exe"; Description: "Start BiMaDock"; Flags: nowait pos
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "BiMaDock"; ValueData: """{app}\BiMaDock.exe"""; Flags: uninsdeletevalue; Tasks: autostart
 
 [Messages]
-BevelMessage=Willkommen bei der Installation von BiMaDock!
+BeveledLabel=Willkommen bei der Installation von BiMaDock!
