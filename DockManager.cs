@@ -818,7 +818,8 @@ public class DockManager
         // Check if the item is a category and has an IconSource
         // var iconSource = item.IsCategory && !string.IsNullOrEmpty(item.IconSource) ? item.IconSource : item.FilePath;
         var iconSource = !string.IsNullOrEmpty(item.IconSource) ? item.IconSource : item.FilePath;
-        var icon = IconHelper.GetIcon(iconSource);
+        var icon = IconHelper.GetIcon(item.FilePath, iconSource);
+
 
         var image = new Image
         {

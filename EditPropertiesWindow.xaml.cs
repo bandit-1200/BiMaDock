@@ -101,7 +101,9 @@ namespace BiMaDock
                 Debug.WriteLine($"Ist Kategorie: {DockItem.IsCategory}");
 
                 // Originalbild laden und in der Box anzeigen
-                var originalImage = IconHelper.GetIcon(DockItem.FilePath);
+                // var originalImage = IconHelper.GetIcon(DockItem.FilePath);
+                // Originalbild laden und in der Box anzeigen
+                var originalImage = IconHelper.GetIcon(DockItem.FilePath, "");
                 OriginalImage.Source = originalImage;
                 OriginalImage.Width = 48;
                 OriginalImage.Height = 48;
@@ -195,83 +197,55 @@ namespace BiMaDock
             SelectedIconBorder.Visibility = Visibility.Collapsed;
         }
 
-        
+
 
         private async Task CopyDefaultIcons()
         {
-            string logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "log.txt");
-            try
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+
+            // Sicherstellen, dass das Verzeichnis existiert
+            Directory.CreateDirectory(iconDirectoryPath);
+
+            // Der relative Pfad zum Entwicklungsverzeichnis
+            string developmentIconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Resources\Icons");
+
+            // Pfad zu den Icons im Entwicklungsverzeichnis verwenden
+            string resourceDirectoryPath = developmentIconPath;
+
+            // Debugging-Ausgabe des Pfades
+            Console.WriteLine($"Resource Verzeichnis: {resourceDirectoryPath}");
+            Console.WriteLine($"Icon Zielverzeichnis: {iconDirectoryPath}");
+
+            // Überprüfen, ob das Quellverzeichnis existiert
+            if (!Directory.Exists(resourceDirectoryPath))
             {
-                string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+                Console.WriteLine("Fehler: Quellverzeichnis existiert nicht.");
+                return;
+            }
 
-                // Sicherstellen, dass das Verzeichnis existiert
-                Directory.CreateDirectory(iconDirectoryPath);
+            // Alle Standard-Icons aus dem Entwicklungsverzeichnis kopieren
+            var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
+            foreach (var iconPath in defaultIcons)
+            {
+                string fileName = Path.GetFileName(iconPath);
+                string destinationPath = Path.Combine(iconDirectoryPath, fileName);
 
-                // Der relative Pfad zum Entwicklungsverzeichnis
-                string developmentIconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Resources\Icons");
+                // Debugging-Ausgabe der Pfade
+                Console.WriteLine($"Kopiere Icon: {iconPath} nach {destinationPath}");
 
-                // Der Pfad zum Installationsverzeichnis zur Laufzeit
-                string? installationPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
-                // Überprüfen, ob installationPath null ist
-                if (string.IsNullOrEmpty(installationPath))
+                // Wenn das Icon noch nicht existiert, kopiere es
+                if (!File.Exists(destinationPath))
                 {
-                    LogToFile(logFilePath, "CopyDefaultIcons: Installationspfad konnte nicht ermittelt werden.");
-                    return; // Wenn der Pfad nicht ermittelt werden kann, abbrechen
-                }
-
-                // Pfad zu den Icons im Installationsverzeichnis
-                string resourceDirectoryPath = Path.Combine(installationPath, "Resources", "Icons");
-
-                // Debugging-Ausgabe des Installationspfades
-                LogToFile(logFilePath, $"Installationspfad: {installationPath}");
-                LogToFile(logFilePath, $"Resource Verzeichnis: {resourceDirectoryPath}");
-
-                // Wenn der Installationspfad nicht existiert, benutze den Entwicklungsverzeichnis-Pfad
-                if (!Directory.Exists(resourceDirectoryPath))
-                {
-                    resourceDirectoryPath = developmentIconPath;
-                }
-
-                LogToFile(logFilePath, $"CopyDefaultIcons: Resource Verzeichnis nach Überprüfung: {resourceDirectoryPath}");
-
-                // Alle Standard-Icons aus dem Verzeichnis (Entwicklung oder Installation) kopieren
-                var defaultIcons = Directory.GetFiles(resourceDirectoryPath, "*.png");
-                foreach (var iconPath in defaultIcons)
-                {
-                    string fileName = Path.GetFileName(iconPath);
-                    string destinationPath = Path.Combine(iconDirectoryPath, fileName);
-
-                    // Wenn das Icon noch nicht existiert, kopiere es
-                    if (!File.Exists(destinationPath))
+                    using (FileStream sourceStream = File.Open(iconPath, FileMode.Open))
+                    using (FileStream destinationStream = File.Create(destinationPath))
                     {
-                        using (FileStream sourceStream = File.Open(iconPath, FileMode.Open))
-                        using (FileStream destinationStream = File.Create(destinationPath))
-                        {
-                            await sourceStream.CopyToAsync(destinationStream);
-                        }
-                        LogToFile(logFilePath, $"CopyDefaultIcons: {fileName} hinzugefügt.");
-                    }
-                    else
-                    {
-                        LogToFile(logFilePath, $"CopyDefaultIcons: {fileName} existiert bereits im Verzeichnis.");
+                        await sourceStream.CopyToAsync(destinationStream);
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                LogToFile(logFilePath, $"CopyDefaultIcons: Fehler beim Kopieren der Icons. {ex.Message}");
-            }
         }
 
-        private void LogToFile(string logFilePath, string message)
-        {
-            using (StreamWriter writer = new StreamWriter(logFilePath, true))
-            {
-                writer.WriteLine($"{DateTime.Now}: {message}");
-            }
-        }
 
         private void UploadIcon_Click(object sender, RoutedEventArgs e)
         {
