@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*'
 
 jobs:
   release:
@@ -33,18 +33,11 @@ jobs:
       run: |
         & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "./BiMaDock.iss"
 
-    - name: Determine tag
-      id: determine_tag
-      run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
     - name: Create release
-      id: create_release
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        automatic_release_tag: ${{ env.RELEASE_TAG }}
-        title: "Release ${{ env.RELEASE_TAG }}"
-        files: ./publish/BiMaDockSetup.exe
-
-    - name: Save Release URL
-      run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/${{ env.RELEASE_TAG }}" >> $GITHUB_ENV
+        automatic_release_tag: ${{ github.ref_name }}
+        title: "Release ${{ github.ref_name }}"
+        files: |
+          ./publish/BiMaDockSetup.exe
