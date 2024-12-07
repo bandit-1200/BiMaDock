@@ -42,9 +42,9 @@ jobs:
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        automatic_release_tag: ${{ steps.determine_tag.outputs.RELEASE_TAG }}
-        title: "Release ${{ steps.determine_tag.outputs.RELEASE_TAG }}"
+        automatic_release_tag: ${{ env.RELEASE_TAG }}
+        title: "Release ${{ env.RELEASE_TAG }}"
         files: ./publish/BiMaDockSetup.exe
 
     - name: Save Release URL
-      run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/${{ steps.determine_tag.outputs.RELEASE_TAG }}" >> $GITHUB_ENV
+      run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/${{ env.RELEASE_TAG }}" >> $GITHUB_ENV
