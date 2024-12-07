@@ -1,6 +1,6 @@
 [Setup]
 AppName=BiMaDock
-AppVersion={#Version}
+AppVersion={#MyAppVersion}
 DefaultDirName={commonpf}\BiMaDock
 DefaultGroupName=BiMaDock
 OutputDir=D:\a\BiMaDock\BiMaDock\publish

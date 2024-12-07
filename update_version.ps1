@@ -10,7 +10,7 @@ $innoSetupFile = "D:\a\BiMaDock\BiMaDock\BiMaDock.iss"
 $content = Get-Content $innoSetupFile
 
 # Aktualisieren der Versionsnummer in der Inno Setup-Datei
-$updatedContent = $content -replace "AppVersion=.*", "AppVersion=$version"
+$updatedContent = $content -replace "#define MyAppVersion .*", "#define MyAppVersion `"$version`""
 
 # Schreiben Sie die aktualisierte Datei zurück
 Set-Content $innoSetupFile -Value $updatedContent
