@@ -19,6 +19,9 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '8.0.x'
+    
+    - name: Install Nerdbank.GitVersioning 
+      run: dotnet tool install --global nbgv
 
     - name: Install dependencies
       run: dotnet restore
