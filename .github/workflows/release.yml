@@ -40,6 +40,8 @@ jobs:
     - name: Create release
       id: create_release
       uses: actions/github-script@v6
+      env:
+        RELEASE_TAG: ${{ env.RELEASE_TAG }}
       with:
         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         script: |
