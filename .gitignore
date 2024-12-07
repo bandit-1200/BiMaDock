@@ -64,6 +64,7 @@ $RECYCLE.BIN/
 *.sln.docstates
 Beschreibung.md
 *.bat
+setup.bat
 BiMaDock_local.iss
 
 # ASP.NET Scaffolding
