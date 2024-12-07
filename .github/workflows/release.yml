@@ -35,7 +35,7 @@ jobs:
 
     - name: Determine tag
       id: determine_tag
-      run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_STATE  # Setze den Tag in GITHUB_STATE
 
     - name: Create release
       id: create_release
@@ -48,4 +48,4 @@ jobs:
           ./publish/BiMaDockSetup.exe
 
     - name: Save Release URL
-      run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/${{ steps.determine_tag.outputs.RELEASE_TAG }}" >> $GITHUB_ENV
+      run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/${{ steps.determine_tag.outputs.RELEASE_TAG }}" >> $GITHUB_OUTPUT  # Ausgabe in GITHUB_OUTPUT
