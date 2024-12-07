@@ -32,3 +32,10 @@ BiMaDock ist in C# und WPF entwickelt und besteht aus modularen Komponenten für
 
 ## Download
    https://github.com/bandit-1200/BiMaDock/releases/latest
+
+## Unterstützung
+
+Wenn Ihnen dieses Projekt gefällt und Sie mich unterstützen möchten, können Sie mir gerne eine Spende über PayPal zukommen lassen. Jeder Beitrag hilft mir, dieses Projekt weiterzuentwickeln und zu verbessern. Vielen Dank für Ihre Unterstützung!
+
+[![PayPal Donate](https://www.paypalobjects.com/webstatic/en_US/i/btn/png/blue-rect-paypal-34px.png)](https://www.paypal.com/donate?hosted_button_id=YOUR_BUTTON_ID)
+
