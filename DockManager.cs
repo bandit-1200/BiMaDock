@@ -275,11 +275,11 @@ public class DockManager
                         // Debug.WriteLine("LogMousePositionAndElements :DockItem ist eine Kategorie, rufe ShowCategoryDockPanel auf");
 
                         // Erstelle und übergebe ein StackPanel
-                        StackPanel categoryDock = new StackPanel
-                        {
-                            Name = dockItem.DisplayName,
-                            Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
-                        };
+                        // StackPanel categoryDock = new StackPanel
+                        // {
+                            // Name = dockItem.DisplayName,
+                            // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
+                        // };
 
                         // mainWindow.ShowCategoryDockPanel(categoryDock);
                     }
