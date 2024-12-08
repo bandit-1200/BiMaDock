@@ -11,6 +11,9 @@ namespace BiMaDock
 
         public static void AddToStartup(bool isChecked)
         {
+            // Debugging-Ausgabe zur Überprüfung des Pfads
+            MessageBox.Show($"DEBUG: appPath = {appPath}");
+
             using (Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
             {
                 if (key == null)
