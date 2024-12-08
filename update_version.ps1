@@ -13,7 +13,7 @@ $versionInfo = $versionJson | ConvertFrom-Json
 $version = $versionInfo.SemVer2
 
 # Debugging-Ausgabe zur Überprüfung der Versionsermittlung
-if ($version -eq $null -or $version -eq "") {
+if ($null -eq $version) {
     Write-Host "Fehler: Die abgerufene Versionsnummer ist leer."
 } else {
     Write-Host "Ermittelte Version: $version"
