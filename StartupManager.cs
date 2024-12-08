@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 
@@ -6,11 +7,16 @@ namespace BiMaDock
     public static class StartupManager
     {
         private static string appName = "BiMaDock";
-        // Annahme, dass die exe-Datei sich im selben Verzeichnis wie die dll befindet
-        private static string appPath = Path.ChangeExtension(System.Reflection.Assembly.GetExecutingAssembly().Location, ".exe");
+        private static string? appPath = Process.GetCurrentProcess().MainModule?.FileName;
 
         public static void AddToStartup(bool isChecked)
         {
+            if (appPath == null)
+            {
+                MessageBox.Show("Fehler beim Ermitteln des Anwendungs-Pfads.");
+                return;
+            }
+
             using (Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
             {
                 if (key == null)
