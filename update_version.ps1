@@ -1,40 +1,32 @@
 # Wechseln zum Verzeichnis des Projekts (falls nötig, den Pfad anpassen)
 Set-Location -Path "D:\a\BiMaDock\BiMaDock"
 
-# Installieren Sie Nerdbank.GitVersioning CLI, falls noch nicht geschehen
-dotnet tool install --global nbgv
+# Debugging-Ausgaben aktivieren
+Write-Host "Debug: Start des Skripts zum Aktualisieren der Versionsnummer"
 
-# Abrufen der Versionsnummer aus Nerdbank.GitVersioning mit JSON-Format
-$versionJson = nbgv get-version --format json
-Write-Host "VersionJson: $versionJson"
+# Version aus version.json auslesen
+$versionJson = Get-Content -Raw -Path ".\version.json" | ConvertFrom-Json
+$version = $versionJson.version
+Write-Host "Debug: Versionsnummer ist $version"
 
-# Konvertieren der JSON-Ausgabe in ein PowerShell-Objekt
-$versionInfo = $versionJson | ConvertFrom-Json
-$version = $versionInfo.SemVer2
+# Lesen Sie die Inno Setup-Datei
+$innoSetupFile = "D:\a\BiMaDock\BiMaDock\BiMaDock.iss"
+$content = Get-Content $innoSetupFile -Raw
 
-# Debugging-Ausgabe zur Überprüfung der Versionsermittlung
-if ($null -eq $version) {
-    Write-Host "Fehler: Die abgerufene Versionsnummer ist leer."
+# Debugging-Ausgabe des Datei-Inhalts vor der Änderung
+Write-Host "Inhalt vor der Änderung:`n$content"
+
+# Aktualisieren der Versionsnummer in der Inno Setup-Datei
+if ($content -match '#define MyAppVersion') {
+    $updatedContent = $content -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$version`""
 } else {
-    Write-Host "Ermittelte Version: $version"
-
-    # Lesen Sie die Inno Setup-Datei
-    $innoSetupFile = "D:\a\BiMaDock\BiMaDock\BiMaDock.iss"
-    $content = Get-Content $innoSetupFile -Raw
-
-    # Debugging-Ausgabe des Datei-Inhalts vor der Änderung
-    Write-Host "Inhalt vor der Aenderung:`n$content"
-
-    # Aktualisieren der Versionsnummer in der Inno Setup-Datei
-    if ($content -match '#define MyAppVersion') {
-        $updatedContent = $content -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$version`""
-    } else {
-        $updatedContent = "#define MyAppVersion `"$version`"" + [Environment]::NewLine + $content
-    }
-
-    # Debugging-Ausgabe des Datei-Inhalts nach der Änderung
-    Write-Host ("Inhalt nach der Aenderung:`n" + $updatedContent)
-
-    # Schreiben Sie die aktualisierte Datei zurück
-    Set-Content $innoSetupFile -Value $updatedContent
+    $updatedContent = "#define MyAppVersion `"$version`"" + [Environment]::NewLine + $content
 }
+
+# Debugging-Ausgabe des Datei-Inhalts nach der Änderung
+Write-Host ("Inhalt nach der Änderung:`n" + $updatedContent)
+
+# Schreiben Sie die aktualisierte Datei zurück
+Set-Content $innoSetupFile -Value $updatedContent
+
+Write-Host "Debug: Die Datei wurde erfolgreich aktualisiert"
