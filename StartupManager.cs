@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 
@@ -7,16 +6,10 @@ namespace BiMaDock
     public static class StartupManager
     {
         private static string appName = "BiMaDock";
-        private static string? appPath = Process.GetCurrentProcess().MainModule?.FileName;
+        private static string appPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!, "BiMaDock.exe");
 
         public static void AddToStartup(bool isChecked)
         {
-            if (appPath == null)
-            {
-                MessageBox.Show("Fehler beim Ermitteln des Anwendungs-Pfads.");
-                return;
-            }
-
             using (Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
             {
                 if (key == null)
