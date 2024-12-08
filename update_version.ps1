@@ -20,15 +20,19 @@ if ($null -eq $version) {
 
     # Lesen Sie die Inno Setup-Datei
     $innoSetupFile = "D:\a\BiMaDock\BiMaDock\BiMaDock.iss"
-    $content = Get-Content $innoSetupFile
+    $content = Get-Content $innoSetupFile -Raw
 
-    # Debugging-Ausgabe zur Überprüfung des Datei-Inhalts vor der Änderung
+    # Debugging-Ausgabe des Datei-Inhalts vor der Änderung
     Write-Host "Inhalt vor der Aenderung:`n$content"
 
     # Aktualisieren der Versionsnummer in der Inno Setup-Datei
-    $updatedContent = $content -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$version`""
+    if ($content -match '#define MyAppVersion') {
+        $updatedContent = $content -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$version`""
+    } else {
+        $updatedContent = "#define MyAppVersion `"$version`"" + [Environment]::NewLine + $content
+    }
 
-    # Debugging-Ausgabe zur Überprüfung des Datei-Inhalts nach der Änderung
+    # Debugging-Ausgabe des Datei-Inhalts nach der Änderung
     Write-Host ("Inhalt nach der Aenderung:`n" + $updatedContent)
 
     # Schreiben Sie die aktualisierte Datei zurück
