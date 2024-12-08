@@ -1490,18 +1490,18 @@ namespace BiMaDock
             StartupManager.AddToStartup(false);
         }
 
-        private void RemoveCurrentPlaceholder()
-        {
-            for (int i = 0; i < DockPanel?.Children?.Count; i++)
-            {
-                if (DockPanel.Children[i] is Border border && border.Tag as string == "Placeholder")
-                {
-                    Debug.WriteLine($"RemoveCurrentPlaceholder: Lösche Platzhalter Border bei Index {i}");
-                    DockPanel.Children.Remove(border);
-                    i--; // Index anpassen, da ein Element entfernt wurde
-                }
-            }
-        }
+        // private void RemoveCurrentPlaceholder()
+        // {
+        //     for (int i = 0; i < DockPanel?.Children?.Count; i++)
+        //     {
+        //         if (DockPanel.Children[i] is Border border && border.Tag as string == "Placeholder")
+        //         {
+        //             Debug.WriteLine($"RemoveCurrentPlaceholder: Lösche Platzhalter Border bei Index {i}");
+        //             DockPanel.Children.Remove(border);
+        //             i--; // Index anpassen, da ein Element entfernt wurde
+        //         }
+        //     }
+        // }
 
 
 
