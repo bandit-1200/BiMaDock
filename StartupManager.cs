@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 
 namespace BiMaDock
@@ -5,7 +6,8 @@ namespace BiMaDock
     public static class StartupManager
     {
         private static string appName = "BiMaDock";
-        private static string appPath = System.Reflection.Assembly.GetExecutingAssembly().Location.Replace(".dll", ".exe");
+        // Annahme, dass die exe-Datei sich im selben Verzeichnis wie die dll befindet
+        private static string appPath = Path.ChangeExtension(System.Reflection.Assembly.GetExecutingAssembly().Location, ".exe");
 
         public static void AddToStartup(bool isChecked)
         {
