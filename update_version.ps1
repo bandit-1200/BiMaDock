@@ -16,17 +16,20 @@ $content = Get-Content $innoSetupFile -Raw
 # Debugging-Ausgabe des Datei-Inhalts vor der Änderung
 Write-Host "Inhalt vor der Änderung:`n$content"
 
-# Aktualisieren der Versionsnummer in der Inno Setup-Datei
+# Sicherstellen, dass MyAppVersion definiert ist
 if ($content -match '#define MyAppVersion') {
     $updatedContent = $content -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$version`""
+    Write-Host "Debug: MyAppVersion gefunden und ersetzt"
 } else {
     $updatedContent = "#define MyAppVersion `"$version`"" + [Environment]::NewLine + $content
+    Write-Host "Debug: MyAppVersion nicht gefunden, Definition hinzugefügt"
 }
 
 # Debugging-Ausgabe des Datei-Inhalts nach der Änderung
-Write-Host ("Inhalt nach der Änderung:`n" + $updatedContent)
+Write-Host "Inhalt nach der Änderung:`n$updatedContent"
 
 # Schreiben Sie die aktualisierte Datei zurück
 Set-Content $innoSetupFile -Value $updatedContent
 
+# Debugging-Ausgabe zur Bestätigung, dass die Datei geschrieben wurde
 Write-Host "Debug: Die Datei wurde erfolgreich aktualisiert"

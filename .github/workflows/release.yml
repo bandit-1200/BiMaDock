@@ -19,7 +19,7 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '8.0.x'
-    
+
     - name: Install Nerdbank.GitVersioning 
       run: dotnet tool install --global nbgv
 
@@ -31,6 +31,9 @@ jobs:
 
     - name: Publish project
       run: dotnet publish ./BiMaDock.csproj --configuration Release --output ./publish --runtime win-x64
+
+    - name: Update Inno Setup version
+      run: pwsh -File update_version.ps1
 
     - name: Create Windows installer
       run: |
