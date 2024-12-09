@@ -44,9 +44,6 @@
                     <Border x:Name="OriginalImageBorder" BorderBrush="Green" BorderThickness="2" Margin="0,5,0,0" Width="64" Height="64" VerticalAlignment="Top" Grid.Row="1">
                         <Grid>
                             <Image x:Name="OriginalImage" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Image.Effect>
-                                    <BlurEffect/>
-                                </Image.Effect>
                             </Image>
                         </Grid>
                     </Border>

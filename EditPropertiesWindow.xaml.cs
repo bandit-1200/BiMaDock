@@ -64,8 +64,8 @@ namespace BiMaDock
                         var image = new Image
                         {
                             Source = new BitmapImage(new Uri(iconPath)),
-                            Width = 64,
-                            Height = 64,
+                            Width = 48,
+                            Height = 48,
                             Margin = new Thickness(5),
                             Cursor = Cursors.Hand // Zeiger ändern, um anklickbar zu zeigen
                         };
@@ -103,7 +103,13 @@ namespace BiMaDock
                 // Originalbild laden und in der Box anzeigen
                 // var originalImage = IconHelper.GetIcon(DockItem.FilePath);
                 // Originalbild laden und in der Box anzeigen
-                var originalImage = IconHelper.GetIcon(DockItem.FilePath, "");
+                var originalImage = IconHelper.GetIcon(DockItem.IconSource, DockItem.FilePath);
+
+                if (DockItem.IsCategory)
+                {
+                    originalImage = IconHelper.GetIcon(DockItem.FilePath, DockItem.IconSource);
+                }
+
                 OriginalImage.Source = originalImage;
                 OriginalImage.Width = 48;
                 OriginalImage.Height = 48;
@@ -157,8 +163,8 @@ namespace BiMaDock
                                 var image = new Image
                                 {
                                     Source = new BitmapImage(new Uri(iconPath)),
-                                    Width = 64,
-                                    Height = 64,
+                                    Width = 48,
+                                    Height = 48,
                                     Margin = new Thickness(5),
                                     Cursor = Cursors.Hand // Zeiger ändern, um anklickbar zu zeigen
                                 };
@@ -319,8 +325,8 @@ namespace BiMaDock
                 var image = new Image
                 {
                     Source = new BitmapImage(new Uri(iconPath)),
-                    Width = 64,
-                    Height = 64,
+                    Width = 48,
+                    Height = 48,
                     Margin = new Thickness(5),
                     Cursor = Cursors.Hand // Zeiger ändern, um anklickbar zu zeigen
                 };
