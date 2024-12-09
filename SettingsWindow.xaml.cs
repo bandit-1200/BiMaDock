@@ -59,9 +59,6 @@ namespace BiMaDock
         private Slider? rotateDurationSlider;
         private Slider? translateDurationSlider;
 
-
-
-
         public SettingsWindow(MainWindow window)
         {
             InitializeComponent();
@@ -595,6 +592,25 @@ namespace BiMaDock
                     }
 
 
+
+                    if (settings.AccentColor != null
+                        && ColorConverter.ConvertFromString((string)settings.AccentColor) is Color accentColor)
+                    {
+                        // Farbwähler und Vorschau aktualisieren
+                        AccentColorPicker.SelectedColor = accentColor;
+                        // AccentColorPreview.Background = new SolidColorBrush(accentColorColor);
+
+                        // Ressourcen aktualisieren
+                        var newAccentColor = new SolidColorBrush(accentColor);
+                        Application.Current.Resources["AccentColor"] = newAccentColor;
+
+                        // Debugging
+                        Debug.WriteLine($"LoadSettings: AccentColor {settings.AccentColor}");
+                    }
+
+
+
+
                     // Animationseinstellungen laden
                     if (settings.Scale != null)
                     {
@@ -641,6 +657,8 @@ namespace BiMaDock
         {
             var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
             var secondaryColor = SecondaryColorPicker.SelectedColor ?? Colors.Transparent;
+            var accentColor = AccentColorPicker.SelectedColor ?? Colors.Transparent;
+
 
             // Überprüfen und Alpha-Wert auf mindestens 1 setzen
             if (primaryColor.A < 1)
@@ -653,28 +671,12 @@ namespace BiMaDock
                 secondaryColor.A = 1;
             }
 
-            // Aktualisiere die Variablen mit den Werten der Steuerelemente
-            // if (scaleDurationSlider != null) scaleSettings.Duration = scaleDurationSlider.Value;
-            // if (scaleFactorSlider != null) scaleSettings.ScaleFactor = scaleFactorSlider.Value;
 
-            // // Hier speziell die CheckBox für Scale verwenden
-            // var scaleAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Scale AutoReverse");
-            // if (scaleAutoReverseCheckBox != null) scaleSettings.AutoReverse = scaleAutoReverseCheckBox.IsChecked ?? true;
+            if (accentColor.A < 1)
+            {
+                accentColor.A = 1;
+            }
 
-            // if (rotateDurationSlider != null) rotateSettings.Duration = rotateDurationSlider.Value;
-            // if (angleSlider != null) rotateSettings.Angle = angleSlider.Value;
-
-            // // Hier speziell die CheckBox für Rotate verwenden
-            // var rotateAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Rotate AutoReverse");
-            // if (rotateAutoReverseCheckBox != null) rotateSettings.AutoReverse = rotateAutoReverseCheckBox.IsChecked ?? true;
-
-            // if (translateDurationSlider != null) translateSettings.Duration = translateDurationSlider.Value;
-            // if (translateXSlider != null) translateSettings.TranslateX = translateXSlider.Value;
-            // if (translateYSlider != null) translateSettings.TranslateY = translateYSlider.Value;
-
-            // // Hier speziell die CheckBox für Translate verwenden
-            // var translateAutoReverseCheckBox = AnimationSettingsPanel.Children.OfType<CheckBox>().FirstOrDefault(chk => chk.Content.ToString() == "Translate AutoReverse");
-            // if (translateAutoReverseCheckBox != null) translateSettings.AutoReverse = translateAutoReverseCheckBox.IsChecked ?? true;
 
             if (animationEffectComboBox != null && animationEffectComboBox.SelectedItem != null)
             {
@@ -690,6 +692,7 @@ namespace BiMaDock
                 {
                     PrimaryColor = primaryColor.ToString(),
                     SecondaryColor = secondaryColor.ToString(),
+                    AccentColor = accentColor.ToString(),
                     SelectedEffectIndex = selectedEffectIndex,
                     Scale = scaleSettings,
                     Rotate = rotateSettings,
@@ -716,19 +719,6 @@ namespace BiMaDock
         }
 
 
-        // private void SaveEffectSettings(string filename, object effectSettings)
-        // {
-        //     string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        //     string directoryPath = Path.Combine(appDataPath, "BiMaDock");
-        //     Directory.CreateDirectory(directoryPath);
-
-        //     // Serialize and save the settings for a specific animation effect
-        //     string json = JsonConvert.SerializeObject(effectSettings, Formatting.Indented);
-        //     File.WriteAllText(Path.Combine(directoryPath, filename), json);
-        // }
-
-
-
         private void PrimaryColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
             if (e.NewValue.HasValue)
@@ -751,15 +741,15 @@ namespace BiMaDock
             {
                 var selectedColor = e.NewValue.Value;
                 Debug.WriteLine($"AccentColorPicker_SelectedColorChanged: {selectedColor}");
+                // Überprüfen, ob der Alpha-Wert mindestens 1 ist
+                if (selectedColor.A < 1)
+                {
+                    selectedColor.A = 1; // Mindestwert der Alpha-Komponente auf 1 setzen
+                }
 
-                // // Überprüfen, ob der Alpha-Wert mindestens 1 ist
-                // if (selectedColor.A < 1)
-                // {
-                //     selectedColor.A = 1; // Mindestwert der Alpha-Komponente auf 1 setzen
-                // }
+                AccentColorPicker.Background = new SolidColorBrush(selectedColor);
+                // AccentColorPicker.Background = new SolidColorBrush(selectedColor);
 
-                // SecondaryColorPicker.Background = new SolidColorBrush(selectedColor);
-                // SecondaryColorPreview.Background = new SolidColorBrush(selectedColor);
             }
         }
 
