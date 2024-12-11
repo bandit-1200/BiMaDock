@@ -7,6 +7,7 @@ using BiMaDock;
 using System.Windows.Input;
 using System.Windows.Media; // Für SolidColorBrush und Colors
 using System.Windows.Media.Animation;
+using System.Windows.Controls.Primitives;
 
 
 
@@ -277,8 +278,8 @@ public class DockManager
                         // Erstelle und übergebe ein StackPanel
                         // StackPanel categoryDock = new StackPanel
                         // {
-                            // Name = dockItem.DisplayName,
-                            // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
+                        // Name = dockItem.DisplayName,
+                        // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
                         // };
 
                         // mainWindow.ShowCategoryDockPanel(categoryDock);
@@ -504,7 +505,7 @@ public class DockManager
             DisplayName = categoryName,
             Category = "",
             IsCategory = true,
-            IconSource = "" // IconSource bleibt leer beim ersten Anlegen
+            IconSource = "", // IconSource bleibt leer beim ersten Anlegen
         };
         AddDockItemAt(categoryItem, dockPanel.Children.Count, categoryItem.DisplayName);
 
@@ -849,7 +850,20 @@ public class DockManager
             Content = stackPanel,
             Tag = item,
             Margin = new Thickness(5),
-            Width = 70
+            Width = 70,
+            ToolTip = new ToolTip
+            {
+                Content = new TextBlock
+                {
+                    Text = item.DisplayName,
+                    FontFamily = new FontFamily("Arial"), // Schriftart festlegen 
+                    FontSize = 16, // Schriftgröße festlegen 
+                    Foreground = Brushes.DarkBlue // Schriftfarbe festlegen }
+                },
+                Placement = PlacementMode.Center,
+                HorizontalOffset = 0,
+                VerticalOffset = 55
+            }
         };
         button.MouseRightButtonDown += (s, e) =>
         {
