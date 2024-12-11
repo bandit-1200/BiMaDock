@@ -226,7 +226,7 @@ public class DockManager
 
                     double mainWindowCenterX = mainWindow.ActualWidth / 2;
                     double positionRelativeToCenter = elementCenterX - mainWindowCenterX;
-                    Debug.WriteLine($"LogMousePositionAndElements: Button ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position relativ zur Mitte des MainWindow = {positionRelativeToCenter}");
+                    // Debug.WriteLine($"LogMousePositionAndElements: Button ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position relativ zur Mitte des MainWindow = {positionRelativeToCenter}");
 
 
                     //  isCategoryDockOpenID

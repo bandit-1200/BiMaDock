@@ -42,8 +42,8 @@ namespace BiMaDock
         public class TranslateSettings
         {
             public double Duration { get; set; } = 0.3;
-            public double TranslateX { get; set; } = 0.0;
-            public double TranslateY { get; set; } = 0.0;
+            public double TranslateX { get; set; } = 5.0;
+            public double TranslateY { get; set; } = -5.0;
             public bool AutoReverse { get; set; } = true;
             public int EffectIndex { get; set; } = 2;
         }
@@ -331,7 +331,7 @@ namespace BiMaDock
                 Minimum = 0.0,
                 Maximum = 360.0,
                 Value = rotateSettings.Angle, // Wert aus den Einstellungen laden
-                TickFrequency = 10.0,
+                TickFrequency = 2.0,
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
             };
@@ -395,7 +395,7 @@ namespace BiMaDock
             translateDurationSlider = new Slider
             {
                 Minimum = 0.1,
-                Maximum = 3.0,
+                Maximum = 2.0,
                 Value = translateSettings.Duration, // Wert aus den Einstellungen laden
                 TickFrequency = 0.1,
                 IsSnapToTickEnabled = true,
@@ -434,7 +434,7 @@ namespace BiMaDock
                 Minimum = -100.0,
                 Maximum = 100.0,
                 Value = translateSettings.TranslateX, // Wert aus den Einstellungen laden
-                TickFrequency = 10.0,
+                TickFrequency = 1.0,
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
             };
@@ -471,7 +471,7 @@ namespace BiMaDock
                 Minimum = -100.0,
                 Maximum = 100.0,
                 Value = translateSettings.TranslateY, // Wert aus den Einstellungen laden
-                TickFrequency = 10.0,
+                TickFrequency = 1.0,
                 IsSnapToTickEnabled = true,
                 Margin = new Thickness(0, 0, 0, 20)
             };
