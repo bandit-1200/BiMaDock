@@ -853,7 +853,13 @@ public class DockManager
             Width = 70,
             ToolTip = new ToolTip
             {
-                Content = item.DisplayName,
+                Content = new TextBlock
+                {
+                    Text = item.DisplayName,
+                    FontFamily = new FontFamily("Arial"), // Schriftart festlegen 
+                    FontSize = 16, // Schriftgröße festlegen 
+                    Foreground = Brushes.DarkBlue // Schriftfarbe festlegen }
+                },
                 Placement = PlacementMode.Center,
                 HorizontalOffset = 0,
                 VerticalOffset = 55
