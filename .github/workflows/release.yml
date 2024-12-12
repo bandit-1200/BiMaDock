@@ -39,6 +39,13 @@ jobs:
     - name: Update Inno Setup version
       run: pwsh -File update_version.ps1
 
+    - name: Decode certificate
+      run: echo "${{ secrets.CERTIFICATE_FILE }}" | base64 -d > meinzertifikat.pfx
+
+    - name: Sign executable
+      run: |
+        signtool sign /f meinzertifikat.pfx /p ${{ secrets.CERTIFICATE_PASSWORD }} /t http://timestamp.url ./publish/BiMaDockSetup.exe
+
     - name: Create Windows installer
       run: |
         & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "./BiMaDock.iss"
