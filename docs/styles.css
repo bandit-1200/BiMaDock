@@ -49,3 +49,10 @@ footer {
     bottom: 0;
     width: 100%;
 }
+
+pre {
+    background-color: #eee;
+    padding: 1rem;
+    border-radius: 5px;
+    overflow: auto;
+}
