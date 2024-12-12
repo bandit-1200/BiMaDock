@@ -22,15 +22,9 @@ BiMaDock ist in C# und WPF entwickelt und besteht aus modularen Komponenten für
 
 - **C# und WPF**: Die Hauptanwendung ist in C# mit Windows Presentation Foundation (WPF) entwickelt.
 - **Material Design**: Die Benutzeroberfläche nutzt Material Design Themes für ein modernes und ansprechendes Design.
-- **Avalonia**: Die Einstellungen werden mit Avalonia für eine verbesserte Benutzeroberfläche umgesetzt.
-
-## Installation für Entwickler
-
-1. Klone das Repository:
-   ```bash
-   git clone https://github.com/bandit-1200/BiMaDock.git
 
 
+**Download**
 [Neueste Version herunterladen](https://github.com/bandit-1200/BiMaDock/releases/latest)
 
 
