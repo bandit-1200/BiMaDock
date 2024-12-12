@@ -24,7 +24,7 @@ BiMaDock ist in C# und WPF entwickelt und besteht aus modularen Komponenten für
 - **Material Design**: Die Benutzeroberfläche nutzt Material Design Themes für ein modernes und ansprechendes Design.
 
 
-**Download**
+**Download:**
 [Neueste Version herunterladen](https://github.com/bandit-1200/BiMaDock/releases/latest)
 
 
