@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 public static class IconHelper
@@ -37,11 +38,10 @@ public static class IconHelper
             }
 
             SHFILEINFO shinfo = new SHFILEINFO();
-            int result = SHGetFileInfo(iconSource, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SMALLICON);
+            int result = SHGetFileInfo(iconSource, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_LARGEICON);
 
             if (result == 0 || shinfo.hIcon == IntPtr.Zero)
             {
-                // Wenn das Icon nicht gefunden wird, versuche das zweite Argument
                 return FallbackIcon(filePath);
             }
 
@@ -49,12 +49,15 @@ public static class IconHelper
             {
                 var bitmap = icon.ToBitmap();
                 var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+
+                // Setze BitmapScalingMode auf HighQuality
+                RenderOptions.SetBitmapScalingMode(bitmapSource, BitmapScalingMode.HighQuality);
+
                 return bitmapSource;
             }
         }
         catch
         {
-            // Bei einem Fehler versuche das zweite Argument
             return FallbackIcon(filePath);
         }
     }
@@ -67,7 +70,7 @@ public static class IconHelper
         }
 
         SHFILEINFO shinfo = new SHFILEINFO();
-        int result = SHGetFileInfo(filePath, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SMALLICON);
+        int result = SHGetFileInfo(filePath, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_LARGEICON);
 
         if (result == 0 || shinfo.hIcon == IntPtr.Zero)
         {
@@ -78,9 +81,11 @@ public static class IconHelper
         {
             var bitmap = icon.ToBitmap();
             var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+
+            // Setze BitmapScalingMode auf HighQuality
+            RenderOptions.SetBitmapScalingMode(bitmapSource, BitmapScalingMode.HighQuality);
+
             return bitmapSource;
         }
     }
-
-
 }
