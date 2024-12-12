@@ -54,6 +54,7 @@ $RECYCLE.BIN/
 
 # VS Code directories
 .vscode/
+.vs/
 
 # User-specific files
 *.rsuser
@@ -63,7 +64,13 @@ $RECYCLE.BIN/
 *.sln.docstates
 Beschreibung.md
 *.bat
+setup.bat
 BiMaDock_local.iss
+setup/
+Output/
+Beschreibung.md
+BiMaDock_local_update_version.ps1
+release.ps1
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
@@ -93,6 +100,9 @@ ehthumbs.db
 *.msi
 *.msm
 *.msp
+/setup/
 
 # Windows shortcuts
 *.lnk
+
+.fake

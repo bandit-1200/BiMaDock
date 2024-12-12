@@ -1,0 +1,17 @@
+<Window x:Class="BiMaDock.UpdateDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Update verfügbar" Height="300" Width="400"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"> <!-- Verhindert Größenänderungen -->
+    <Grid>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10">
+            <TextBlock Text="BiMaDock" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+            <TextBlock Name="UpdateMessage" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="10">
+            <Button Name="DownloadButton" Content="Download und Installieren" Click="DownloadButton_Click" Margin="5" Width="150" Height="30"/> <!-- Größere Buttons -->
+            <Button Name="CancelButton" Content="Später" Click="CancelButton_Click" Margin="5" Width="150" Height="30"/> <!-- Größere Buttons -->
+        </StackPanel>
+    </Grid>
+</Window>
