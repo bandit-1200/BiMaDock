@@ -47,25 +47,38 @@ jobs:
       shell: pwsh
       run: |
         $certContent = @"
-        ${{ secrets.CERTIFICATE_FILE }}
-        "@
+          ${{ secrets.CERTIFICATE_FILE }}
+          "@
         $certContent | Out-File -FilePath meinzertifikat_base64.txt -Encoding ascii
         certutil -decode meinzertifikat_base64.txt meinzertifikat.pfx
 
-    - name: Verify signtool path
+    - name: Find and set signtool path
+      id: find-signtool
       shell: pwsh
       run: |
-        if (Test-Path "C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe") {
-          Write-Output "signtool.exe found."
-        } else {
-          Write-Output "signtool.exe not found."
-          exit 1
+        $paths = @(
+            "C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe",
+            "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x86\signtool.exe",
+            "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64\signtool.exe"
+        )
+        $signtoolPath = $null
+        foreach ($path in $paths) {
+            if (Test-Path $path) {
+                $signtoolPath = $path
+                break
+            }
         }
+        if ($null -eq $signtoolPath) {
+            Write-Error "signtool.exe not found."
+            exit 1
+        }
+        Write-Output "signtool.exe found at: $signtoolPath"
+        echo "::set-output name=signtool_path::$signtoolPath"
 
     - name: Sign executable
-      if: success()
       run: |
-        & "C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /f meinzertifikat.pfx /p ${{ secrets.CERTIFICATE_PASSWORD }} /t http://timestamp.url ./publish/BiMaDockSetup.exe
+        $path = ${{ steps.find-signtool.outputs.signtool_path }}
+        & "$path" sign /f meinzertifikat.pfx /p ${{ secrets.CERTIFICATE_PASSWORD }} /t http://timestamp.url ./publish/BiMaDockSetup.exe
 
     - name: Create Windows installer
       run: |
