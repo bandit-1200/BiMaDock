@@ -58,7 +58,7 @@ namespace BiMaDock
         {
             InitializeComponent();
             CheckAutostart();
-            
+
             // GlobalMouseHook.SetHook();
             mouseHook = new GlobalMouseHook(this);
 
@@ -1514,10 +1514,10 @@ namespace BiMaDock
             // base.OnClosed(e);
         }
 
-        private async void Test_Click(object sender, RoutedEventArgs e)
+        private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            // Asynchroner Aufruf der Update-Überprüfung, um den UI-Thread nicht zu blockieren
-            await UpdateChecker.CheckForUpdatesAsync();
+            AboutWindow aboutWindow = new AboutWindow();
+            aboutWindow.ShowDialog();
         }
 
         private async void UpdateCheck()
