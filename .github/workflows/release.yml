@@ -36,18 +36,21 @@ jobs:
     - name: Update Inno Setup version
       run: pwsh -File update_version.ps1
 
+    - name: Install Windows SDK
+      run: choco install windows-sdk-10-version-1903-all -y
+
     - name: Decode certificate
       shell: pwsh
       run: |
         $certContent = @"
-        ${secrets.CERTIFICATE_FILE}
+        ${{ secrets.CERTIFICATE_FILE }}
         "@
         $certContent | Out-File -FilePath meinzertifikat_base64.txt -Encoding ascii
         certutil -decode meinzertifikat_base64.txt meinzertifikat.pfx
 
     - name: Sign executable
       run: |
-        signtool sign /f meinzertifikat.pfx /p ${{ secrets.CERTIFICATE_PASSWORD }} /t http://timestamp.url ./publish/BiMaDockSetup.exe
+        "C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /f meinzertifikat.pfx /p ${{ secrets.CERTIFICATE_PASSWORD }} /t http://timestamp.url ./publish/BiMaDockSetup.exe
 
     - name: Create Windows installer
       run: |
