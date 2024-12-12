@@ -41,7 +41,13 @@ jobs:
       run: pwsh -File update_version.ps1
 
     - name: Decode certificate
-      run: echo "${{ secrets.CERTIFICATE_FILE }}" | base64 -d > meinzertifikat.pfx
+      shell: pwsh
+      run: |
+        $certContent = @"
+        ${secrets.CERTIFICATE_FILE}
+        "@
+        $certContent | Out-File -FilePath meinzertifikat_base64.txt -Encoding ascii
+        certutil -decode meinzertifikat_base64.txt meinzertifikat.pfx
 
     - name: Sign executable
       run: |
