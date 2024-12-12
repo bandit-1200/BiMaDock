@@ -7,6 +7,10 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading; // Für den DispatcherTimer
 using System.Collections;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace BiMaDock
 {
@@ -173,6 +177,38 @@ namespace BiMaDock
 
         }
         // Weitere Initialisierung
+
+
+
+
+        public async Task ShowUpdateDialog()
+        {
+            string latestVersion = "1.2.3"; // Beispielversion
+            string downloadUrl = await GetLatestReleaseDownloadUrlAsync(); // Hole den tatsächlichen Download-Link
+            UpdateDialog updateDialog = new UpdateDialog(latestVersion, downloadUrl);
+            updateDialog.ShowDialog();
+        }
+
+
+
+        public static async Task<string> GetLatestReleaseDownloadUrlAsync()
+        {
+            const string GitHubApiUrl = "https://api.github.com/repos/bandit-1200/BiMaDock/releases/latest";
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", "BiMaDock-Update-Checker");
+                string response = await client.GetStringAsync(GitHubApiUrl);
+                JObject releaseInfo = JObject.Parse(response);
+                string downloadUrl = releaseInfo["assets"]?[0]?["browser_download_url"]?.ToString() ?? "Unknown";
+                return downloadUrl;
+            }
+        }
+
+        private async void TestUpdateDialogButton_Click(object sender, RoutedEventArgs e)
+        {
+            await ShowUpdateDialog();
+        }
+
 
 
         // Methode zum Öffnen des Einstellungsfensters
@@ -1589,6 +1625,21 @@ namespace BiMaDock
         //     DockPanel.Background = newColorBrush;
         //     Debug.WriteLine("PrimaryColor im UI aktualisiert.");
         // }
+
+
+
+        private void GitHub_Click(object sender, RoutedEventArgs e)
+        {
+            string url = "https://bandit-1200.github.io/BiMaDock";
+            try
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Fehler beim Öffnen der URL: {ex.Message}");
+            }
+        }
 
 
 

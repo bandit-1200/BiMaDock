@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,9 +12,16 @@ namespace BiMaDock
     public class UpdateChecker
     {
         private const string GitHubApiUrl = "https://api.github.com/repos/bandit-1200/BiMaDock/releases/latest";
+        private static string ConfigFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "update_config.txt");
 
         public static async Task CheckForUpdatesAsync()
         {
+            if (IsUpdateDeferred())
+            {
+                Debug.WriteLine("Updateprüfung ist für 30 Tage ausgesetzt.");
+                return;
+            }
+
             string currentVersion = GetCurrentVersion();
             Debug.WriteLine($"Installierte Version: {currentVersion}");
             Console.WriteLine($"Installierte Version: {currentVersion}");
@@ -21,42 +29,38 @@ namespace BiMaDock
             using (HttpClient client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("User-Agent", "BiMaDock-Update-Checker");
-                string response = await client.GetStringAsync(GitHubApiUrl);
-                if (response != null)
+                try
                 {
+                    string response = await client.GetStringAsync(GitHubApiUrl);
                     JObject releaseInfo = JObject.Parse(response);
-                    if (releaseInfo != null)
+                    string latestVersion = releaseInfo["tag_name"]?.ToString().Trim('v') ?? "Unknown";
+                    string downloadUrl = releaseInfo["assets"]?[0]?["browser_download_url"]?.ToString() ?? "Unknown";
+
+                    Debug.WriteLine($"Verfügbare Version: {latestVersion}");
+
+                    if (IsNewVersionAvailable(currentVersion, latestVersion))
                     {
-                        string latestVersion = releaseInfo["tag_name"]?.ToString().Trim('v') ?? "Unknown";
-                        string downloadUrl = releaseInfo["assets"]?[0]?["browser_download_url"]?.ToString() ?? "Unknown";
+                        Debug.WriteLine($"Ein neues Update ist verfügbar: Version {latestVersion}");
+                        Debug.WriteLine($"Download-Link: {downloadUrl}");
 
-                        Debug.WriteLine($"Verfügbare Version: {latestVersion}");
-
-                        if (IsNewVersionAvailable(currentVersion, latestVersion))
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
-                            Debug.WriteLine($"Ein neues Update ist verfügbar: Version {latestVersion}");
-                            Debug.WriteLine($"Download-Link: {downloadUrl}");
-
-                            // Zeige den Update-Dialog nur, wenn ein Update verfügbar ist
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                UpdateDialog updateDialog = new UpdateDialog(latestVersion, downloadUrl);
-                                updateDialog.ShowDialog();
-                            });
-                        }
-                        else
-                        {
-                            Debug.WriteLine("Keine Updates verfügbar.");
-                        }
+                            UpdateDialog updateDialog = new UpdateDialog(latestVersion, downloadUrl);
+                            updateDialog.ShowDialog();
+                        });
                     }
                     else
                     {
-                        Debug.WriteLine("Fehler: Konnte Release-Informationen nicht abrufen.");
+                        Debug.WriteLine("Keine Updates verfügbar.");
                     }
                 }
-                else
+                catch (HttpRequestException e)
                 {
-                    Debug.WriteLine("Fehler: Konnte keine Antwort vom Server abrufen.");
+                    Debug.WriteLine($"Fehler: {e.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Fehler: {ex.Message}");
                 }
             }
         }
@@ -74,7 +78,6 @@ namespace BiMaDock
 
         private static bool IsNewVersionAvailable(string currentVersion, string latestVersion)
         {
-            // Entferne die Buildnummer für den Vergleich
             Version current = new Version(TrimBuildNumber(currentVersion));
             Version latest = new Version(latestVersion);
             return latest > current;
@@ -85,5 +88,39 @@ namespace BiMaDock
             var parts = version.Split('.');
             return parts.Length > 3 ? $"{parts[0]}.{parts[1]}.{parts[2]}" : version;
         }
+
+        private static bool IsUpdateDeferred()
+        {
+            if (File.Exists(ConfigFilePath))
+            {
+                string deferredDateStr = File.ReadAllText(ConfigFilePath);
+                if (DateTime.TryParse(deferredDateStr, out DateTime deferredDate))
+                {
+                    if (DateTime.Now < deferredDate)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static void DeferUpdate()
+        {
+            DateTime deferUntil = DateTime.Now.AddDays(30);
+            string configFilePath = ConfigFilePath;
+            string? directoryPath = Path.GetDirectoryName(configFilePath);
+
+            if (directoryPath != null && !string.IsNullOrEmpty(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+                File.WriteAllText(configFilePath, deferUntil.ToString());
+            }
+            else
+            {
+                Debug.WriteLine("Fehler: Der Verzeichnisname ist ungültig.");
+            }
+        }
+
     }
 }
