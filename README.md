@@ -28,14 +28,11 @@ BiMaDock ist in C# und WPF entwickelt und besteht aus modularen Komponenten für
 
 1. Klone das Repository:
    ```bash
-   git clone https://github.com/DeinBenutzername/BiMaDock.git
+   git clone https://github.com/bandit-1200/BiMaDock.git
 
-## Download
-   https://github.com/bandit-1200/BiMaDock/releases/latest
 
-## Unterstützung
+[Neueste Version herunterladen](https://github.com/bandit-1200/BiMaDock/releases/latest)
 
-Wenn Ihnen dieses Projekt gefällt und Sie mich unterstützen möchten, können Sie mir gerne eine Spende über PayPal zukommen lassen. Jeder Beitrag hilft mir, dieses Projekt weiterzuentwickeln und zu verbessern. Vielen Dank für Ihre Unterstützung!
 
-[![PayPal Donate](https://www.paypalobjects.com/webstatic/en_US/i/btn/png/blue-rect-paypal-34px.png)](https://www.paypal.com/donate?hosted_button_id=YOUR_BUTTON_ID)
-
+> **Projekt Webseite:**  
+> [https://bandit-1200.github.io/BiMaDock/](https://bandit-1200.github.io/BiMaDock/)
