@@ -1,30 +1,67 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BiMaDock</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="img/BiMaDock_V3.ico" type="image/x-icon"> <!-- Favicon -->
     <style>
-        footer a {
-            color: #FFFFFF; /* Weiße Farbe für den Linktext */
-            text-decoration: none;
+        /* CSS für das Popup */
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
         }
-        footer a:hover {
-            color: #ADD8E6; /* Hellblaue Farbe für den Linktext beim Hover */
+
+        .popup-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
 </head>
+
 <body>
     <header>
-        <h1>BiMaDock</h1>
+        <h1>
+            <img src="img/BiMaDock_V3.ico" alt="BiMaDock Logo" style="vertical-align: middle; height: 40px;">
+            <!-- Logo in der Kopfzeile -->
+            BiMaDock
+        </h1>
         <nav>
             <ul>
                 <li><a href="#home">Startseite</a></li>
                 <li><a href="#about">Über BiMaDock</a></li>
                 <li><a href="#features">Funktionen</a></li>
-                <li><a href="#setup">Installation</a></li>
+                <li><a href="#effekte">Effekte</a></li>
+                <li><a href="#installation">Installation</a></li>
                 <li><a href="#support">Unterstützung</a></li>
+                <li><a href="#license">Lizenz</a></li>
                 <li><a href="https://github.com/bandit-1200/BiMaDock" target="_blank">GitHub Repository</a></li>
             </ul>
         </nav>
@@ -36,33 +73,142 @@
         </section>
         <section id="about">
             <h2>Über BiMaDock</h2>
-            <p>BiMaDock ist eine WPF-basierte Anwendung für Windows, die eine personalisierbare Dock-Leiste zur Organisation von Programmen und Dateien bietet. Die Anwendung wurde entwickelt, um eine optisch ansprechende und funktionale Alternative zu gängigen Dock-Programmen zu schaffen, mit modernem Design und einer intuitiven Benutzeroberfläche.</p>
+            <p>BiMaDock ist eine WPF-basierte Anwendung für Windows, die eine personalisierbare Dock-Leiste zur Organisation von Programmen und Dateien bietet.<br>
+               Die Anwendung wurde entwickelt, um eine optisch ansprechende und funktionale Alternative zu gängigen Dock-Programmen zu schaffen,<br>
+               mit modernem Design und einer intuitiven Benutzeroberfläche.</p>
+            <img src="img/dockbar_img_001.png" alt="BiMaDock Screenshot" />
+            <p>Im Fenster "Eigenschaften bearbeiten" können Nutzer den Namen und das Symbolbild der Dock-Leiste individuell anpassen, <br>
+                um eine persönlichere und maßgeschneiderte Benutzererfahrung zu gewährleisten.</p>
+            <img src="img/settings.jpg" alt="Eigenschaften bearbeiten Screenshot" />
         </section>
+        
         <section id="features">
             <h2>Funktionen</h2>
             <ul>
-                <li>Drag & Drop-Unterstützung: Dateien und Programme können per Drag & Drop in die Dock-Leiste hinzugefügt werden und sind direkt per Klick ausführbar.</li>
-                <li>Automatisches Ausblenden: Die Dock-Leiste kann sich automatisch ausblenden und erscheint beim Bewegen der Maus zum oberen Bildschirmrand.</li>
-                <li>Kategorien und Organisation: Dateien können in benutzerdefinierten Kategorien angeordnet werden, um eine saubere und einfache Struktur zu schaffen.</li>
-                <li>Einstellungen für Design und Layout: Nutzer können Farben, Transparenz und Deckkraft der Dock-Leiste und des Einstellungsfensters nach ihren Wünschen anpassen.</li>
-                <li>Moderne Benutzeroberfläche: Verwendung von Material Design für ein ansprechendes visuelles Erlebnis.</li>
+                <li>Drag & Drop-Unterstützung: Dateien und Programme können per Drag & Drop in die Dock-Leiste
+                    hinzugefügt werden und sind direkt per Klick ausführbar.</li>
+                <li>Automatisches Ausblenden: Die Dock-Leiste kann sich automatisch ausblenden und erscheint beim
+                    Bewegen der Maus zum oberen Bildschirmrand.</li>
+                <li>Kategorien und Organisation: Dateien können in benutzerdefinierten Kategorien angeordnet werden, um
+                    eine saubere und einfache Struktur zu schaffen.</li>
+                <li>Einstellungen für Design und Layout: Nutzer können Farben, Transparenz und Deckkraft der Dock-Leiste
+                    und des Einstellungsfensters nach ihren Wünschen anpassen.</li>
+                <li>Auswahlmöglichkeit für Effekte: Nutzer können verschiedene visuelle Effekte für die Dock-Leiste
+                    auswählen.</li>
             </ul>
         </section>
-        <section id="setup">
-            <h2>Installation für Entwickler</h2>
-            <p>Klone das Repository:</p>
-            <pre><code>git clone https://github.com/bandit-1200/BiMaDock.git</code></pre>
-            <p>Download:</p>
-            <a href="https://github.com/bandit-1200/BiMaDock/releases/latest" target="_blank">Neueste Version herunterladen</a>
+        <section id="effekte">
+            <h2>Effekte</h2>
+            <p>Es sind folgende Effekte auswählbar und frei konfigurierbar:</p>
+            <ul>
+                <li><strong>Keine Animation</strong>: Keine Animationseffekte angewendet.</li>
+                <li><strong>Scale Effekt</strong>: Verändert die Größe der Dock-Leiste, indem sie eine Vergrößerungs-
+                    und Verkleinerungsbewegung ausführt.</li>
+                <li><strong>Rotate Effekt</strong>: Dreht die Dock-Leiste sanft um ihren Mittelpunkt, wodurch ein
+                    rotierender Effekt entsteht.</li>
+                <li><strong>Translate Effekt</strong>: Bewegt die Dock-Leiste entlang einer definierten Achse, wodurch
+                    ein gleitender Bewegungseffekt erzeugt wird.</li>
+                <li><strong>Swing Effekt</strong>: Lässt die Dock-Leiste wie ein Pendel hin und her schwingen und
+                    erzeugt dadurch einen schwungvollen Effekt.</li>
+            </ul>
+            <!-- Links zum Öffnen der Popups -->
+            <h3>Beispielvideo: Scale Effekt</h3>
+            <a href="javascript:void(0)" onclick="openPopup('scaleVideoPopup')">Video ansehen</a>
+
+            <h3>Beispielvideo: Rotate Effekt</h3>
+            <a href="javascript:void(0)" onclick="openPopup('rotateVideoPopup')">Video ansehen</a>
+
+            <h3>Beispielvideo: Translate Effekt</h3>
+            <a href="javascript:void(0)" onclick="openPopup('translateVideoPopup')">Video ansehen</a>
+
+            <h3>Beispielvideo: Swing Effekt</h3>
+            <a href="javascript:void(0)" onclick="openPopup('swingVideoPopup')">Video ansehen</a>
+        </section>
+        <section id="scaleVideoPopup" class="popup">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup('scaleVideoPopup')">&times;</span>
+                <h2>Scale Effekt</h2>
+                <video width="640" height="160" controls>
+                    <source src="./video/scale_effect.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </section>
+        <section id="rotateVideoPopup" class="popup">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup('rotateVideoPopup')">&times;</span>
+                <h2>Rotate Effekt</h2>
+                <video width="640" height="160" controls>
+                    <source src="./video/rotate_effect.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </section>
+        <section id="translateVideoPopup" class="popup">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup('translateVideoPopup')">&times;</span>
+                <h2>Translate Effekt</h2>
+                <video width="640" height="160" controls>
+                    <source src="./video/translate_effect.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </section>
+        <section id="swingVideoPopup" class="popup">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup('swingVideoPopup')">&times;</span>
+                <h2>Swing Effekt</h2>
+                <video width="640" height="160" controls>
+                    <source src="./video/swing_effect.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </section>
+        <section id="installation">
+            <h2>Installation</h2>
+            <p><strong>Download:</strong></p>
+            <a href="https://github.com/bandit-1200/BiMaDock/releases/latest" target="_blank">Neueste Version
+                herunterladen</a>
+            <h3>Installationsanleitung</h3>
+            <p><strong>Schritt 1:</strong> Download der BiMaDockSetup.exe</p>
+            <p><strong>Schritt 2:</strong> Die Sicherheitswarnung kann ausgeführt werden. <strong>"Ausführen"</strong>
+            </p>
+            <p><strong>Schritt 3:</strong> Im ersten Schritt des Setups kann ausgewählt werden, ob eine
+                Desktopverknüpfung erstellt und ob das Programm zum Windows Autostart hinzugefügt werden soll.</p>
+            <img src="img/setupimg001.jpg" alt="Schritt 3 - Setup" />
+            <p><strong>Schritt 4:</strong> Im zweiten Schritt sehen Sie eine Übersicht Ihrer Auswahl. Klicken Sie auf
+                <strong>"Install"</strong>, um mit der Installation fortzufahren.</p>
+            <img src="img/setupimg002.jpg" alt="Schritt 4 - Setup" />
+            <p><strong>Schritt 5:</strong> Im dritten Schritt wird das Setup beendet und Sie können auswählen, ob die
+                Applikation sofort gestartet werden soll.</p>
+            <img src="img/setupimg003.jpg" alt="Schritt 5 - Setup" />
         </section>
         <section id="support">
             <h2>Unterstützung</h2>
-            <p>Wenn Ihnen dieses Projekt gefällt und Sie mich unterstützen möchten, können Sie mir gerne eine Spende über PayPal zukommen lassen. Jeder Beitrag hilft mir, dieses Projekt weiterzuentwickeln und zu verbessern. Vielen Dank für Ihre Unterstützung!</p>
+            <p>Wenn Ihnen dieses Projekt gefällt und Sie mich unterstützen möchten, können Sie mir gerne eine Spende
+                über PayPal zukommen lassen. Jeder Beitrag hilft mir, dieses Projekt weiterzuentwickeln und zu
+                verbessern. Vielen Dank für Ihre Unterstützung!</p>
+        </section>
+        <section id="license">
+            <h2>Lizenz</h2>
+            <p>Dieses Projekt steht unter der <a href="https://opensource.org/licenses/MIT"
+                    target="_blank">MIT-Lizenz</a>.</p>
         </section>
     </main>
     <footer>
-        <p>&copy; 2024 BiMaDock</p>
+        <p>&copy; 2024 BiMaDock - Marco Bilz</p>
         <p><a href="https://github.com/bandit-1200/BiMaDock" target="_blank">GitHub Repository</a></p>
     </footer>
+    <script>
+        // JavaScript für das Öffnen und Schließen der Popups
+        function openPopup(id) {
+            document.getElementById(id).style.display = "block";
+        }
+
+        function closePopup(id) {
+            document.getElementById(id).style.display = "none";
+        }
+    </script>
 </body>
+
 </html>
