@@ -42,7 +42,7 @@ jobs:
     - name: Decode certificate
       shell: pwsh
       run: |
-        $certContent = @"${{ secrets.CERTIFICATE_FILE }}"@
+        $certContent = "${{ secrets.CERTIFICATE_FILE }}"
         $certContent | Out-File -FilePath meinzertifikat_base64.txt -Encoding ascii
         certutil -decode meinzertifikat_base64.txt meinzertifikat.pfx
 
@@ -50,18 +50,7 @@ jobs:
       id: find-signtool
       shell: pwsh
       run: |
-        $paths = @(
-            "C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe",
-            "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x86\signtool.exe",
-            "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64\signtool.exe"
-        )
-        $signtoolPath = $null
-        foreach ($path in $paths) {
-            if (Test-Path $path) {
-                $signtoolPath = $path
-                break
-            }
-        }
+        $signtoolPath = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits" -Recurse -Filter signtool.exe | Select-Object -ExpandProperty FullName -First 1
         if ($null -eq $signtoolPath) {
             Write-Error "signtool.exe not found."
             exit 1
