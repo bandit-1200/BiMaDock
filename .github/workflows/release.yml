@@ -42,9 +42,7 @@ jobs:
     - name: Decode certificate
       shell: pwsh
       run: |
-        $certContent = @"
-          ${{ secrets.CERTIFICATE_FILE }}
-          "@
+        $certContent = @"${{ secrets.CERTIFICATE_FILE }}"@
         $certContent | Out-File -FilePath meinzertifikat_base64.txt -Encoding ascii
         certutil -decode meinzertifikat_base64.txt meinzertifikat.pfx
 
