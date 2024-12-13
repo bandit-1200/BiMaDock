@@ -4,6 +4,9 @@ body {
     padding: 0;
     background-color: #f4f4f4;
     color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 header {
@@ -11,6 +14,59 @@ header {
     color: #fff;
     padding: 1rem 0;
     text-align: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+header nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+header nav ul li a:hover {
+    color: #ADD8E6; /* Farbe für den Hover-Effekt, z.B. hellblau */
+    text-decoration: underline; /* Unterstreicht den Text beim Hover */
+}
+
+
+main {
+    flex: 1;
+    padding: 4rem 2rem 2rem;
+    /* Füge oberen Rand hinzu, um den fixierten Header auszugleichen */
+}
+
+section {
+    padding-top: 4rem;
+    /* Platz für den fixierten Header */
+    margin-top: -4rem;
+    /* Gleicht das zusätzliche Padding aus */
+}
+
+section:target {
+    scroll-margin-top: 4rem;
+    /* Offset für den fixierten Header */
+}
+
+video {
+    display: block;
+    margin: 0 auto;
+    margin-top: 10px;
+    /* Kleineren Abstand nach oben */
+}
+
+h3+video {
+    margin-top: 5px;
+    /* Noch geringerer Abstand zwischen Überschrift und Video */
+}
+
+.video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 5px;
+    /* Reduziere den Abstand zur Video-Bedienung */
 }
 
 header h1 {
@@ -33,6 +89,8 @@ nav ul li a {
 }
 
 main {
+    flex: 1;
+    /* Flexbox-Layout für den Hauptinhalt */
     padding: 2rem;
 }
 
@@ -41,13 +99,15 @@ section {
 }
 
 footer {
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    padding: 1rem 0;
     position: fixed;
     bottom: 0;
     width: 100%;
+    background-color: #333; /* Gleiche Hintergrundfarbe wie Kopfzeile */
+    color: #fff; /* Weiße Textfarbe */
+    text-align: center;
+    padding: 10px 0; /* Abstände oben und unten */
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Schatten für eine leichte 3D-Optik */
+    font-size: 16px; /* Gut lesbare Textgröße */
 }
 
 pre {
@@ -55,4 +115,13 @@ pre {
     padding: 1rem;
     border-radius: 5px;
     overflow: auto;
+}
+
+footer a {
+    color: #fff; /* Weiße Farbe für den Linktext */
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #ADD8E6; /* Hellblaue Farbe für den Linktext beim Hover */
 }
