@@ -64,7 +64,7 @@ jobs:
 
     - name: Sign executable
       run: |
-        $path = ${{ steps.find-signtool.outputs.signtool_path }}
+        $path = '${{ steps.find-signtool.outputs.signtool_path }}'
         & "$path" sign /f meinzertifikat.pfx /p ${{ secrets.CERTIFICATE_PASSWORD }} /t http://timestamp.url ./publish/BiMaDockSetup.exe
 
     - name: Create Windows installer
