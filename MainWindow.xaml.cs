@@ -7,7 +7,7 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Threading; // Für den DispatcherTimer
+using System.Windows.Threading;
 using System.Collections;
 using System;
 using System.Linq;
@@ -61,11 +61,9 @@ namespace BiMaDock
         const int SW_MAXIMIZE = 3;
         const int SW_MINIMIZE = 6;
 
-
-        // private GlobalMouseHook mouseHook;  // Deklariere die private Variable für den Hook
         private GlobalMouseHook mouseHook;
         private DockManager dockManager;
-        // private bool isDragging = false;
+
         public bool dockVisible = true;
         public bool IsDragging => isDragging;
         private Point? dragStartPoint = null;
@@ -73,7 +71,7 @@ namespace BiMaDock
         public bool isDragging = false; // Flag für Dragging
         private DispatcherTimer dockHideTimer;
         private DispatcherTimer categoryHideTimer;
-        // private string currentOpenCategory;
+
         private string currentOpenCategory = "";
         public bool isCategoryDockOpen = false;
         public string isCategoryDockOpenID = "";
@@ -127,13 +125,7 @@ namespace BiMaDock
             //  SettingsWindow.LoadSettings();
             SettingsWindow settingsWindow = new SettingsWindow(this);
             double screenWidth = SystemParameters.PrimaryScreenWidth;
-            // this.Width = screenWidth * 1.0;  // 100% der Bildschirmbreite
-            // GlobalMouseHook mouseHook = new GlobalMouseHook(this); // 'this' bezieht sich auf das MainWindow
 
-            // mouseHook = new GlobalMouseHook();
-            // mouseHook.Start();
-
-            // LoadSettings()
             ButtonAnimations.LoadSettings(); //Animation
             settingsWindow.LoadSettings(); // Einstellungen laden
             AllowDrop = true;
@@ -570,12 +562,6 @@ namespace BiMaDock
                 {
                     // Debug.WriteLine("Mouse over DockPanel");  // Debug-Ausgabe
 
-                    // Timer neu starten, wenn die Maus über dem Dock ist
-                    // dockHideTimer.Stop();
-                    // dockHideTimer.Start();
-
-                    // categoryHideTimer.Stop();
-                    // categoryHideTimer.Start();
                 }
                 else
                 {
@@ -599,7 +585,6 @@ namespace BiMaDock
             // currentDockStatus &= ~DockStatus.CategoryElementClicked; // Löscht das CategoryElementClicked-Flag
             CheckAllConditions();
         }
-
 
 
         private void CategoryDockContainer_MouseLeave(object sender, MouseEventArgs e)
@@ -626,8 +611,6 @@ namespace BiMaDock
 
         public void CheckAllConditions()
         {
-            // RemoveCrrentPlaceholder();
-            // Ausgabe im Klartext
             // Debug.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
 
             if (currentDockStatus > 0) // Überprüft, ob irgendein Flag gesetzt ist
@@ -799,9 +782,6 @@ namespace BiMaDock
 
 
 
-
-
-
         private void DockPanel_MouseMove(object sender, MouseEventArgs e)
         {
             // Debug.WriteLine($"DockPanel_MouseMove: aufgerufen"); // Debugging
@@ -846,17 +826,6 @@ namespace BiMaDock
                             // Debug.WriteLine($"Maus über Element: {button.Tag}, Position: {mousePosition}"); // Debugging
                             isOverElement = true;
 
-                            // if (button.Tag is DockItem dockItem && dockItem.IsCategory)
-                            // {
-                            //     Debug.WriteLine("Kategorie-Element erkannt>: " + dockItem.DisplayName); // Debugging
-                            //     ShowCategoryDockPanel(new StackPanel
-                            //     {
-                            //         Name = dockItem.DisplayName,
-
-                            //         // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
-                            //     });
-                            // }
-
                             break;
                         }
                     }
@@ -887,7 +856,6 @@ namespace BiMaDock
                 // HideDock();
             }
         }
-
 
 
         private void DockPanel_DragEnter(object sender, DragEventArgs e)
@@ -1021,17 +989,6 @@ namespace BiMaDock
             currentDockStatus &= ~DockStatus.DraggingToDock;  // Flag zurücksetzen, wenn der Drag-Vorgang das DockPanel verlässt
             CheckAllConditions();
 
-            // Entferne alle Platzhalter, wenn der Drag-Vorgang das DockPanel verlässt
-            // for (int i = 0; i < DockPanel.Children.Count; i++)
-            // {
-            //     if (DockPanel.Children[i] is Border border && border.Tag as string == "Placeholder")
-            //     {
-            //         Debug.WriteLine($"DockPanel_DragEnter: Platzhalter Lösche Platzhalter Border bei Index {i}");
-            //         DockPanel.Children.Remove(border);
-            //         i--; // Index anpassen, da ein Element entfernt wurde
-            //     }
-            // }
-
             // Visuelles Feedback zurücksetzen
             var brush = (SolidColorBrush)FindResource("PrimaryColor");
             if (brush != null)
@@ -1092,10 +1049,6 @@ namespace BiMaDock
                 Debug.WriteLine("UpdateDockItemLocation: DockItem ist null"); // Debug-Ausgabe
             }
         }
-
-
-
-
 
         public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
@@ -1794,21 +1747,6 @@ namespace BiMaDock
             StartupManager.AddToStartup(false);
         }
 
-        // private void RemoveCurrentPlaceholder()
-        // {
-        //     for (int i = 0; i < DockPanel?.Children?.Count; i++)
-        //     {
-        //         if (DockPanel.Children[i] is Border border && border.Tag as string == "Placeholder")
-        //         {
-        //             Debug.WriteLine($"RemoveCurrentPlaceholder: Lösche Platzhalter Border bei Index {i}");
-        //             DockPanel.Children.Remove(border);
-        //             i--; // Index anpassen, da ein Element entfernt wurde
-        //         }
-        //     }
-        // }
-
-
-
 
         protected override void OnClosed(EventArgs e)
         {
@@ -1829,71 +1767,6 @@ namespace BiMaDock
         }
 
 
-        // private void Test_Click(object sender, RoutedEventArgs e)
-        // {
-        //     // Ersetze die Ressource direkt mit einer neuen Brush
-        //     Application.Current.Resources["SecondaryColor"] = new SolidColorBrush(Colors.Green);
-
-        //     // Debugging-Ausgabe
-        //     Debug.WriteLine("Test_Click: Aufruf der Methode");
-
-        //     // // Wenn du die Farbe später erneut ändern möchtest
-        //     // if (Application.Current.Resources["PrimaryColor"] is SolidColorBrush primaryBrush)
-        //     // {
-        //     //     // Clone erstellen, um schreibgeschützte Brushes zu vermeiden
-        //     //     var newBrush = primaryBrush.Clone();
-        //     //     newBrush.Color = Colors.Red; // Ändere zu Rot
-        //     //     Application.Current.Resources["PrimaryColor"] = newBrush;
-        //     // }
-        // }
-
-
-
-        // Methode zur direkten Änderung der PrimaryColor
-        // private void UpdatePrimaryColor(Color newColor)
-        // {
-        //     var newColorBrush = new SolidColorBrush(newColor);
-
-        //     // Direkte Aktualisierung des ResourceDictionary
-        //     foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
-        //     {
-        //         if (dictionary.Contains("PrimaryColor"))
-        //         {
-        //             dictionary["PrimaryColor"] = newColorBrush;
-        //             Debug.WriteLine("PrimaryColor direkt im ResourceDictionary aktualisiert.");
-        //         }
-        //     }
-
-        //     // Überprüfen, ob die Änderung sichtbar ist
-        //     this.Resources["PrimaryColor"] = newColorBrush;
-        //     DockPanel.Background = newColorBrush;
-        //     Debug.WriteLine("PrimaryColor im UI aktualisiert.");
-        // }
-
-
-
-        // private void UpdateSecondaryColor(Color newColor)
-        // {
-        //     var newColorBrush = new SolidColorBrush(newColor);
-
-        //     // Direkte Aktualisierung des ResourceDictionary
-        //     foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
-        //     {
-        //         if (dictionary.Contains("SecondaryColor"))
-        //         {
-        //             dictionary["SecondaryColor"] = newColorBrush;
-        //             Debug.WriteLine("SecondaryColor direkt im ResourceDictionary aktualisiert.");
-        //         }
-        //     }
-
-        //     // Überprüfen, ob die Änderung sichtbar ist
-        //     this.Resources["SecondaryColor"] = newColorBrush;
-        //     DockPanel.Background = newColorBrush;
-        //     Debug.WriteLine("PrimaryColor im UI aktualisiert.");
-        // }
-
-
-
         private void GitHub_Click(object sender, RoutedEventArgs e)
         {
             string url = "https://bandit-1200.github.io/BiMaDock";
@@ -1906,12 +1779,6 @@ namespace BiMaDock
                 MessageBox.Show($"Fehler beim Öffnen der URL: {ex.Message}");
             }
         }
-
-
-
-
-
-
 
 
 
