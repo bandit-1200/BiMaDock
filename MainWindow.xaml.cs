@@ -1480,10 +1480,71 @@ namespace BiMaDock
             }
         }
 
+        // public void ShowCategoryDockPanel(StackPanel categoryDock)
+        // {
+        //     // Debug.WriteLine("ShowCategoryDockPanel: Methode aufgerufen");
+        //     CategoryDockContainer.Children.Clear();
+        //     CategoryDockContainer.Children.Add(categoryDock);
+        //     CategoryDockContainer.Visibility = Visibility.Visible;
+        //     CategoryDockBorder.Visibility = Visibility.Visible;
+        //     OverlayCanvas.Visibility = Visibility.Visible;
+        //     Panel.SetZIndex(OverlayCanvas, 1000);
+        //     Panel.SetZIndex(CategoryDockBorder, 0);
+
+        //     currentDockStatus |= DockStatus.CategoryElementClicked;
+        //     currentOpenCategory = categoryDock.Tag?.ToString() ?? string.Empty;
+        //     CategoryDockContainer.Tag = currentOpenCategory;
+        //     // Debug.WriteLine($"ShowCategoryDockPanel: currentOpenCategory = {currentOpenCategory}");
+
+        //     var items = SettingsManager.LoadSettings();
+        //     foreach (var item in items)
+        //     {
+        //         if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
+        //         {
+        //             dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
+        //             // Debug.WriteLine($"ShowCategoryDockPanel: DockItem {item.DisplayName} zur Kategorie {currentOpenCategory} hinzugefügt");
+        //         }
+        //     }
+
+        //     Application.Current.Dispatcher.InvokeAsync(() =>
+        //     {
+        //         // Debug.WriteLine("ShowCategoryDockPanel: Dispatcher aufgerufen");
+
+        //         if (CategoryDockBorder.ActualWidth > 0)
+        //         {
+        //             double mainWindowCenterX = Application.Current.MainWindow.ActualWidth / 2;
+        //             double mainStackPanelCenterX = MainStackPanel.ActualWidth / 2;
+        //             double elementCenterX = dockManager.mousePositionSave + mainStackPanelCenterX;
+        //             double categoryDockPositionX = dockManager.mousePositionSave + dockManager.mousePositionSave;
+        //             // Setze die neue Position
+        //             CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
+
+        //             double categoryDockCenterX = categoryDockPositionX + (CategoryDockBorder.ActualWidth / 2);
+        //             double positionRelativeToCenter = categoryDockCenterX - mainWindowCenterX;
+
+        //             double overlayPositionX = dockManager.mousePositionSaveleft - 10;
+        //             double overlayPositionY = 80;
+
+        //             Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
+        //             Canvas.SetTop(OverlayCanvasHorizontalLine, overlayPositionY);
+        //             Panel.SetZIndex(OverlayCanvasHorizontalLine, 1000); // Höherer Wert bringt es in den Vordergrund
+
+        //         }
+        //         else
+        //         {
+        //             // Debug.WriteLine("ShowCategoryDockPanel: CategoryDockBorder.ActualWidth ist 0 oder kleiner");
+        //         }
+        //     }, System.Windows.Threading.DispatcherPriority.Loaded);
+
+        //     MainStackPanel.Margin = new Thickness(0);
+        //     categoryHideTimer.Start();
+        //     CheckAllConditions();
+        // }
+
+
         public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
             // Debug.WriteLine("ShowCategoryDockPanel: Methode aufgerufen");
-
             CategoryDockContainer.Children.Clear();
             CategoryDockContainer.Children.Add(categoryDock);
             CategoryDockContainer.Visibility = Visibility.Visible;
@@ -1491,8 +1552,6 @@ namespace BiMaDock
             OverlayCanvas.Visibility = Visibility.Visible;
             Panel.SetZIndex(OverlayCanvas, 1000);
             Panel.SetZIndex(CategoryDockBorder, 0);
-
-            // Debug.WriteLine("ShowCategoryDockPanel: Kategorie-Dock hinzugefügt und sichtbar gemacht");
 
             currentDockStatus |= DockStatus.CategoryElementClicked;
             currentOpenCategory = categoryDock.Tag?.ToString() ?? string.Empty;
@@ -1518,37 +1577,20 @@ namespace BiMaDock
                     double mainWindowCenterX = Application.Current.MainWindow.ActualWidth / 2;
                     double mainStackPanelCenterX = MainStackPanel.ActualWidth / 2;
                     double elementCenterX = dockManager.mousePositionSave + mainStackPanelCenterX;
-                    // Debug.WriteLine($"ShowCategoryDockPanel: dockManager.mousePositionSave = {dockManager.mousePositionSave}");
-                    // Debug.WriteLine($"ShowCategoryDockPanel: MainStackPanel.ActualWidth = {MainStackPanel.ActualWidth}");
-                    // Debug.WriteLine($"ShowCategoryDockPanel: dockManager.mousePositionSaveleft = {dockManager.mousePositionSaveleft}");
-                    // Debug.WriteLine($"ShowCategoryDockPanel: mainStackPanelCenterX = {mainStackPanelCenterX}");
-                    // Debug.WriteLine($"ShowCategoryDockPanel: elementCenterX (inkl. mainStackPanelCenterX) = {elementCenterX}");
-                    // Debug.WriteLine($"ShowCategoryDockPanel: CategoryDockBorder.ActualWidth = {CategoryDockBorder.ActualWidth}");
-
-                    // Berechne die neue Position für CategoryDockBorder relativ zur Mitte des MainWindow
-                    // double categoryDockPositionX = elementCenterX - (CategoryDockBorder.ActualWidth / 2);
                     double categoryDockPositionX = dockManager.mousePositionSave + dockManager.mousePositionSave;
-                    // Debug.WriteLine($"ShowCategoryDockPanel: Berechnete Position categoryDockPositionX = {categoryDockPositionX}");
-
                     // Setze die neue Position
                     CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
-                    // Debug.WriteLine($"ShowCategoryDockPanel: Neue Margin für CategoryDockBorder gesetzt = {CategoryDockBorder.Margin}");
 
-                    // Debug-Ausgaben zur Überprüfung der Position relativ zur Mitte des MainWindow
                     double categoryDockCenterX = categoryDockPositionX + (CategoryDockBorder.ActualWidth / 2);
                     double positionRelativeToCenter = categoryDockCenterX - mainWindowCenterX;
-                    // Debug.WriteLine($"ShowCategoryDockPanel: Position der Mitte des CategoryDock relativ zur Mitte des MainWindow = {positionRelativeToCenter}");
 
                     double overlayPositionX = dockManager.mousePositionSaveleft - 10;
                     double overlayPositionY = 80;
-
-                    // OverlayCanvasHorizontalLine.Stroke = new SolidColorBrush(Colors.Red);
 
                     Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
                     Canvas.SetTop(OverlayCanvasHorizontalLine, overlayPositionY);
                     Panel.SetZIndex(OverlayCanvasHorizontalLine, 1000); // Höherer Wert bringt es in den Vordergrund
 
-                    // Debug.WriteLine($"ShowCategoryDockPanel: Neue Position für OverlayCanvasHorizontalLine gesetzt = {overlayPositionX}");
                 }
                 else
                 {
@@ -1556,13 +1598,21 @@ namespace BiMaDock
                 }
             }, System.Windows.Threading.DispatcherPriority.Loaded);
 
+            // Einblendanimation hinzufügen
+            DoubleAnimation fadeInAnimation = new DoubleAnimation
+            {
+                From = 0.0,
+                To = 1.0,
+                Duration = TimeSpan.FromSeconds(0.5) // Dauer der Animation
+            };
+
+            // Animation starten, wenn das Element sichtbar wird
+            CategoryDockContainer.BeginAnimation(UIElement.OpacityProperty, fadeInAnimation);
+
             MainStackPanel.Margin = new Thickness(0);
             categoryHideTimer.Start();
             CheckAllConditions();
-            // Debug.WriteLine("ShowCategoryDockPanel: Methode abgeschlossen");
         }
-
-
 
 
         public void HideCategoryDockPanel()
