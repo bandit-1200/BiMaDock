@@ -642,14 +642,13 @@ namespace BiMaDock
             }
         }
 
-
-        // private Dictionary<Button, bool> animationPlayed = new Dictionary<Button, bool>();
-
+        private Button? previousButton = null;
         public void CategoryDockContainer_MouseMove(object sender, MouseEventArgs e)
         {
             Debug.WriteLine("CategoryDockContainer_MouseMove: gestartet"); // Debugging
 
             Point mousePosition = e.GetPosition(CategoryDockContainer);
+            // LogMousePositionAndElements(mousePosition); // Optional, falls benötigt
 
             if (dragStartPoint.HasValue && draggedButton != null)
             {
@@ -670,7 +669,8 @@ namespace BiMaDock
             else
             {
                 bool isOverElement = false;
-                Button? hoveredButton = null;
+                UIElement? previousElement = null;
+                UIElement? nextElement = null;
 
                 for (int i = 0; i < CategoryDockContainer.Children.Count; i++)
                 {
@@ -680,35 +680,48 @@ namespace BiMaDock
                         if (elementRect.Contains(mousePosition))
                         {
                             isOverElement = true;
-                            hoveredButton = button;
-
-                            if (!animationPlayed.ContainsKey(button))
+                            if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
                             {
-                                animationPlayed[button] = false;
-                            }
-
-                            if (!animationPlayed[button])
-                            {
+                                ButtonAnimations.AnimateButtonByChoice(button); // Methode aus der neuen Klasse aufrufen
                                 animationPlayed[button] = true;
-                                ButtonAnimations.AnimateButtonByChoice(button);
                             }
-
+                            else if (button != previousButton)
+                            {
+                                ButtonAnimations.AnimateButtonByChoice(button); // Methode aus der neuen Klasse aufrufen
+                            }
+                            previousButton = button;
                             break;
+                        }
+                        else
+                        {
+                            previousElement = (i > 0) ? CategoryDockContainer.Children[i - 1] : null;
+                            nextElement = CategoryDockContainer.Children[i];
                         }
                     }
                 }
 
-                if (!isOverElement && hoveredButton != null)
+                if (!isOverElement)
                 {
-                    // Setze die Animation zurück, wenn die Maus das Element verlässt
-                    if (animationPlayed.ContainsKey(hoveredButton))
+                    previousButton = null;
+                    if (previousElement is Button prevButton && nextElement is Button nextButton)
                     {
-                        animationPlayed[hoveredButton] = false;
+                        // Debug.WriteLine($"Maus zwischen Elementen: {prevButton.Tag} und {nextButton.Tag}");
+                    }
+                    else if (nextElement is Button onlyNextButton)
+                    {
+                        // Debug.WriteLine($"Maus vor dem ersten Element: {onlyNextButton.Tag}");
+                    }
+                    else if (previousElement is Button onlyPrevButton)
+                    {
+                        // Debug.WriteLine($"Maus nach dem letzten Element: {onlyPrevButton.Tag}");
+                    }
+                    else
+                    {
+                        // Debug.WriteLine("Maus über CategoryDockContainer ohne Element");
                     }
                 }
             }
         }
-
 
 
         public void CategoryDockContainer_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -725,15 +738,6 @@ namespace BiMaDock
                 }
             }
         }
-
-
-
-
-
-
-
-
-
 
 
         private void DockPanel_PreviewGiveFeedback(object sender, GiveFeedbackEventArgs e)
