@@ -545,6 +545,8 @@ namespace BiMaDock
                 LeftEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
                 RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
             }
+            currentDockStatus = DockStatus.None;
+
         }
 
 
@@ -1270,7 +1272,7 @@ namespace BiMaDock
             // Visuelles Feedback zurücksetzen
             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
             CheckAllConditions();
-            HideCategoryDockPanel();
+            // HideCategoryDockPanel();
             Debug.WriteLine("CategoryDockContainer_Drop: Kategorie-Dock korrekt zurückgesetzt um {DateTime.Now}"); // Debug-Ausgabe mit Zeitstempel
         }
 
