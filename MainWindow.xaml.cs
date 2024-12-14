@@ -855,12 +855,22 @@ namespace BiMaDock
 
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+
+
+
+            if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+            {
+                var customMessageBox = new CustomMessageBox($"Möchtest du BiMaDock wirklich beenden?");
+                customMessageBox.ShowDialog();
+
+                if (customMessageBox.Result)
+                {
+                    Application.Current.Shutdown();
+
+                }
+            }
+
         }
-
-
-
-
 
         public void UpdateDockItemLocation(Button button)
         {
