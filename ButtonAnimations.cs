@@ -104,36 +104,6 @@ public class ButtonAnimations
         // Keine Animation, leer lassen
     }
 
-
-    // ScaleTransform_Animation
-    // public static void AnimatScaleTransform(Button button)
-    // {
-    //     var scaleTransform = new ScaleTransform(1.0, 1.0);
-    //     button.RenderTransformOrigin = new Point(0.5, 0.5);
-    //     button.RenderTransform = scaleTransform;
-
-    //     var scaleXAnimation = new DoubleAnimation
-    //     {
-    //         From = 1.0,
-    //         To = 1.2,
-    //         Duration = new Duration(TimeSpan.FromSeconds(0.3)),
-    //         AutoReverse = true,
-    //         RepeatBehavior = new RepeatBehavior(2)
-    //     };
-
-    //     var scaleYAnimation = new DoubleAnimation
-    //     {
-    //         From = 1.0,
-    //         To = 1.2,
-    //         Duration = new Duration(TimeSpan.FromSeconds(0.3)),
-    //         AutoReverse = true,
-    //         RepeatBehavior = new RepeatBehavior(2)
-    //     };
-
-    //     scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
-    //     scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
-    // }
-
     public static void AnimatScaleTransform(Button button)
     {
         var scaleTransform = new ScaleTransform(1.0, 1.0);
@@ -231,24 +201,6 @@ public class ButtonAnimations
     }
 
 
-    // public static void AnimatRotateTransform(Button button)
-    // {
-    //     var rotateTransform = new RotateTransform();
-    //     button.RenderTransformOrigin = new Point(0.5, 0.5);
-    //     button.RenderTransform = rotateTransform;
-
-    //     var rotateAnimation = new DoubleAnimation
-    //     {
-    //         From = 0,
-    //         To = 360,
-    //         Duration = new Duration(TimeSpan.FromSeconds(1)),
-    //         AutoReverse = true,
-    //         RepeatBehavior = new RepeatBehavior(1)
-    //     };
-
-    //     rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation);
-    // }
-
     // Auswahl der Animation
     public static void AnimateButtonByChoice(Button button)
     {
@@ -285,12 +237,3 @@ public class ButtonAnimations
         }
     }
 }
-
-
-
-
-// // Beispiel für den Start der Anwendung:
-// ButtonAnimations.LoadSelectedEffectIndex();
-
-// // Anwendung der Animation auf einen Button
-// ButtonAnimations.AnimateButtonByChoice(myButton);

@@ -190,46 +190,10 @@ public class DockManager
                 if (elementRect.Contains(mousePosition))
 
                 {
-                    // Debug.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}");
-                    // Debug.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementPosition}, Size = {elementRect.Size}");
-                    // Debug.WriteLine($"LogMousePositionAndElements: Maus über Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
-                    // Debug.WriteLine($"LogMousePositionAndElements: Maus über Button: ID KAT = {mainWindow.isCategoryDockOpenID}");
                     double elementCenterX = elementPosition.X + (elementRect.Width / 2);
-                    // Debug.WriteLine($"LogMousePositionAndElements: elementCenterX {elementCenterX}");
-                    // double categoryDockPositionX = elementCenterX - (mainWindow.CategoryDockBorder.Width / 2);
-                    // double categoryDockBorderWidth = mainWindow.CategoryDockBorder.Width;
-                    // Debug.WriteLine($"LogMousePositionAndElements: mainWindow.CategoryDockBorder.Width {mainWindow.CategoryDockBorder.Width}");
-                    // double categoryDockPositionX = elementCenterX - (categoryDockBorderWidth / 2);
-
-
-                    // Debug.WriteLine($"LogMousePositionAndElements: categoryDockPositionX {categoryDockPositionX}");
-
-                    // mainWindow.CategoryDockBorder.Margin = new Thickness(elementCenterX, 0, 0, 0);
-
-
-                    // Vergewissere dich, dass du die richtige Eigenschaft zum Setzen der Position verwendest.
-                    // Hier ein Beispiel, wenn du Canvas verwendest:
-                    // Canvas.SetLeft(mainWindow.CategoryDockBorder, categoryDockPositionX);
-
-
-                    // Oder setze die Margin, falls du sie verwenden möchtest:
-                    // mainWindow.CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, mainWindow.CategoryDockBorder.Margin.Top, 0, 0);
-
-
-
-
-
-
-                    // Debug.WriteLine($"LogMousePositionAndElements: Element MainWindow Left {mainWindow.Left}");
-                    // Debug.WriteLine($"LogMousePositionAndElements: Element MainStackPanel  {mainWindow.MainStackPanel}");
-                    // Debug.WriteLine($"LogMousePositionAndElements: Element MainWindow Left {mainWindow.Left}");
-
                     double mainWindowCenterX = mainWindow.ActualWidth / 2;
                     double positionRelativeToCenter = elementCenterX - mainWindowCenterX;
-                    // Debug.WriteLine($"LogMousePositionAndElements: Button ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position relativ zur Mitte des MainWindow = {positionRelativeToCenter}");
 
-
-                    //  isCategoryDockOpenID
                     if (dockItem.IsCategory)
                     {
                         mousePositionSaveleft = elementRect.X;
@@ -274,15 +238,6 @@ public class DockManager
                     if (dockItem.IsCategory)
                     {
                         // Debug.WriteLine("LogMousePositionAndElements :DockItem ist eine Kategorie, rufe ShowCategoryDockPanel auf");
-
-                        // Erstelle und übergebe ein StackPanel
-                        // StackPanel categoryDock = new StackPanel
-                        // {
-                        // Name = dockItem.DisplayName,
-                        // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
-                        // };
-
-                        // mainWindow.ShowCategoryDockPanel(categoryDock);
                     }
                     else
                     {
@@ -305,56 +260,10 @@ public class DockManager
         }
     }
 
-
-    // private void AnimateButton(Button button)
-    // {
-    //     var scaleTransform = new ScaleTransform(1.0, 1.0);
-    //     button.RenderTransformOrigin = new Point(0.5, 0.5);
-    //     button.RenderTransform = scaleTransform;
-
-    //     var scaleXAnimation = new DoubleAnimation
-    //     {
-    //         From = 1.0,
-    //         To = 1.2,
-    //         Duration = new Duration(TimeSpan.FromSeconds(0.3)),
-    //         AutoReverse = true,
-    //         RepeatBehavior = new RepeatBehavior(2)  // Animation 2-mal abspielen
-    //     };
-
-    //     var scaleYAnimation = new DoubleAnimation
-    //     {
-    //         From = 1.0,
-    //         To = 1.2,
-    //         Duration = new Duration(TimeSpan.FromSeconds(0.3)),
-    //         AutoReverse = true,
-    //         RepeatBehavior = new RepeatBehavior(2)  // Animation 2-mal abspielen
-    //     };
-
-    //     scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
-    //     scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
-    // }
-
-
-
-
-    // private void StopAnimation(Button button)
-    // {
-    //     var scaleTransform = button.RenderTransform as ScaleTransform;
-    //     if (scaleTransform != null)
-    //     {
-    //         scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, null);
-    //         scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, null);
-    //     }
-    // }
-
-
     public void InitializeCategoryDockContainer(StackPanel container)
     {
         CategoryDockContainer = container ?? throw new ArgumentNullException(nameof(container), "CategoryDockContainer ist null.");
     }
-
-
-
 
 
     public void LoadDockItems()
@@ -487,15 +396,6 @@ public class DockManager
     {
         // Aktuellen Stand der Dock-Settings einlesen
         var existingItems = SettingsManager.LoadSettings();
-
-        // Überprüfen, ob die Kategorie bereits existiert
-        // var existingCategoryItem = existingItems.FirstOrDefault(item => item.DisplayName == categoryName && item.IsCategory);
-
-        // if (existingCategoryItem != null)
-        // {
-        //     MessageBox.Show($"Kategorie '{categoryName}' existiert bereits.", "Kategorie existiert", MessageBoxButton.OK, MessageBoxImage.Warning);
-        //     return; // Kategorie nicht erneut erstellen
-        // }
 
         // Neue Kategorie erstellen
         var categoryItem = new DockItem
@@ -729,10 +629,6 @@ public class DockManager
         }
     }
 
-
-
-
-
     public void UpdateDockItemLocation(Button button, string currentCategory)
     {
         var dockItem = button.Tag as DockItem;
@@ -750,8 +646,6 @@ public class DockManager
             }
         }
     }
-
-
 
     public void RemoveDockItem(Button button, string currentCategory)
     {
@@ -780,8 +674,6 @@ public class DockManager
         }
         SaveDockItems(currentCategory);
     }
-
-
 
 
     private void RemoveCategoryChildren(string categoryName)
@@ -922,9 +814,6 @@ public class DockManager
     }
 
 
-
-
-
     public void Open_Click(object sender, RoutedEventArgs e)
     {
         // Debug.WriteLine("Open_Click aufgerufen"); // Debug-Ausgabe
@@ -961,8 +850,5 @@ public class DockManager
             Debug.WriteLine("Fehler: DockContextMenu.PlacementTarget ist kein Button"); // Debug-Ausgabe
         }
     }
-
-
-
 
 }

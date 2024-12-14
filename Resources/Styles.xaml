@@ -8,6 +8,8 @@
     <SolidColorBrush x:Key="HighlightColor" Color="#3E3E3E"/> <!-- Dunklerer Grauton für Hover- und Auswahlzustände -->
     <SolidColorBrush x:Key="DebugColor4" Color="#2D2D2D"/>
     <SolidColorBrush x:Key="DebugColor5" Color="#FFA500"/>
+    <SolidColorBrush x:Key="FeedbackColor" Color="#14670a"/>
+
 
     <!-- Stile und Templates -->
     <Style x:Key="MainDockStyle" TargetType="StackPanel">
