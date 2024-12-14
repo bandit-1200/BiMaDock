@@ -68,6 +68,7 @@ public class GlobalMouseHook
                                     // Klick außerhalb des ersten Grids und des CategoryDockPanels erkannt
                                     window.HideDock();
                                     window.HideCategoryDockPanel();
+                                    window.currentDockStatus = MainWindow.DockStatus.None;
                                     Console.WriteLine("Klick außerhalb des ersten Grids und des CategoryDockPanels erkannt!");
                                 }
                             }

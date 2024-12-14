@@ -546,6 +546,7 @@ namespace BiMaDock
                 RightEndCap.RenderTransform.BeginAnimation(TranslateTransform.YProperty, endCapAnimation);
             }
             currentDockStatus = DockStatus.None;
+            isCategoryDockOpen = false;
 
         }
 
@@ -1580,6 +1581,7 @@ namespace BiMaDock
             // Debug.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
             // CheckAllConditions();
             isCategoryMessageShown = false; // Nachricht-Flag sofort zurücksetzen
+            isCategoryDockOpen = false;
         }
 
 
