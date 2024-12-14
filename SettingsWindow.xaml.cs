@@ -610,6 +610,22 @@ namespace BiMaDock
 
 
 
+                    if (settings.FeedbackColor != null
+                        && ColorConverter.ConvertFromString((string)settings.FeedbackColor) is Color feedbackColor)
+                    {
+                        // Farbwähler und Vorschau aktualisieren
+                        FeedbackColorPicker.SelectedColor = feedbackColor;
+
+
+                        // Ressourcen aktualisieren
+                        var newFeedbackColor = new SolidColorBrush(feedbackColor);
+                        Application.Current.Resources["FeedbackColor"] = newFeedbackColor;
+
+                        // Debugging
+                        Debug.WriteLine($"LoadSettings: FeedbackColor {settings.FeedbackColor}");
+                    }
+
+
 
                     // Animationseinstellungen laden
                     if (settings.Scale != null)
@@ -658,6 +674,7 @@ namespace BiMaDock
             var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
             var secondaryColor = SecondaryColorPicker.SelectedColor ?? Colors.Transparent;
             var accentColor = AccentColorPicker.SelectedColor ?? Colors.Transparent;
+            var feedbackColor = FeedbackColorPicker.SelectedColor ?? Colors.Transparent;
 
 
             // Überprüfen und Alpha-Wert auf mindestens 1 setzen
@@ -677,6 +694,10 @@ namespace BiMaDock
                 accentColor.A = 1;
             }
 
+            if (feedbackColor.A < 1)
+            {
+                feedbackColor.A = 1;
+            }
 
             if (animationEffectComboBox != null && animationEffectComboBox.SelectedItem != null)
             {
@@ -693,6 +714,7 @@ namespace BiMaDock
                     PrimaryColor = primaryColor.ToString(),
                     SecondaryColor = secondaryColor.ToString(),
                     AccentColor = accentColor.ToString(),
+                    FeedbackColor = feedbackColor.ToString(),
                     SelectedEffectIndex = selectedEffectIndex,
                     Scale = scaleSettings,
                     Rotate = rotateSettings,
@@ -749,6 +771,24 @@ namespace BiMaDock
 
                 AccentColorPicker.Background = new SolidColorBrush(selectedColor);
                 // AccentColorPicker.Background = new SolidColorBrush(selectedColor);
+
+            }
+        }
+
+        private void FeedbackColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        {
+            if (e.NewValue.HasValue)
+            {
+                var selectedColor = e.NewValue.Value;
+                Debug.WriteLine($"FeedbackColorPicker_SelectedColorChanged: {selectedColor}");
+                // Überprüfen, ob der Alpha-Wert mindestens 1 ist
+                if (selectedColor.A < 1)
+                {
+                    selectedColor.A = 1; // Mindestwert der Alpha-Komponente auf 1 setzen
+                }
+
+                FeedbackColorPicker.Background = new SolidColorBrush(selectedColor);
+                // FeedbackColorPicker.Background = new SolidColorBrush(selectedColor);
 
             }
         }
