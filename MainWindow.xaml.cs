@@ -567,7 +567,9 @@ namespace BiMaDock
                                 if (dockItem.IsCategory)
                                 {
                                     // Visuelles Feedback für Kategorie-Elemente
-                                    button.Background = new SolidColorBrush(Colors.LightGreen);
+                                    // button.Background = new SolidColorBrush(Colors.Blue);
+                                    button.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
+
                                 }
                             }
                             else
@@ -796,7 +798,9 @@ namespace BiMaDock
             if ((e.Data.GetDataPresent(DataFormats.Serializable) || e.Data.GetDataPresent(DataFormats.FileDrop)) && DockPanel != null)
             {
                 e.Effects = DragDropEffects.Move;
-                DockPanel.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback
+                // DockPanel.Background = new SolidColorBrush(Colors.Blue); // Visuelles Feedback
+                DockPanel.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
+
                 Debug.WriteLine("DockPanel_DragEnter: Element über dem Hauptdock erkannt"); // Debug-Ausgabe
             }
             else
@@ -1091,7 +1095,9 @@ namespace BiMaDock
             if (e.Data.GetDataPresent("Shell IDList Array") || e.Data.GetDataPresent("FileDrop") || e.Data.GetDataPresent("FileNameW") || e.Data.GetDataPresent("FileName") || e.Data.GetDataPresent("FileGroupDescriptorW") || e.Data.GetDataPresent("FileContents") || e.Data.GetDataPresent(DataFormats.Serializable))
             {
                 e.Effects = DragDropEffects.Move;
-                CategoryDockContainer.Background = new SolidColorBrush(Colors.LightGreen); // Visuelles Feedback Farbe
+                // CategoryDockContainer.Background = new SolidColorBrush(Colors.Blue); // Visuelles Feedback Farbe
+                CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
+
                 Console.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt");
 
                 // Den Tag der geöffneten Kategorie lesen
