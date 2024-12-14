@@ -628,7 +628,7 @@ namespace BiMaDock
         {
             // RemoveCrrentPlaceholder();
             // Ausgabe im Klartext
-            Debug.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
+            // Debug.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
 
             if (currentDockStatus > 0) // Überprüft, ob irgendein Flag gesetzt ist
             {
@@ -648,7 +648,7 @@ namespace BiMaDock
         private Button? previousButton = null;
         public void CategoryDockContainer_MouseMove(object sender, MouseEventArgs e)
         {
-            Debug.WriteLine("CategoryDockContainer_MouseMove: gestartet"); // Debugging
+            // Debug.WriteLine("CategoryDockContainer_MouseMove: gestartet"); // Debugging
 
             Point mousePosition = e.GetPosition(CategoryDockContainer);
             // LogMousePositionAndElements(mousePosition); // Optional, falls benötigt
@@ -662,7 +662,7 @@ namespace BiMaDock
                     (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                      Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
                 {
-                    Debug.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
+                    // Debug.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
                     DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
                     dragStartPoint = null;
                     draggedButton = null;
@@ -729,7 +729,7 @@ namespace BiMaDock
 
         public void CategoryDockContainer_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            Debug.WriteLine("CategoryDockContainer_PreviewMouseLeftButtonDown aufgerufen"); // Debugging
+            // Debug.WriteLine("CategoryDockContainer_PreviewMouseLeftButtonDown aufgerufen"); // Debugging
 
             if (sender is StackPanel categoryDock)
             {
@@ -743,58 +743,58 @@ namespace BiMaDock
         }
 
 
-        private void DockPanel_PreviewGiveFeedback(object sender, GiveFeedbackEventArgs e)
-        {
-            if (draggedButton != null)
-            {
-                var mousePosition = Mouse.GetPosition(DockPanel);
+        // private void DockPanel_PreviewGiveFeedback(object sender, GiveFeedbackEventArgs e)
+        // {
+        //     if (draggedButton != null)
+        //     {
+        //         var mousePosition = Mouse.GetPosition(DockPanel);
 
-                if (mousePosition.X >= 0 && mousePosition.X <= DockPanel.ActualWidth &&
-                    mousePosition.Y >= 0 && mousePosition.Y <= DockPanel.ActualHeight)
-                {
-                    Debug.WriteLine($"DockPanel_PreviewGiveFeedback: Dragging: {draggedButton.Tag}, Effects: {e.Effects}, Mouse Position: {mousePosition}"); // Debugging
+        //         if (mousePosition.X >= 0 && mousePosition.X <= DockPanel.ActualWidth &&
+        //             mousePosition.Y >= 0 && mousePosition.Y <= DockPanel.ActualHeight)
+        //         {
+        //             // Debug.WriteLine($"DockPanel_PreviewGiveFeedback: Dragging: {draggedButton.Tag}, Effects: {e.Effects}, Mouse Position: {mousePosition}"); // Debugging
 
-                    var hitTestResult = VisualTreeHelper.HitTest(DockPanel, mousePosition);
-                    if (hitTestResult != null)
-                    {
-                        var overElement = hitTestResult.VisualHit as UIElement;
-                        if (overElement != null)
-                        {
-                            if (overElement is Button button && button.Tag is DockItem dockItem)
-                            {
-                                Debug.WriteLine($"DockPanel_PreviewGiveFeedback: Über Element: {dockItem.DisplayName}, IsCategory: {dockItem.IsCategory}, Mouse Position: {mousePosition}"); // Debugging
-                                if (dockItem.IsCategory)
-                                {
-                                    // Visuelles Feedback für Kategorie-Elemente
-                                    // button.Background = new SolidColorBrush(Colors.Blue);
-                                    button.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
+        //             var hitTestResult = VisualTreeHelper.HitTest(DockPanel, mousePosition);
+        //             if (hitTestResult != null)
+        //             {
+        //                 var overElement = hitTestResult.VisualHit as UIElement;
+        //                 if (overElement != null)
+        //                 {
+        //                     if (overElement is Button button && button.Tag is DockItem dockItem)
+        //                     {
+        //                         Debug.WriteLine($"DockPanel_PreviewGiveFeedback: Über Element: {dockItem.DisplayName}, IsCategory: {dockItem.IsCategory}, Mouse Position: {mousePosition}"); // Debugging
+        //                         if (dockItem.IsCategory)
+        //                         {
+        //                             // Visuelles Feedback für Kategorie-Elemente
+        //                             // button.Background = new SolidColorBrush(Colors.Blue);
+        //                             button.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
 
-                                }
-                            }
-                            else
-                            {
-                                Debug.WriteLine("DockPanel_PreviewGiveFeedback: Über einem unbekannten Element oder kein DockItem"); // Debugging
-                            }
-                        }
-                        else
-                        {
-                            Debug.WriteLine("DockPanel_PreviewGiveFeedback: Keine Übereinstimmung mit einem Element im DockPanel"); // Debugging
-                        }
-                    }
-                    else
-                    {
-                        Debug.WriteLine("DockPanel_PreviewGiveFeedback: HitTestResult ist null"); // Debugging
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine("DockPanel_PreviewGiveFeedback: Mausposition außerhalb der Grenzen des DockPanels"); // Debugging
-                }
-            }
+        //                         }
+        //                     }
+        //                     else
+        //                     {
+        //                         Debug.WriteLine("DockPanel_PreviewGiveFeedback: Über einem unbekannten Element oder kein DockItem"); // Debugging
+        //                     }
+        //                 }
+        //                 else
+        //                 {
+        //                     Debug.WriteLine("DockPanel_PreviewGiveFeedback: Keine Übereinstimmung mit einem Element im DockPanel"); // Debugging
+        //                 }
+        //             }
+        //             else
+        //             {
+        //                 Debug.WriteLine("DockPanel_PreviewGiveFeedback: HitTestResult ist null"); // Debugging
+        //             }
+        //         }
+        //         else
+        //         {
+        //             Debug.WriteLine("DockPanel_PreviewGiveFeedback: Mausposition außerhalb der Grenzen des DockPanels"); // Debugging
+        //         }
+        //     }
 
-            e.UseDefaultCursors = false; // Benutzerdefinierte Cursors verwenden
-            Mouse.SetCursor(Cursors.Hand); // Beispiel: Hand-Cursor verwenden, du kannst hier auch dein eigenes Symbol verwenden
-        }
+        //     e.UseDefaultCursors = false; // Benutzerdefinierte Cursors verwenden
+        //     Mouse.SetCursor(Cursors.Hand); // Beispiel: Hand-Cursor verwenden, du kannst hier auch dein eigenes Symbol verwenden
+        // }
 
 
 
@@ -811,7 +811,7 @@ namespace BiMaDock
             foreach (var placeholder in allPlaceholders)
             {
                 DockPanel.Children.Remove(placeholder);
-                Debug.WriteLine($"DockPanel_MouseMove: Entferne Platzhalter mit ID {placeholder.Uid}.");
+                // Debug.WriteLine($"DockPanel_MouseMove: Entferne Platzhalter mit ID {placeholder.Uid}.");
             }
 
             if (dragStartPoint.HasValue && draggedButton != null)
