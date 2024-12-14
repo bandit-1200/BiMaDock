@@ -2,12 +2,15 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
+using System.Runtime.InteropServices;
+using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading; // Für den DispatcherTimer
 using System.Collections;
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -16,6 +19,49 @@ namespace BiMaDock
 {
     public partial class MainWindow : Window
     {
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        private DispatcherTimer timer;
+        private IntPtr lastForegroundWindow = IntPtr.Zero;
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct WINDOWPLACEMENT
+        {
+            public int length;
+            public int flags;
+            public int showCmd;
+            public POINT ptMinPosition;
+            public POINT ptMaxPosition;
+            public RECT rcNormalPosition;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct POINT
+        {
+            public int x;
+            public int y;
+        }
+
+        [DllImport("user32.dll")]
+        static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+
+        const int SW_MAXIMIZE = 3;
+        const int SW_MINIMIZE = 6;
+
+
         // private GlobalMouseHook mouseHook;  // Deklariere die private Variable für den Hook
         private GlobalMouseHook mouseHook;
         private DockManager dockManager;
@@ -62,6 +108,18 @@ namespace BiMaDock
         {
             InitializeComponent();
             CheckAutostart();
+
+
+            this.WindowStyle = WindowStyle.None;
+            this.ResizeMode = ResizeMode.NoResize;
+            this.Topmost = true;
+
+            this.StateChanged += MainWindow_StateChanged;
+
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1); // Überprüfe jede Sekunde
+            timer.Tick += CheckForRdpFullScreen;
+            timer.Start();
 
             // GlobalMouseHook.SetHook();
             mouseHook = new GlobalMouseHook(this);
@@ -177,8 +235,104 @@ namespace BiMaDock
 
         }
         // Weitere Initialisierung
+        private void CheckForRdpFullScreen(object? sender, EventArgs e)
+        {
+            // Debug.WriteLine("CheckForRdpFullScreen: Überprüfe RDP-Sitzung...");
 
+            bool rdpSessionActive = Process.GetProcessesByName("mstsc").Any();
+            // Debug.WriteLine($"CheckForRdpFullScreen: RDP-Sitzung aktiv: {rdpSessionActive}");
 
+            IntPtr foregroundWindow = GetForegroundWindow();
+            RECT rect;
+
+            if (GetWindowRect(foregroundWindow, out rect))
+            {
+                // Debug.WriteLine($"CheckForRdpFullScreen: Vordergrundfensterabmessungen: Links={rect.Left}, Oben={rect.Top}, Rechts={rect.Right}, Unten={rect.Bottom}");
+
+                int screenWidth = (int)SystemParameters.PrimaryScreenWidth;
+                int screenHeight = (int)SystemParameters.PrimaryScreenHeight;
+
+                // Überprüfen, ob das Fenster maximiert ist
+                if (IsWindowMaximized(foregroundWindow))
+                {
+                    // Debug.WriteLine("CheckForRdpFullScreen: Das Fenster ist maximiert.");
+                    // Keine Änderung an Topmost, wenn das Fenster maximiert ist
+                }
+
+                // Überprüfen, ob das Fenster minimiert ist
+                if (IsWindowMinimized(foregroundWindow))
+                {
+                    // Debug.WriteLine("CheckForRdpFullScreen: Das Fenster ist minimiert.");
+                    if (!this.Topmost)
+                    {
+                        // Debug.WriteLine("CheckForRdpFullScreen: Setze Topmost auf True.");
+                        this.Topmost = true;
+                    }
+                }
+
+                if (rdpSessionActive)
+                {
+                    if (rect.Left == 0 && rect.Top == 0 && rect.Right == screenWidth && rect.Bottom == screenHeight)
+                    {
+                        // Debug.WriteLine("CheckForRdpFullScreen: RDP-Fenster ist im Vollbildmodus.");
+                        if (this.Topmost)
+                        {
+                            // Debug.WriteLine("CheckForRdpFullScreen: Setze Topmost auf False.");
+                            this.Topmost = false;
+                        }
+                    }
+                    else
+                    {
+                        // Debug.WriteLine("CheckForRdpFullScreen: RDP-Fenster ist nicht im Vollbildmodus.");
+                        if (this.Topmost)
+                        {
+                            // Debug.WriteLine("CheckForRdpFullScreen: Setze Topmost auf False.");
+                            this.Topmost = false;
+                        }
+                    }
+                }
+                else
+                {
+                    // Debug.WriteLine("CheckForRdpFullScreen: RDP-Sitzung nicht aktiv.");
+                    if (!this.Topmost)
+                    {
+                        // Debug.WriteLine("CheckForRdpFullScreen: Setze Topmost auf True.");
+                        this.Topmost = true;
+                    }
+                }
+
+                // Debug.WriteLine($"CheckForRdpFullScreen: Aktueller Status der Dockbar (Topmost): {this.Topmost}");
+            }
+            else
+            {
+                // Debug.WriteLine("CheckForRdpFullScreen: Konnte die Abmessungen des Vordergrundfensters nicht abrufen.");
+                if (!this.Topmost)
+                {
+                    // Debug.WriteLine("CheckForRdpFullScreen: Setze Topmost auf True.");
+                    this.Topmost = true;
+                }
+            }
+        }
+
+        private bool IsWindowMaximized(IntPtr hWnd)
+        {
+            WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
+            GetWindowPlacement(hWnd, ref placement);
+            return placement.showCmd == SW_MAXIMIZE;
+        }
+
+        private bool IsWindowMinimized(IntPtr hWnd)
+        {
+            WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
+            GetWindowPlacement(hWnd, ref placement);
+            return placement.showCmd == SW_MINIMIZE;
+        }
+
+        // Event-Handler für StateChanged Ereignis
+        private void MainWindow_StateChanged(object? sender, EventArgs e)
+        {
+            CheckForRdpFullScreen(sender, e);
+        }
 
 
         public async Task ShowUpdateDialog()
@@ -188,7 +342,6 @@ namespace BiMaDock
             UpdateDialog updateDialog = new UpdateDialog(latestVersion, downloadUrl);
             updateDialog.ShowDialog();
         }
-
 
 
         public static async Task<string> GetLatestReleaseDownloadUrlAsync()
