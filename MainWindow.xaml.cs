@@ -101,7 +101,7 @@ namespace BiMaDock
         }
 
         public DockStatus currentDockStatus = DockStatus.None;
-
+        private Dictionary<Button, bool> animationPlayed = new Dictionary<Button, bool>();
 
 
         public MainWindow()
@@ -643,14 +643,14 @@ namespace BiMaDock
         }
 
 
-
-
-
+        // private Dictionary<Button, bool> animationPlayed = new Dictionary<Button, bool>();
 
         public void CategoryDockContainer_MouseMove(object sender, MouseEventArgs e)
         {
+            Debug.WriteLine("CategoryDockContainer_MouseMove: gestartet"); // Debugging
 
-            Debug.WriteLine($"CategoryDockContainer_MouseMove: gestartet"); // Debugging
+            Point mousePosition = e.GetPosition(CategoryDockContainer);
+
             if (dragStartPoint.HasValue && draggedButton != null)
             {
                 Point position = e.GetPosition(CategoryDockContainer);
@@ -667,8 +667,47 @@ namespace BiMaDock
                     isDragging = false; // Setze Dragging-Flag zurück
                 }
             }
-        }
+            else
+            {
+                bool isOverElement = false;
+                Button? hoveredButton = null;
 
+                for (int i = 0; i < CategoryDockContainer.Children.Count; i++)
+                {
+                    if (CategoryDockContainer.Children[i] is Button button)
+                    {
+                        Rect elementRect = new Rect(button.TranslatePoint(new Point(0, 0), CategoryDockContainer), button.RenderSize);
+                        if (elementRect.Contains(mousePosition))
+                        {
+                            isOverElement = true;
+                            hoveredButton = button;
+
+                            if (!animationPlayed.ContainsKey(button))
+                            {
+                                animationPlayed[button] = false;
+                            }
+
+                            if (!animationPlayed[button])
+                            {
+                                animationPlayed[button] = true;
+                                ButtonAnimations.AnimateButtonByChoice(button);
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+                if (!isOverElement && hoveredButton != null)
+                {
+                    // Setze die Animation zurück, wenn die Maus das Element verlässt
+                    if (animationPlayed.ContainsKey(hoveredButton))
+                    {
+                        animationPlayed[hoveredButton] = false;
+                    }
+                }
+            }
+        }
 
 
 
