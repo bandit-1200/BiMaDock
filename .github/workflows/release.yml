@@ -36,7 +36,7 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Install Nerdbank.GitVersioning 
+    - name: Install Nerdbank.GitVersioning
       run: dotnet tool install --global nbgv
 
     - name: Install dependencies
@@ -90,15 +90,16 @@ jobs:
       id: prepare_release_notes
       run: |
         echo "## Release Notes" > release_notes.txt
-        echo "GitBuildVersion: 24.12.7.1" >> release_notes.txt  # Füge hier die korrekte Build-Version hinzu
+        echo "GitBuildVersion: 24.12.8.1" >> release_notes.txt  # Füge hier die korrekte Build-Version hinzu
         echo "Commit: $GITHUB_SHA" >> release_notes.txt
         echo "## Commits" >> release_notes.txt
         git log --pretty=format:"- %h: %s (%an)" >> release_notes.txt
 
     - name: Read release notes
       id: read_release_notes
+      shell: pwsh
       run: |
-        release_notes=$(cat release_notes.txt)
+        $release_notes = Get-Content -Raw -Path release_notes.txt
         echo "::set-output name=release_notes::$release_notes"
 
     - name: Create release with curl
