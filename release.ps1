@@ -32,24 +32,18 @@ if ($versionInfo -and $versionInfo.SimpleVersion -and $versionInfo.VersionHeight
         exit $LASTEXITCODE
     }
 
-    # Überprüfe, ob es Änderungen gibt, die committed werden können
-    $changes = git status --porcelain
-    if ($changes) {
-        Write-Output "Debug: git commit -m 'Release $tagName Build $versionHeight'"
-        git commit -m "Release $tagName Build $versionHeight"
-        if ($LASTEXITCODE -ne 0) {
-            Write-Output "Error: Failed to commit changes"
-            exit $LASTEXITCODE
-        }
+    Write-Output "Debug: git commit -m 'Release $tagName Build $versionHeight'"
+    git commit -m "Release $tagName Build $versionHeight"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Output "Error: Failed to commit changes"
+        exit $LASTEXITCODE
+    }
 
-        Write-Output "Debug: git push origin dev"
-        git push origin dev
-        if ($LASTEXITCODE -ne 0) {
-            Write-Output "Error: Failed to push to dev branch"
-            exit $LASTEXITCODE
-        }
-    } else {
-        Write-Output "No changes to commit."
+    Write-Output "Debug: git push origin dev"
+    git push origin dev
+    if ($LASTEXITCODE -ne 0) {
+        Write-Output "Error: Failed to push to dev branch"
+        exit $LASTEXITCODE
     }
 
     Write-Output "Debug: git tag $tagName"
