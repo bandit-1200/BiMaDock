@@ -74,6 +74,7 @@ release.ps1
 todo.*
 release_body.json
 test.ps1
+autotag.ps1
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
