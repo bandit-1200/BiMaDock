@@ -13,7 +13,7 @@ if ($versionInfo -and $versionInfo.Version -and $versionInfo.VersionHeight) {
     Write-Output "The full version is: $fullVersion"
     Write-Output "The build number is: $versionHeight"
     
-    # Erstelle den Release-Tag im Format vX.Y.Z-BuildN
+    # Erstelle den Tag-Namen im Format vX.Y.Z-BuildN
     $releaseTag = "v$fullVersion-Build$versionHeight"
     Write-Output "The release tag would be: $releaseTag"
 
@@ -66,19 +66,19 @@ if ($versionInfo -and $versionInfo.Version -and $versionInfo.VersionHeight) {
         exit $LASTEXITCODE
     }
 
-    # Erstelle ein neues GitHub-Release
-    $releaseUrl = "https://api.github.com/repos/bandit-1200/BiMaDock/releases"
-    $releaseData = @{
-        tag_name = $releaseTag
-        name = "Release $fullVersion Build $versionHeight"
-        body = "Release notes for $releaseTag"
-        draft = $false
-        prerelease = $false
-    } | ConvertTo-Json
+    # Erstelle ein neues GitHub-Release (Optional, falls du ein Release erstellen möchtest)
+    # $releaseUrl = "https://api.github.com/repos/bandit-1200/BiMaDock/releases"
+    # $releaseData = @{
+    #     tag_name = $releaseTag
+    #     name = "Release $fullVersion Build $versionHeight"
+    #     body = "Release notes for $releaseTag"
+    #     draft = $false
+    #     prerelease = $false
+    # } | ConvertTo-Json
+    #
+    # Write-Output "Debug: Creating GitHub release"
+    # Invoke-RestMethod -Uri $releaseUrl -Method Post -Headers @{ "Accept" = "application/vnd.github.v3+json" } -Body $releaseData -ContentType "application/json"
 
-    Write-Output "Debug: Creating GitHub release"
-    Invoke-RestMethod -Uri $releaseUrl -Method Post -Headers @{ "Accept" = "application/vnd.github.v3+json" } -Body $releaseData -ContentType "application/json"
-    
 } else {
     Write-Output "Failed to retrieve the version information."
 }
