@@ -86,15 +86,37 @@ jobs:
       id: determine_tag
       run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_STATE  # Setze den Tag in GITHUB_STATE
 
-    - name: Create release
-      id: create_release
-      uses: marvinpinto/action-automatic-releases@latest
-      with:
-        repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        automatic_release_tag: ${{ steps.determine_tag.outputs.RELEASE_TAG }}
-        title: "Release ${{ steps.determine_tag.outputs.RELEASE_TAG }}"
-        files: |
-          ./publish/BiMaDockSetup.exe
+    - name: Prepare release notes
+      id: prepare_release_notes
+      run: |
+        echo "## Release Notes" > release_notes.txt
+        echo "GitBuildVersion: 24.12.7.1" >> release_notes.txt  # Füge hier die korrekte Build-Version hinzu
+        echo "Commit: $GITHUB_SHA" >> release_notes.txt
+        echo "## Commits" >> release_notes.txt
+        git log --pretty=format:"- %h: %s (%an)" >> release_notes.txt
+
+    - name: Read release notes
+      id: read_release_notes
+      run: |
+        release_notes=$(cat release_notes.txt)
+        echo "::set-output name=release_notes::$release_notes"
+
+    - name: Create release with curl
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      run: |
+        curl -X POST \
+          -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d @- << EOF
+        {
+          "tag_name": "${{ steps.determine_tag.outputs.RELEASE_TAG }}",
+          "name": "Release ${{ steps.determine_tag.outputs.RELEASE_TAG }}",
+          "body": "${{ steps.read_release_notes.outputs.release_notes }}",
+          "draft": false,
+          "prerelease": false
+        }
+        EOF
 
     - name: Save Release URL
       run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/${{ steps.determine_tag.outputs.RELEASE_TAG }}" >> $GITHUB_OUTPUT  # Ausgabe in GITHUB_OUTPUT

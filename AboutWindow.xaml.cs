@@ -30,6 +30,15 @@ namespace BiMaDock
             e.Handled = true;
         }
 
+        private async void CheckUpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+            await UpdateChecker.CheckForUpdatesAsync(ignoreDefer: true);
+        }
+
+
+
+
+
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();

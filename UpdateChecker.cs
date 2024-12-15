@@ -14,9 +14,9 @@ namespace BiMaDock
         private const string GitHubApiUrl = "https://api.github.com/repos/bandit-1200/BiMaDock/releases/latest";
         private static string ConfigFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "update_config.txt");
 
-        public static async Task CheckForUpdatesAsync()
+        public static async Task CheckForUpdatesAsync(bool ignoreDefer = false)
         {
-            if (IsUpdateDeferred())
+            if (!ignoreDefer && IsUpdateDeferred())
             {
                 Debug.WriteLine("Updateprüfung ist für 30 Tage ausgesetzt.");
                 return;
@@ -52,6 +52,10 @@ namespace BiMaDock
                     else
                     {
                         Debug.WriteLine("Keine Updates verfügbar.");
+                        if (ignoreDefer)
+                        {
+                            MessageBox.Show($"Ihre Software ist auf dem neuesten Stand.\n\nInstallierte Version: {currentVersion}\nVerfügbare Version: {latestVersion}");
+                        }
                     }
                 }
                 catch (HttpRequestException e)
@@ -121,6 +125,5 @@ namespace BiMaDock
                 Debug.WriteLine("Fehler: Der Verzeichnisname ist ungültig.");
             }
         }
-
     }
 }
