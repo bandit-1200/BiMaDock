@@ -35,8 +35,8 @@ if ($versionInfo -and $versionInfo.SimpleVersion -and $versionInfo.VersionHeight
     # Überprüfe, ob es Änderungen gibt, die committed werden können
     $changes = git status --porcelain
     if ($changes) {
-        Write-Output "Debug: git commit -m 'Release $tagName Build $versionHeight'"
-        git commit -m "Release $tagName Build $versionHeight"
+        Write-Output "Debug: git commit -m 'Release $tagName'"
+        git commit -m "Release $tagName"
         if ($LASTEXITCODE -ne 0) {
             Write-Output "Error: Failed to commit changes"
             exit $LASTEXITCODE
