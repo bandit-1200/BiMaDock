@@ -13,7 +13,7 @@ if ($versionInfo -and $versionInfo.Version -and $versionInfo.VersionHeight) {
     Write-Output "The full version is: $fullVersion"
     Write-Output "The build number is: $versionHeight"
     
-    # Erstelle den Tag-Namen
+    # Erstelle den Tag-Namen ohne Build-Nummer
     $tagName = "v$fullVersion"
     Write-Output "The tag name would be: $tagName"
 
