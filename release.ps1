@@ -6,16 +6,16 @@ $versionInfoJson = nbgv get-version --format json
 $versionInfo = $versionInfoJson | ConvertFrom-Json
 
 # Überprüfe, ob die VersionInfo korrekt ermittelt wurde
-if ($versionInfo -and $versionInfo.Version -and $versionInfo.VersionHeight) {
-    # Extrahiere die vollständige Version und die VersionHeight
-    $fullVersion = $versionInfo.Version
+if ($versionInfo -and $versionInfo.SimpleVersion -and $versionInfo.VersionHeight) {
+    # Extrahiere die SimpleVersion und die VersionHeight
+    $simpleVersion = $versionInfo.SimpleVersion
     $versionHeight = $versionInfo.VersionHeight
-    Write-Output "The full version is: $fullVersion"
+    Write-Output "The simple version is: $simpleVersion"
     Write-Output "The build number is: $versionHeight"
     
-    # Erstelle den Tag-Namen im Format vX.Y.Z-BuildN
-    $releaseTag = "v$fullVersion-Build$versionHeight"
-    Write-Output "The release tag would be: $releaseTag"
+    # Erstelle den Tag-Namen
+    $tagName = "v$simpleVersion"
+    Write-Output "The tag name would be: $tagName"
 
     # Git-Befehle ausführen mit klaren Debug-Nachrichten
     Write-Output "Debug: git checkout dev"
@@ -35,8 +35,8 @@ if ($versionInfo -and $versionInfo.Version -and $versionInfo.VersionHeight) {
     # Überprüfe, ob es Änderungen gibt, die committed werden können
     $changes = git status --porcelain
     if ($changes) {
-        Write-Output "Debug: git commit -m 'Release $releaseTag Build $versionHeight'"
-        git commit -m "Release $releaseTag Build $versionHeight"
+        Write-Output "Debug: git commit -m 'Release $tagName Build $versionHeight'"
+        git commit -m "Release $tagName Build $versionHeight"
         if ($LASTEXITCODE -ne 0) {
             Write-Output "Error: Failed to commit changes"
             exit $LASTEXITCODE
@@ -52,32 +52,19 @@ if ($versionInfo -and $versionInfo.Version -and $versionInfo.VersionHeight) {
         Write-Output "No changes to commit."
     }
 
-    Write-Output "Debug: git tag $releaseTag"
-    git tag $releaseTag
+    Write-Output "Debug: git tag $tagName"
+    git tag $tagName
     if ($LASTEXITCODE -ne 0) {
-        Write-Output "Error: Failed to create tag $releaseTag"
+        Write-Output "Error: Failed to create tag $tagName"
         exit $LASTEXITCODE
     }
 
-    Write-Output "Debug: git push origin $releaseTag"
-    git push origin $releaseTag
+    Write-Output "Debug: git push origin $tagName"
+    git push origin $tagName
     if ($LASTEXITCODE -ne 0) {
-        Write-Output "Error: Failed to push tag $releaseTag"
+        Write-Output "Error: Failed to push tag $tagName"
         exit $LASTEXITCODE
     }
-
-    # Erstelle ein neues GitHub-Release (Optional, falls du ein Release erstellen möchtest)
-    # $releaseUrl = "https://api.github.com/repos/bandit-1200/BiMaDock/releases"
-    # $releaseData = @{
-    #     tag_name = $releaseTag
-    #     name = "Release $fullVersion Build $versionHeight"
-    #     body = "Release notes for $releaseTag"
-    #     draft = $false
-    #     prerelease = $false
-    # } | ConvertTo-Json
-    #
-    # Write-Output "Debug: Creating GitHub release"
-    # Invoke-RestMethod -Uri $releaseUrl -Method Post -Headers @{ "Accept" = "application/vnd.github.v3+json" } -Body $releaseData -ContentType "application/json"
 
 } else {
     Write-Output "Failed to retrieve the version information."
