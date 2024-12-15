@@ -3,8 +3,9 @@ name: Release
 on:
   workflow_dispatch:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+      - dev
 
 jobs:
   release:
@@ -38,6 +39,10 @@ jobs:
 
     - name: Install Nerdbank.GitVersioning 
       run: dotnet tool install --global nbgv
+
+    - name: Get version from Nerdbank.GitVersioning
+      id: get_version
+      run: echo "::set-output name=version::$(nbgv get-version --format json | jq -r .SimpleVersion)"
 
     - name: Install dependencies
       run: dotnet restore
@@ -82,19 +87,24 @@ jobs:
         $path = '${{ steps.find-signtool.outputs.signtool_path }}'
         & "$path" sign /f meinzertifikat.pfx /p ${{ secrets.CERTIFICATE_PASSWORD }} /fd SHA256 /tr http://tss.accv.es:8318/tsa /td SHA256 ./publish/BiMaDockSetup.exe
 
-    - name: Determine tag
-      id: determine_tag
-      run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_STATE  # Setze den Tag in GITHUB_STATE
+    - name: Create and push tag
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git tag v${{ steps.get_version.outputs.version }}
+        git push origin v${{ steps.get_version.outputs.version }}
 
     - name: Create release
       id: create_release
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        automatic_release_tag: ${{ steps.determine_tag.outputs.RELEASE_TAG }}
-        title: "Release ${{ steps.determine_tag.outputs.RELEASE_TAG }}"
+        automatic_release_tag: ${{ steps.get_version.outputs.version }}
+        title: "Release ${{ steps.get_version.outputs.version }}"
         files: |
           ./publish/BiMaDockSetup.exe
 
     - name: Save Release URL
-      run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/${{ steps.determine_tag.outputs.RELEASE_TAG }}" >> $GITHUB_OUTPUT  # Ausgabe in GITHUB_OUTPUT
+      run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/v${{ steps.get_version.outputs.version }}" >> $GITHUB_OUTPUT  # Ausgabe in GITHUB_OUTPUT
