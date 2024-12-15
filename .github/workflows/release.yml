@@ -39,13 +39,6 @@ jobs:
     - name: Install Nerdbank.GitVersioning 
       run: dotnet tool install --global nbgv
 
-    - name: Get version
-      id: get_version
-      run: |
-        $version = $(nbgv get-version --format json | ConvertFrom-Json)
-        echo "##[set-output name=simple_version;]$($version.SimpleVersion)"
-        echo "##[set-output name=git_build_version;]$($version.Version.WithSemVer)"
-
     - name: Install dependencies
       run: dotnet restore
 
@@ -89,40 +82,19 @@ jobs:
         $path = '${{ steps.find-signtool.outputs.signtool_path }}'
         & "$path" sign /f meinzertifikat.pfx /p ${{ secrets.CERTIFICATE_PASSWORD }} /fd SHA256 /tr http://tss.accv.es:8318/tsa /td SHA256 ./publish/BiMaDockSetup.exe
 
-    - name: Prepare release notes
-      id: prepare_release_notes
-      run: |
-        echo "## Release Notes" > release_notes.txt
-        echo "GitBuildVersion: ${{ steps.get_version.outputs.git_build_version }}" >> release_notes.txt
-        echo "Commit: $GITHUB_SHA" >> release_notes.txt
-        echo "## Commits" >> release_notes.txt
-        git log --pretty=format:"- %h: %s (%an)" >> release_notes.txt
+    - name: Determine tag
+      id: determine_tag
+      run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_STATE  # Setze den Tag in GITHUB_STATE
 
-    - name: Read release notes
-      id: read_release_notes
-      shell: pwsh
-      run: |
-        $release_notes = Get-Content -Raw -Path release_notes.txt
-        echo "::set-output name=release_notes::$release_notes"
-
-    - name: Write JSON body to file
-      run: |
-        $json = @{
-            tag_name = "v${{ steps.get_version.outputs.simple_version }}"
-            name = "Release v${{ steps.get_version.outputs.simple_version }}"
-            body = "${{ steps.read_release_notes.outputs.release_notes }}"
-            draft = $false
-            prerelease = $false
-        } | ConvertTo-Json
-        $json | Out-File -FilePath release_body.json
-
-    - name: Create release with curl
-      run: |
-        curl -X POST \
-          -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-          -H "Content-Type: application/json" \
-          -d @release_body.json \
-          https://api.github.com/repos/${{ github.repository }}/releases
+    - name: Create release
+      id: create_release
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        automatic_release_tag: ${{ steps.determine_tag.outputs.RELEASE_TAG }}
+        title: "Release ${{ steps.determine_tag.outputs.RELEASE_TAG }}"
+        files: |
+          ./publish/BiMaDockSetup.exe
 
     - name: Save Release URL
-      run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/v${{ steps.get_version.outputs.simple_version }}" >> $GITHUB_OUTPUT  # Ausgabe in GITHUB_OUTPUT
+      run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/${{ steps.determine_tag.outputs.RELEASE_TAG }}" >> $GITHUB_OUTPUT  # Ausgabe in GITHUB_OUTPUT
