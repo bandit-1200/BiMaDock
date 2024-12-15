@@ -72,6 +72,7 @@ Beschreibung.md
 BiMaDock_local_update_version.ps1
 release.ps1
 todo.*
+release_body.json
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
