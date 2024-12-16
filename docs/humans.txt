@@ -1,0 +1,9 @@
+/* TEAM */
+Developer: Marco Bilz
+GitHub: https://github.com/bandit-1200
+
+/* THANKS */
+Thanks to all contributors and users.
+
+/* SITE */
+Last update: 2024-12
