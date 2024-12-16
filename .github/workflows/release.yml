@@ -43,6 +43,10 @@ jobs:
     - name: Install Nerdbank.GitVersioning 
       run: dotnet tool install --global nbgv
 
+    - name: Get version from Nerdbank.GitVersioning
+      id: get_version
+      run: echo "::set-output name=version::$(nbgv get-version --format json | jq -r .SimpleVersion)"
+
     - name: Install dependencies
       run: dotnet restore
 

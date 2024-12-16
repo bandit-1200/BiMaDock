@@ -14,9 +14,9 @@ namespace BiMaDock
         private const string GitHubApiUrl = "https://api.github.com/repos/bandit-1200/BiMaDock/releases/latest";
         private static string ConfigFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "update_config.txt");
 
-        public static async Task CheckForUpdatesAsync()
+        public static async Task CheckForUpdatesAsync(bool ignoreDefer = false)
         {
-            if (IsUpdateDeferred())
+            if (!ignoreDefer && IsUpdateDeferred())
             {
                 Debug.WriteLine("Updateprüfung ist für 30 Tage ausgesetzt.");
                 return;
@@ -52,6 +52,12 @@ namespace BiMaDock
                     else
                     {
                         Debug.WriteLine("Keine Updates verfügbar.");
+                        if (ignoreDefer)
+                        {
+                            // Entferne "Build" vor der Anzeige in der MessageBox
+                            string latestVersionTrimmed = latestVersion.Replace("-Build", ".");
+                            MessageBox.Show($"Ihre Software ist auf dem neuesten Stand.\n\nInstallierte Version: {currentVersion}\nVerfügbare Version: {latestVersionTrimmed}");
+                        }
                     }
                 }
                 catch (HttpRequestException e)
@@ -79,15 +85,17 @@ namespace BiMaDock
         private static bool IsNewVersionAvailable(string currentVersion, string latestVersion)
         {
             Version current = new Version(TrimBuildNumber(currentVersion));
-            Version latest = new Version(latestVersion);
+            Version latest = new Version(TrimBuildNumber(latestVersion));
             return latest > current;
         }
 
         private static string TrimBuildNumber(string version)
         {
-            var parts = version.Split('.');
-            return parts.Length > 3 ? $"{parts[0]}.{parts[1]}.{parts[2]}" : version;
+            // Entfernt das "-BuildN" Suffix
+            var buildIndex = version.IndexOf("-Build");
+            return buildIndex > -1 ? version.Substring(0, buildIndex) : version;
         }
+
 
         private static bool IsUpdateDeferred()
         {
@@ -121,6 +129,5 @@ namespace BiMaDock
                 Debug.WriteLine("Fehler: Der Verzeichnisname ist ungültig.");
             }
         }
-
     }
 }
