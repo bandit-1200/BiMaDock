@@ -1782,6 +1782,16 @@ namespace BiMaDock
 
 
 
+        private void Test_Click(object sender, RoutedEventArgs e)
+        {
+            // string shortcutPath = @"C:\Users\Public\Desktop\Modbus Poll.lnk";
+            // string targetPath = TestPath.GetShortcutTarget(shortcutPath);
+            // MessageBox.Show("Ziel der Verknüpfung: " + targetPath);
+        }
+
+
+
+
     }
 
 }

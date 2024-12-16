@@ -44,6 +44,7 @@
                             <MenuItem x:Name="DeleteMenuItem" Header="Löschen" Click="Delete_Click"/>
                             <Separator/>
                             <MenuItem Header="Einstellungen" Click="OpenSettings_Click"/>
+                            <!-- <MenuItem Header="Test" Click="Test_Click"/> -->
                             <MenuItem Header="Autostart" Click="AutostartMenuItem_Click">
                                 <MenuItem.Icon>
                                     <CheckBox x:Name="AutostartCheckBox"
