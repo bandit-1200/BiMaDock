@@ -1784,12 +1784,18 @@ namespace BiMaDock
 
 
 
-        private void Test_Click(object sender, RoutedEventArgs e)
-        {
-            // string shortcutPath = @"C:\Users\Public\Desktop\Modbus Poll.lnk";
-            // string targetPath = TestPath.GetShortcutTarget(shortcutPath);
-            // MessageBox.Show("Ziel der Verknüpfung: " + targetPath);
-        }
+        // private void Test_Click(object sender, RoutedEventArgs e)
+        // {
+        //     string shortcutPath = @"C:\Users\Public\Desktop\Modbus Poll.lnk";
+        //     string targetPath = TestPath.GetShortcutTarget(shortcutPath);
+
+        //     // Ausgabe zur Überprüfung
+        //     Console.WriteLine("Aufgerufene Methode: Test_Click");
+        //     Console.WriteLine($"Verknüpfungspfad: {shortcutPath}");
+        //     Console.WriteLine($"Ziel der Verknüpfung: {targetPath}");
+
+        //     MessageBox.Show("Ziel der Verknüpfung: " + targetPath);
+        // }
 
 
 
