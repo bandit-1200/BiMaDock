@@ -1623,6 +1623,8 @@ namespace BiMaDock
                         IconSourceTextBox = { Text = settings.IconSource }, // Hinzufügen des Bildpfads
                         CategoryTextBox = { Text = settings.Category },
                         IsCategoryTextBox = { Text = settings.IsCategory.ToString() },
+                        ApplicationPathTextBox = { Text = settings.FilePath.ToString() },
+
                         DockItem = settings
                     };
                     Debug.WriteLine($"Edit_Click: Übergebenes DockItem: ID = {settings.Id}, Name = {settings.DisplayName}, IconSource = {settings.IconSource}, Kategorie = {settings.Category}, Ist Kategorie = {settings.IsCategory}");
