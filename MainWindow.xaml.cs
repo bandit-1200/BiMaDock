@@ -1735,26 +1735,9 @@ namespace BiMaDock
 
 
 
-        private async void Test_Click(object sender, RoutedEventArgs e)
+        private void Test_Click(object sender, RoutedEventArgs e)
         {
-            string shortcutPath = @"C:\Users\Public\Desktop\VPN Access Manager.lnk";
 
-            // Überprüfe, ob die Datei existiert
-            if (!System.IO.File.Exists(shortcutPath))
-            {
-                Console.WriteLine("Die Verknüpfungsdatei existiert nicht: " + shortcutPath);
-                MessageBox.Show("Die Verknüpfungsdatei existiert nicht: " + shortcutPath);
-                return;
-            }
-
-            string targetPath = await GetShortcutTarget.GetShortcutTargetAsync(shortcutPath);
-
-            // Ausgabe zur Überprüfung
-            Console.WriteLine("Aufgerufene Methode: Test_Click");
-            Console.WriteLine($"Verknüpfungspfad: {shortcutPath}");
-            Console.WriteLine($"Ziel der Verknüpfung: {targetPath}");
-
-            MessageBox.Show("Ziel der Verknüpfung: " + targetPath);
         }
 
 
