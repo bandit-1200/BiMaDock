@@ -1050,7 +1050,7 @@ namespace BiMaDock
             }
         }
 
-        public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
+        public async void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
             Debug.WriteLine($"CategoryDockContainer_Drop: aufgerufen um {DateTime.Now}"); // Debug-Ausgabe mit Zeitstempel
 
@@ -1159,14 +1159,24 @@ namespace BiMaDock
             }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                Debug.WriteLine("CategoryDockContainer_Drop: FileDrop Daten gefunden"); // Debug-Ausgabe
+                Debug.WriteLine("CategoryDockContainer_Drop: FileDrop-Daten gefunden"); // Debug-Ausgabe
+
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 foreach (var file in files)
                 {
                     Debug.WriteLine($"CategoryDockContainer_Drop: Datei gefunden: {file}"); // Debug-Ausgabe
+
+                    // Überprüfen, ob es sich um eine Verknüpfung handelt und den Zielpfad ermitteln
+                    string targetPath = file;
+                    if (System.IO.Path.GetExtension(file).ToLower() == ".lnk" || System.IO.Path.GetExtension(file).ToLower() == ".url")
+                    {
+                        targetPath = await GetShortcutTarget.GetShortcutTargetAsync(file);
+                        Debug.WriteLine($"CategoryDockContainer_Drop: Zielpfad der Verknüpfung: {targetPath}");
+                    }
+
                     var dockItem = new DockItem
                     {
-                        FilePath = file ?? string.Empty,
+                        FilePath = targetPath ?? file,
                         DisplayName = System.IO.Path.GetFileNameWithoutExtension(file) ?? string.Empty,
                         Category = currentOpenCategory
                     };
@@ -1214,8 +1224,6 @@ namespace BiMaDock
                     {
                         Tag = currentOpenCategory
                     });
-
-
                 }
             }
             else
@@ -1784,27 +1792,27 @@ namespace BiMaDock
 
 
 
-private async void Test_Click(object sender, RoutedEventArgs e)
-{
-    string shortcutPath = @"C:\Users\Public\Desktop\VPN Access Manager.lnk";
+        private async void Test_Click(object sender, RoutedEventArgs e)
+        {
+            string shortcutPath = @"C:\Users\Public\Desktop\VPN Access Manager.lnk";
 
-    // Überprüfe, ob die Datei existiert
-    if (!System.IO.File.Exists(shortcutPath))
-    {
-        Console.WriteLine("Die Verknüpfungsdatei existiert nicht: " + shortcutPath);
-        MessageBox.Show("Die Verknüpfungsdatei existiert nicht: " + shortcutPath);
-        return;
-    }
+            // Überprüfe, ob die Datei existiert
+            if (!System.IO.File.Exists(shortcutPath))
+            {
+                Console.WriteLine("Die Verknüpfungsdatei existiert nicht: " + shortcutPath);
+                MessageBox.Show("Die Verknüpfungsdatei existiert nicht: " + shortcutPath);
+                return;
+            }
 
-    string targetPath = await TestPath.GetShortcutTargetAsync(shortcutPath);
+            string targetPath = await GetShortcutTarget.GetShortcutTargetAsync(shortcutPath);
 
-    // Ausgabe zur Überprüfung
-    Console.WriteLine("Aufgerufene Methode: Test_Click");
-    Console.WriteLine($"Verknüpfungspfad: {shortcutPath}");
-    Console.WriteLine($"Ziel der Verknüpfung: {targetPath}");
+            // Ausgabe zur Überprüfung
+            Console.WriteLine("Aufgerufene Methode: Test_Click");
+            Console.WriteLine($"Verknüpfungspfad: {shortcutPath}");
+            Console.WriteLine($"Ziel der Verknüpfung: {targetPath}");
 
-    MessageBox.Show("Ziel der Verknüpfung: " + targetPath);
-}
+            MessageBox.Show("Ziel der Verknüpfung: " + targetPath);
+        }
 
 
 
