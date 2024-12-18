@@ -4,11 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-<<<<<<< HEAD
-      - 'v*.*.*'  # Dieser Trigger wird ausgelöst, wenn ein Tag mit v*.*.* gepusht wird.
-=======
       - 'v*'
->>>>>>> fc3726b6ed10d277a87604dab4670b0eb53ff92a
 
 jobs:
   release:
@@ -90,35 +86,6 @@ jobs:
         $path = '${{ steps.find-signtool.outputs.signtool_path }}'
         & "$path" sign /f meinzertifikat.pfx /p ${{ secrets.CERTIFICATE_PASSWORD }} /fd SHA256 /tr http://tss.accv.es:8318/tsa /td SHA256 ./publish/BiMaDockSetup.exe
 
-<<<<<<< HEAD
-    - name: Create Windows installer
-      run: |
-        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "./BiMaDock.iss"
-
-<<<<<<< HEAD
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1.0.0  # Neuste stabile Version
-      with:
-        tag_name: ${{ github.ref_name }}
-        release_name: Release ${{ github.ref_name }}
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Verwendung des GITHUB_TOKEN
-
-    - name: Upload Release
-      uses: actions/upload-release-asset@v1  # Hier kannst du ggf. auch die neueste Version verwenden
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./publish/BiMaDockSetup.exe
-        asset_name: BiMaDockSetup.exe
-        asset_content_type: application/octet-stream
-      env:
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Verwendung des GITHUB_TOKEN
-=======
-=======
->>>>>>> dev
     - name: Determine tag
       id: determine_tag
       run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_STATE  # Setze den Tag in GITHUB_STATE
@@ -135,4 +102,3 @@ jobs:
 
     - name: Save Release URL
       run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/${{ steps.determine_tag.outputs.RELEASE_TAG }}" >> $GITHUB_OUTPUT  # Ausgabe in GITHUB_OUTPUT
->>>>>>> fc3726b6ed10d277a87604dab4670b0eb53ff92a

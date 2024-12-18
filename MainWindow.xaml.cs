@@ -725,63 +725,6 @@ namespace BiMaDock
             }
         }
 
-
-        // private void DockPanel_PreviewGiveFeedback(object sender, GiveFeedbackEventArgs e)
-        // {
-        //     if (draggedButton != null)
-        //     {
-        //         var mousePosition = Mouse.GetPosition(DockPanel);
-
-        //         if (mousePosition.X >= 0 && mousePosition.X <= DockPanel.ActualWidth &&
-        //             mousePosition.Y >= 0 && mousePosition.Y <= DockPanel.ActualHeight)
-        //         {
-        //             // Debug.WriteLine($"DockPanel_PreviewGiveFeedback: Dragging: {draggedButton.Tag}, Effects: {e.Effects}, Mouse Position: {mousePosition}"); // Debugging
-
-        //             var hitTestResult = VisualTreeHelper.HitTest(DockPanel, mousePosition);
-        //             if (hitTestResult != null)
-        //             {
-        //                 var overElement = hitTestResult.VisualHit as UIElement;
-        //                 if (overElement != null)
-        //                 {
-        //                     if (overElement is Button button && button.Tag is DockItem dockItem)
-        //                     {
-        //                         Debug.WriteLine($"DockPanel_PreviewGiveFeedback: Über Element: {dockItem.DisplayName}, IsCategory: {dockItem.IsCategory}, Mouse Position: {mousePosition}"); // Debugging
-        //                         if (dockItem.IsCategory)
-        //                         {
-        //                             // Visuelles Feedback für Kategorie-Elemente
-        //                             // button.Background = new SolidColorBrush(Colors.Blue);
-        //                             button.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
-
-        //                         }
-        //                     }
-        //                     else
-        //                     {
-        //                         Debug.WriteLine("DockPanel_PreviewGiveFeedback: Über einem unbekannten Element oder kein DockItem"); // Debugging
-        //                     }
-        //                 }
-        //                 else
-        //                 {
-        //                     Debug.WriteLine("DockPanel_PreviewGiveFeedback: Keine Übereinstimmung mit einem Element im DockPanel"); // Debugging
-        //                 }
-        //             }
-        //             else
-        //             {
-        //                 Debug.WriteLine("DockPanel_PreviewGiveFeedback: HitTestResult ist null"); // Debugging
-        //             }
-        //         }
-        //         else
-        //         {
-        //             Debug.WriteLine("DockPanel_PreviewGiveFeedback: Mausposition außerhalb der Grenzen des DockPanels"); // Debugging
-        //         }
-        //     }
-
-        //     e.UseDefaultCursors = false; // Benutzerdefinierte Cursors verwenden
-        //     Mouse.SetCursor(Cursors.Hand); // Beispiel: Hand-Cursor verwenden, du kannst hier auch dein eigenes Symbol verwenden
-        // }
-
-
-
-
         private void DockPanel_MouseMove(object sender, MouseEventArgs e)
         {
             // Debug.WriteLine($"DockPanel_MouseMove: aufgerufen"); // Debugging
@@ -1050,7 +993,7 @@ namespace BiMaDock
             }
         }
 
-        public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
+        public async void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
             Debug.WriteLine($"CategoryDockContainer_Drop: aufgerufen um {DateTime.Now}"); // Debug-Ausgabe mit Zeitstempel
 
@@ -1159,14 +1102,24 @@ namespace BiMaDock
             }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                Debug.WriteLine("CategoryDockContainer_Drop: FileDrop Daten gefunden"); // Debug-Ausgabe
+                Debug.WriteLine("CategoryDockContainer_Drop: FileDrop-Daten gefunden"); // Debug-Ausgabe
+
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 foreach (var file in files)
                 {
                     Debug.WriteLine($"CategoryDockContainer_Drop: Datei gefunden: {file}"); // Debug-Ausgabe
+
+                    // Überprüfen, ob es sich um eine Verknüpfung handelt und den Zielpfad ermitteln
+                    string targetPath = file;
+                    if (System.IO.Path.GetExtension(file).ToLower() == ".lnk" || System.IO.Path.GetExtension(file).ToLower() == ".url")
+                    {
+                        targetPath = await GetShortcutTarget.GetShortcutTargetAsync(file);
+                        Debug.WriteLine($"CategoryDockContainer_Drop: Zielpfad der Verknüpfung: {targetPath}");
+                    }
+
                     var dockItem = new DockItem
                     {
-                        FilePath = file ?? string.Empty,
+                        FilePath = targetPath ?? file,
                         DisplayName = System.IO.Path.GetFileNameWithoutExtension(file) ?? string.Empty,
                         Category = currentOpenCategory
                     };
@@ -1214,8 +1167,6 @@ namespace BiMaDock
                     {
                         Tag = currentOpenCategory
                     });
-
-
                 }
             }
             else
@@ -1623,6 +1574,8 @@ namespace BiMaDock
                         IconSourceTextBox = { Text = settings.IconSource }, // Hinzufügen des Bildpfads
                         CategoryTextBox = { Text = settings.Category },
                         IsCategoryTextBox = { Text = settings.IsCategory.ToString() },
+                        ApplicationPathTextBox = { Text = settings.FilePath.ToString() },
+
                         DockItem = settings
                     };
                     Debug.WriteLine($"Edit_Click: Übergebenes DockItem: ID = {settings.Id}, Name = {settings.DisplayName}, IconSource = {settings.IconSource}, Kategorie = {settings.Category}, Ist Kategorie = {settings.IsCategory}");
@@ -1779,6 +1732,19 @@ namespace BiMaDock
                 MessageBox.Show($"Fehler beim Öffnen der URL: {ex.Message}");
             }
         }
+
+
+
+        private void Test_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+
+
+
+
+
 
 
 

@@ -124,6 +124,7 @@ namespace BiMaDock
                     SelectedIconImage.Source = originalImage;
                     DockItem.IconSource = "";
                     IconSourceTextBox.Text = "";
+                    ApplicationPathTextBox.Text = "";
                 };
             }
 

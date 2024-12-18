@@ -428,7 +428,7 @@ public class DockManager
     }
 
 
-    public void DockPanel_Drop(object sender, DragEventArgs e)
+    public async void DockPanel_Drop(object sender, DragEventArgs e)
     {
         Debug.WriteLine("DockPanel_Drop: Drop-Vorgang gestartet");
 
@@ -496,7 +496,7 @@ public class DockManager
                     }
 
                     // Dock-Items aktualisieren und speichern
-                    SaveDockItems(droppedItem.Category);
+                    // SaveDockItems(droppedItem.Category);
                 }
             }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -507,11 +507,21 @@ public class DockManager
                 foreach (var file in files)
                 {
                     Debug.WriteLine($"DockPanel_Drop: Datei gefunden: {file}");
+
+                    // Überprüfen, ob es sich um eine Verknüpfung handelt und den Zielpfad ermitteln
+                    string targetPath = file;
+                    if (System.IO.Path.GetExtension(file).ToLower() == ".lnk" || System.IO.Path.GetExtension(file).ToLower() == ".url")
+                    {
+                        targetPath = await GetShortcutTarget.GetShortcutTargetAsync(file);
+                        Debug.WriteLine($"DockPanel_Drop: Zielpfad der Verknüpfung: {targetPath}");
+                    }
+
                     var dockItem = new DockItem
                     {
-                        FilePath = file ?? string.Empty,
+                        FilePath = targetPath ?? file,
                         DisplayName = System.IO.Path.GetFileNameWithoutExtension(file) ?? string.Empty,
                     };
+
                     Point dropPosition = e.GetPosition(dockPanel);
                     double dropCenterX = dropPosition.X;
                     Debug.WriteLine($"DockPanel_Drop: Drop-Position X: {dropPosition.X}, Y: {dropPosition.Y}");
@@ -543,6 +553,10 @@ public class DockManager
                     }
                 }
             }
+
+            // Speichere die Einstellungen vor dem Verlassen der Methode
+            // SaveDockItems(droppedItem);
+            // SaveDockItems(droppedItem.Category);
         }
         catch (Exception ex)
         {
@@ -576,20 +590,8 @@ public class DockManager
             mainWindow.SetDragging(false);
 
             Debug.WriteLine("DockPanel_Drop: Drop-Vorgang abgeschlossen");
-            // LoadDockItems();
             ListAllDockPanelElements(); // Auflisten aller Elemente im DockPanel
             mainWindow.HideCategoryDockPanel();
-
-            // Entferne alle Platzhalter und aktualisiere die UI
-            for (int i = 0; i < dockPanel.Children.Count; i++)
-            {
-                if (dockPanel.Children[i] is Border border && border.Tag as string == "Placeholder")
-                {
-                    Debug.WriteLine($"DockPanel_Drop: Entferne Platzhalter Border bei Index {i}");
-                    dockPanel.Children.Remove(border);
-                    i--; // Index anpassen, da ein Element entfernt wurde
-                }
-            }
 
             // Aktualisiere die UI
             dockPanel.InvalidateVisual();
@@ -599,7 +601,7 @@ public class DockManager
 
 
 
-    // Methode zum Auflisten aller Elemente im DockPanel
+
     private void ListAllDockPanelElements()
     {
         Debug.WriteLine("ListAllDockPanelElements: Aufgerufen"); // Debug-Ausgabe

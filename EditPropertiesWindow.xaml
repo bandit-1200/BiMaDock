@@ -124,6 +124,17 @@
                             <TextBox x:Name="IconSourceTextBox" Padding="5" FontSize="10" Foreground="White" Background="Transparent" IsReadOnly="True" HorizontalAlignment="Left" Width="548"/>
                         </Border>
                     </StackPanel>
+
+                     <!-- Applikationspfad -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0, 0, 0, 10" Grid.Row="5">
+                        <StackPanel.Effect>
+                            <DropShadowEffect/>
+                        </StackPanel.Effect>
+                        <TextBlock Text="Applikationspfad:" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Width="150"/>
+                        <Border BorderBrush="#444444" BorderThickness="1" Background="#3C3C3C" CornerRadius="5" Width="490" Height="35" Margin="25, 0, 0, 0">
+                            <TextBox x:Name="ApplicationPathTextBox" Padding="5" FontSize="10" Foreground="White" Background="Transparent" IsReadOnly="False" HorizontalAlignment="Left" Width="548"/>
+                        </Border>
+                    </StackPanel>
                 </Grid>
 
 
