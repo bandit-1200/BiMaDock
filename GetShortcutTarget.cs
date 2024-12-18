@@ -104,51 +104,51 @@ namespace BiMaDock
     {
     }
 
-    public class TestPath
+    public class GetShortcutTarget
     {
         const uint STGM_READ = 0;
         const int MAX_PATH = 260;
 
-public static async Task<string> GetShortcutTargetAsync(string filePath)
-{
-    return await Task.Run(() =>
-    {
-        try
+        public static async Task<string> GetShortcutTargetAsync(string filePath)
         {
-            string extension = System.IO.Path.GetExtension(filePath).ToLower();
-            if (extension == ".lnk")
+            return await Task.Run(() =>
             {
-                ShellLink link = new ShellLink();
-                ((IPersistFile)link).Load(filePath, STGM_READ);
-
-                StringBuilder stringBuilder = new StringBuilder(MAX_PATH);
-                WIN32_FIND_DATAW data;
-
-                ((IShellLinkW)link).GetPath(stringBuilder, stringBuilder.Capacity, out data, 0);
-                return stringBuilder.ToString();
-            }
-            else if (extension == ".url")
-            {
-                using (StreamReader reader = new StreamReader(filePath))
+                try
                 {
-                    string? line;
-                    while ((line = reader.ReadLine()) != null)
+                    string extension = System.IO.Path.GetExtension(filePath).ToLower();
+                    if (extension == ".lnk")
                     {
-                        if (line.StartsWith("URL=", StringComparison.OrdinalIgnoreCase))
+                        ShellLink link = new ShellLink();
+                        ((IPersistFile)link).Load(filePath, STGM_READ);
+
+                        StringBuilder stringBuilder = new StringBuilder(MAX_PATH);
+                        WIN32_FIND_DATAW data;
+
+                        ((IShellLinkW)link).GetPath(stringBuilder, stringBuilder.Capacity, out data, 0);
+                        return stringBuilder.ToString();
+                    }
+                    else if (extension == ".url")
+                    {
+                        using (StreamReader reader = new StreamReader(filePath))
                         {
-                            return line.Substring(4);
+                            string? line;
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                if (line.StartsWith("URL=", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return line.Substring(4);
+                                }
+                            }
                         }
                     }
                 }
-            }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Fehler beim Auslesen der Verknüpfung: {ex.Message}");
+                }
+                return string.Empty;
+            });
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Fehler beim Auslesen der Verknüpfung: {ex.Message}");
-        }
-        return string.Empty;
-    });
-}
 
 
 
