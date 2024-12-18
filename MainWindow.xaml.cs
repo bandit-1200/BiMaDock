@@ -1784,18 +1784,32 @@ namespace BiMaDock
 
 
 
-        // private void Test_Click(object sender, RoutedEventArgs e)
-        // {
-        //     string shortcutPath = @"C:\Users\Public\Desktop\Modbus Poll.lnk";
-        //     string targetPath = TestPath.GetShortcutTarget(shortcutPath);
+private async void Test_Click(object sender, RoutedEventArgs e)
+{
+    string shortcutPath = @"C:\Users\Public\Desktop\VPN Access Manager.lnk";
 
-        //     // Ausgabe zur Überprüfung
-        //     Console.WriteLine("Aufgerufene Methode: Test_Click");
-        //     Console.WriteLine($"Verknüpfungspfad: {shortcutPath}");
-        //     Console.WriteLine($"Ziel der Verknüpfung: {targetPath}");
+    // Überprüfe, ob die Datei existiert
+    if (!System.IO.File.Exists(shortcutPath))
+    {
+        Console.WriteLine("Die Verknüpfungsdatei existiert nicht: " + shortcutPath);
+        MessageBox.Show("Die Verknüpfungsdatei existiert nicht: " + shortcutPath);
+        return;
+    }
 
-        //     MessageBox.Show("Ziel der Verknüpfung: " + targetPath);
-        // }
+    string targetPath = await TestPath.GetShortcutTargetAsync(shortcutPath);
+
+    // Ausgabe zur Überprüfung
+    Console.WriteLine("Aufgerufene Methode: Test_Click");
+    Console.WriteLine($"Verknüpfungspfad: {shortcutPath}");
+    Console.WriteLine($"Ziel der Verknüpfung: {targetPath}");
+
+    MessageBox.Show("Ziel der Verknüpfung: " + targetPath);
+}
+
+
+
+
+
 
 
 
