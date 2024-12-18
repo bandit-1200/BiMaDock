@@ -725,63 +725,6 @@ namespace BiMaDock
             }
         }
 
-
-        // private void DockPanel_PreviewGiveFeedback(object sender, GiveFeedbackEventArgs e)
-        // {
-        //     if (draggedButton != null)
-        //     {
-        //         var mousePosition = Mouse.GetPosition(DockPanel);
-
-        //         if (mousePosition.X >= 0 && mousePosition.X <= DockPanel.ActualWidth &&
-        //             mousePosition.Y >= 0 && mousePosition.Y <= DockPanel.ActualHeight)
-        //         {
-        //             // Debug.WriteLine($"DockPanel_PreviewGiveFeedback: Dragging: {draggedButton.Tag}, Effects: {e.Effects}, Mouse Position: {mousePosition}"); // Debugging
-
-        //             var hitTestResult = VisualTreeHelper.HitTest(DockPanel, mousePosition);
-        //             if (hitTestResult != null)
-        //             {
-        //                 var overElement = hitTestResult.VisualHit as UIElement;
-        //                 if (overElement != null)
-        //                 {
-        //                     if (overElement is Button button && button.Tag is DockItem dockItem)
-        //                     {
-        //                         Debug.WriteLine($"DockPanel_PreviewGiveFeedback: Über Element: {dockItem.DisplayName}, IsCategory: {dockItem.IsCategory}, Mouse Position: {mousePosition}"); // Debugging
-        //                         if (dockItem.IsCategory)
-        //                         {
-        //                             // Visuelles Feedback für Kategorie-Elemente
-        //                             // button.Background = new SolidColorBrush(Colors.Blue);
-        //                             button.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
-
-        //                         }
-        //                     }
-        //                     else
-        //                     {
-        //                         Debug.WriteLine("DockPanel_PreviewGiveFeedback: Über einem unbekannten Element oder kein DockItem"); // Debugging
-        //                     }
-        //                 }
-        //                 else
-        //                 {
-        //                     Debug.WriteLine("DockPanel_PreviewGiveFeedback: Keine Übereinstimmung mit einem Element im DockPanel"); // Debugging
-        //                 }
-        //             }
-        //             else
-        //             {
-        //                 Debug.WriteLine("DockPanel_PreviewGiveFeedback: HitTestResult ist null"); // Debugging
-        //             }
-        //         }
-        //         else
-        //         {
-        //             Debug.WriteLine("DockPanel_PreviewGiveFeedback: Mausposition außerhalb der Grenzen des DockPanels"); // Debugging
-        //         }
-        //     }
-
-        //     e.UseDefaultCursors = false; // Benutzerdefinierte Cursors verwenden
-        //     Mouse.SetCursor(Cursors.Hand); // Beispiel: Hand-Cursor verwenden, du kannst hier auch dein eigenes Symbol verwenden
-        // }
-
-
-
-
         private void DockPanel_MouseMove(object sender, MouseEventArgs e)
         {
             // Debug.WriteLine($"DockPanel_MouseMove: aufgerufen"); // Debugging
