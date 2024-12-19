@@ -995,41 +995,29 @@ namespace BiMaDock
 
         public async void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
-            Debug.WriteLine($"CategoryDockContainer_Drop: aufgerufen um {DateTime.Now}"); // Debug-Ausgabe mit Zeitstempel
-
             if (e.Data.GetDataPresent(DataFormats.Serializable) && !isCategoryMessageShown)
             {
-                Debug.WriteLine("CategoryDockContainer_Drop: Serializable Daten gefunden"); // Debug-Ausgabe
-
                 var button = e.Data.GetData(DataFormats.Serializable) as Button;
                 if (button != null)
                 {
                     var droppedItem = button.Tag as DockItem;
                     if (droppedItem != null && !string.IsNullOrEmpty(currentOpenCategory))
                     {
-                        Debug.WriteLine($"CategoryDockContainer_Drop: DropItem gefunden: {droppedItem.DisplayName}, Kategorie: {droppedItem.Category}"); // Debug-Ausgabe
-
                         // Überprüfung auf Kategorie
                         if (droppedItem.IsCategory)
                         {
-                            Debug.WriteLine("CategoryDockContainer_Drop: DropItem ist eine Kategorie"); // Debug-Ausgabe
-
                             if (!isCategoryMessageShown)
                             {
                                 isCategoryMessageShown = true; // Nachricht wurde gezeigt
-                                Debug.WriteLine("CategoryDockContainer_Drop: Kategorie-Meldung gezeigt"); // Debug-Ausgabe
                                 HideDock();
                                 HideCategoryDockPanel();
                             }
-
                             return; // Abbrechen, wenn es eine Kategorie ist
                         }
 
                         // Überprüfen, ob das Element bereits einer anderen Kategorie zugewiesen ist
                         if (string.IsNullOrEmpty(droppedItem.Category) || droppedItem.Category == currentOpenCategory)
                         {
-                            Debug.WriteLine("CategoryDockContainer_Drop: DropItem hat passende oder keine Kategorie"); // Debug-Ausgabe
-
                             // Entferne das Element nicht, wenn es vom Hauptdock kommt und keine Kategorie hat
                             if (!string.IsNullOrEmpty(droppedItem.Category))
                             {
@@ -1037,7 +1025,6 @@ namespace BiMaDock
                                 if (parent != null)
                                 {
                                     parent.Children.Remove(button);
-                                    Debug.WriteLine("CategoryDockContainer_Drop: Button aus Parent entfernt"); // Debug-Ausgabe
                                 }
                             }
 
@@ -1050,7 +1037,6 @@ namespace BiMaDock
                                 if (logicalParent != null)
                                 {
                                     logicalParent.Children.Remove(button);
-                                    Debug.WriteLine("CategoryDockContainer_Drop: Button aus logicalParent entfernt"); // Debug-Ausgabe
                                 }
                             }
 
@@ -1070,7 +1056,6 @@ namespace BiMaDock
                                     {
                                         CategoryDockContainer.Children.Insert(i, button);
                                         inserted = true;
-                                        Debug.WriteLine($"CategoryDockContainer_Drop: Button an Position {i} eingefügt um {DateTime.Now}"); // Debug-Ausgabe mit Zeitstempel
                                         break;
                                     }
                                 }
@@ -1079,7 +1064,6 @@ namespace BiMaDock
                             if (!inserted)
                             {
                                 CategoryDockContainer.Children.Add(button);
-                                Debug.WriteLine($"CategoryDockContainer_Drop: Button am Ende hinzugefügt um {DateTime.Now}"); // Debug-Ausgabe mit Zeitstempel
                             }
 
                             // Visuelles Feedback zurücksetzen Farbe
@@ -1087,34 +1071,78 @@ namespace BiMaDock
 
                             // Aktualisiere die interne Struktur oder Daten, falls nötig
                             UpdateDockItemLocation(button);
-                            Debug.WriteLine("CategoryDockContainer_Drop: DockItemLocation aktualisiert"); // Debug-Ausgabe
-
                             // Dock-Items speichern
                             dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
-                            Debug.WriteLine("CategoryDockContainer_Drop: DockItems gespeichert"); // Debug-Ausgabe
-
-                            // ** Erzwinge visuelles Update **
+                                                                            // ** Erzwinge visuelles Update **
                             button.Visibility = Visibility.Collapsed;
                             button.Visibility = Visibility.Visible;
                         }
                     }
                 }
             }
+            else if (e.Data.GetDataPresent(DataFormats.Text))
+            {
+                string? rawData = e.Data.GetData(DataFormats.Text) as string;
+                if (rawData != null)
+                {
+                    string url = rawData.ToString();
+                    var dockItem = new DockItem
+                    {
+                        FilePath = url,
+                        DisplayName = url,
+                        Category = currentOpenCategory
+                    };
+
+                    Point dropPosition = e.GetPosition(CategoryDockContainer);
+                    double dropCenterX = dropPosition.X;
+                    int newIndex = 0;
+                    bool inserted = false;
+                    for (int i = 0; i < CategoryDockContainer.Children.Count; i++)
+                    {
+                        if (CategoryDockContainer.Children[i] is Button existingButton)
+                        {
+                            Point elementPosition = existingButton.TranslatePoint(new Point(0, 0), CategoryDockContainer);
+                            double elementCenterX = elementPosition.X + (existingButton.ActualWidth / 2);
+
+                            if (dropCenterX < elementCenterX)
+                            {
+                                CategoryDockContainer.Children.Insert(i, new Button { Content = dockItem.DisplayName, Tag = dockItem });
+                                inserted = true;
+                                break;
+                            }
+                        }
+                        newIndex++;
+                    }
+                    if (!inserted)
+                    {
+                        CategoryDockContainer.Children.Add(new Button { Content = dockItem.DisplayName, Tag = dockItem });
+                    }
+
+                    // Visuelles Feedback zurücksetzen Farbe
+                    CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
+
+                    // Aktualisiere die interne Struktur oder Daten, falls nötig
+                    UpdateDockItemLocation(new Button { Content = dockItem.DisplayName, Tag = dockItem });
+
+                    // Dock-Items speichern
+                    dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
+                    HideDock();
+                    ShowCategoryDockPanel(new StackPanel
+                    {
+                        Tag = currentOpenCategory
+                    });
+                }
+            }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                Debug.WriteLine("CategoryDockContainer_Drop: FileDrop-Daten gefunden"); // Debug-Ausgabe
-
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 foreach (var file in files)
                 {
-                    Debug.WriteLine($"CategoryDockContainer_Drop: Datei gefunden: {file}"); // Debug-Ausgabe
-
                     // Überprüfen, ob es sich um eine Verknüpfung handelt und den Zielpfad ermitteln
                     string targetPath = file;
                     if (System.IO.Path.GetExtension(file).ToLower() == ".lnk" || System.IO.Path.GetExtension(file).ToLower() == ".url")
                     {
                         targetPath = await GetShortcutTarget.GetShortcutTargetAsync(file);
-                        Debug.WriteLine($"CategoryDockContainer_Drop: Zielpfad der Verknüpfung: {targetPath}");
                     }
 
                     var dockItem = new DockItem
@@ -1139,7 +1167,6 @@ namespace BiMaDock
                             {
                                 CategoryDockContainer.Children.Insert(i, new Button { Content = dockItem.DisplayName, Tag = dockItem });
                                 inserted = true;
-                                Debug.WriteLine($"CategoryDockContainer_Drop: Button an Position {i} eingefügt um {DateTime.Now}"); // Debug-Ausgabe mit Zeitstempel
                                 break;
                             }
                         }
@@ -1148,7 +1175,6 @@ namespace BiMaDock
                     if (!inserted)
                     {
                         CategoryDockContainer.Children.Add(new Button { Content = dockItem.DisplayName, Tag = dockItem });
-                        Debug.WriteLine($"CategoryDockContainer_Drop: Button am Ende hinzugefügt um {DateTime.Now}"); // Debug-Ausgabe mit Zeitstempel
                     }
 
                     // Visuelles Feedback zurücksetzen Farbe
@@ -1156,12 +1182,9 @@ namespace BiMaDock
 
                     // Aktualisiere die interne Struktur oder Daten, falls nötig
                     UpdateDockItemLocation(new Button { Content = dockItem.DisplayName, Tag = dockItem });
-                    Debug.WriteLine("CategoryDockContainer_Drop: DockItemLocation aktualisiert"); // Debug-Ausgabe
 
                     // Dock-Items speichern
                     dockManager.SaveDockItems(currentOpenCategory); // Verwende die gespeicherte Kategorie
-
-                    Debug.WriteLine($"CategoryDockContainer_Drop: DockItems gespeichert {currentOpenCategory}"); // Debug-Ausgabe
                     HideDock();
                     ShowCategoryDockPanel(new StackPanel
                     {
@@ -1171,14 +1194,11 @@ namespace BiMaDock
             }
             else
             {
-                e.Handled = true; // Stelle sicher, dass das Ereignis verarbeitet wurde
+                e.Handled = true;
             }
-
             // Visuelles Feedback zurücksetzen
             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
             CheckAllConditions();
-            // HideCategoryDockPanel();
-            Debug.WriteLine("CategoryDockContainer_Drop: Kategorie-Dock korrekt zurückgesetzt um {DateTime.Now}"); // Debug-Ausgabe mit Zeitstempel
         }
 
 
