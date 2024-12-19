@@ -934,9 +934,9 @@ namespace BiMaDock
             currentPlaceholder = new Border
             {
                 Background = new SolidColorBrush(Colors.LightGray),
-                Opacity = 0.0,
-                Height = 0.0, // Höhe des Platzhalters
-                Width = 10, // Breite des Platzhalters
+                Opacity = 1.0,
+                Height = 100.0, // Höhe des Platzhalters
+                Width = 4, // Breite des Platzhalters
                 Tag = "Placeholder",
                 Uid = Guid.NewGuid().ToString() // Eindeutige ID hinzufügen
             };
