@@ -101,6 +101,8 @@ namespace BiMaDock
 
         public DockStatus currentDockStatus = DockStatus.None;
         private Dictionary<Button, bool> animationPlayed = new Dictionary<Button, bool>();
+        private Point? previousCategoryMousePosition = null;
+
 
 
         public MainWindow()
@@ -633,7 +635,7 @@ namespace BiMaDock
         private Button? previousButton = null;
         public void CategoryDockContainer_MouseMove(object sender, MouseEventArgs e)
         {
-            // Debug.WriteLine("CategoryDockContainer_MouseMove: gestartet"); // Debugging
+            Debug.WriteLine("CategoryDockContainer_MouseMove: gestartet"); // Debugging
 
             Point mousePosition = e.GetPosition(CategoryDockContainer);
             // LogMousePositionAndElements(mousePosition); // Optional, falls benötigt
@@ -935,8 +937,8 @@ namespace BiMaDock
             {
                 Background = new SolidColorBrush(Colors.LightGray),
                 Opacity = 1.0,
-                Height = 100.0, // Höhe des Platzhalters
-                Width = 4, // Breite des Platzhalters
+                Height = 60.0, // Höhe des Platzhalters
+                Width = 3, // Breite des Platzhalters
                 Tag = "Placeholder",
                 Uid = Guid.NewGuid().ToString() // Eindeutige ID hinzufügen
             };
@@ -1092,6 +1094,7 @@ namespace BiMaDock
                 // Aktualisiere die Position des Dock-Items
                 dockManager.UpdateDockItemLocation(button, currentCategory); // currentCategory mitgeben
                 Debug.WriteLine($"UpdateDockItemLocation: DockItem {dockItem.DisplayName} aktualisiert und gespeichert"); // Debug-Ausgabe
+                RemoveCategoryDockPlaceholders();
             }
             else
             {
@@ -1308,46 +1311,177 @@ namespace BiMaDock
         }
 
 
+        // public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
+        // {
+        //     Console.WriteLine("CategoryDockContainer_DragEnter aufgerufen");
+
+        //     // Debug-Ausgabe aller vorhandenen Datenformate
+        //     var formats = e.Data.GetFormats();
+        //     Console.WriteLine("Vorhandene Datenformate:");
+        //     foreach (var format in formats)
+        //     {
+        //         Console.WriteLine($" - {format}");
+        //     }
+
+        //     // Überprüfen, ob eines der relevanten Datenformate übereinstimmt
+        //     if (e.Data.GetDataPresent("Shell IDList Array") || e.Data.GetDataPresent("FileDrop") || e.Data.GetDataPresent("FileNameW") || e.Data.GetDataPresent("FileName") || e.Data.GetDataPresent("FileGroupDescriptorW") || e.Data.GetDataPresent("FileContents") || e.Data.GetDataPresent(DataFormats.Serializable))
+        //     {
+        //         e.Effects = DragDropEffects.Move;
+        //         // CategoryDockContainer.Background = new SolidColorBrush(Colors.Blue); // Visuelles Feedback Farbe
+        //         CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
+
+        //         Console.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt");
+
+        //         // Den Tag der geöffneten Kategorie lesen
+        //         var categoryName = CategoryDockContainer.Tag as string;
+
+        //         Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete categoryName: {categoryName}");
+
+        //         if (!string.IsNullOrEmpty(categoryName))
+        //         {
+        //             currentOpenCategory = categoryName;
+        //             Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete Kategorie: {currentOpenCategory}");
+        //         }
+        //     }
+        //     else
+        //     {
+        //         e.Effects = DragDropEffects.None;
+        //         Console.WriteLine("CategoryDockContainer_DragEnter: Kein passendes Datenformat erkannt");
+        //         CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
+
+        //     }
+        //     CheckAllConditions();
+        // }
+
+        private void CreateCategoryDockPlaceholder(Point dropPosition)
+        {
+            var placeholder = new Border
+            {
+                Background = new SolidColorBrush(Colors.LightGray),
+                Opacity = 1.0,
+                Height = 60.0, // Höhe des Platzhalters
+                Width = 1, // Breite des Platzhalters
+                Tag = "CategoryPlaceholder",
+                Uid = Guid.NewGuid().ToString() // Eindeutige ID hinzufügen
+            };
+
+            // Finde die richtige Position für den Platzhalter im CategoryDockContainer
+            for (int i = 0; i < CategoryDockContainer.Children.Count; i++)
+            {
+                if (CategoryDockContainer.Children[i] is Button button)
+                {
+                    Point elementPosition = button.TransformToAncestor(CategoryDockContainer).Transform(new Point(0, 0));
+                    double elementCenterX = elementPosition.X + (button.RenderSize.Width / 2);
+
+                    if (dropPosition.X < elementCenterX)
+                    {
+                        CategoryDockContainer.Children.Insert(i, placeholder);
+                        Debug.WriteLine($"CategoryDockContainer_DragEnter: Platzhalter zwischen Element {i - 1} und Element {i} hinzugefügt.");
+                        return;
+                    }
+                }
+            }
+
+            // Wenn keine passende Position gefunden wurde, füge den Platzhalter am Ende hinzu
+            CategoryDockContainer.Children.Add(placeholder);
+            Debug.WriteLine("CategoryDockContainer_DragEnter: Platzhalter am Ende hinzugefügt.");
+        }
+
+
+
+        private void RemoveCategoryDockPlaceholders()
+        {
+            var allPlaceholders = CategoryDockContainer.Children.OfType<Border>().Where(border => border.Tag as string == "CategoryPlaceholder").ToList();
+            foreach (var placeholder in allPlaceholders)
+            {
+                CategoryDockContainer.Children.Remove(placeholder);
+                Console.WriteLine($"CategoryDockContainer_DragEnter: Entferne Platzhalter mit ID {placeholder.Uid}.");
+            }
+        }
+
+        private bool HasCategoryMouseMovedSignificantly(Point currentMousePosition)
+        {
+            if (previousCategoryMousePosition == null)
+            {
+                previousCategoryMousePosition = currentMousePosition;
+                return true;
+            }
+
+            double distance = (currentMousePosition - previousCategoryMousePosition.Value).Length;
+            const double movementThreshold = 10; // Schwellenwert in Pixeln
+
+            if (distance > movementThreshold)
+            {
+                previousCategoryMousePosition = currentMousePosition;
+                return true;
+            }
+
+            return false;
+        }
+
+
         public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
         {
             Console.WriteLine("CategoryDockContainer_DragEnter aufgerufen");
 
-            // Debug-Ausgabe aller vorhandenen Datenformate
-            var formats = e.Data.GetFormats();
+            DebugLogDataFormats(e);
+
+            Point dropPosition = e.GetPosition(CategoryDockContainer); // Ermitteln der Drop-Position
+
+            RemoveCategoryDockPlaceholders();
+            CreateCategoryDockPlaceholder(dropPosition); // Platzhalter an der richtigen Position erstellen
+
+            if (IsRelevantDataFormatPresent(e))
+            {
+                ProcessRelevantDataFormats(e);
+            }
+            else
+            {
+                ProcessNoRelevantDataFormat(e);
+            }
+
+            CheckAllConditions();
+        }
+
+
+        private void DebugLogDataFormats(DragEventArgs e)
+        {
             Console.WriteLine("Vorhandene Datenformate:");
+            var formats = e.Data.GetFormats();
             foreach (var format in formats)
             {
                 Console.WriteLine($" - {format}");
             }
+        }
+        private bool IsRelevantDataFormatPresent(DragEventArgs e)
+        {
+            return e.Data.GetDataPresent("Shell IDList Array") || e.Data.GetDataPresent("FileDrop") ||
+                   e.Data.GetDataPresent("FileNameW") || e.Data.GetDataPresent("FileName") ||
+                   e.Data.GetDataPresent("FileGroupDescriptorW") || e.Data.GetDataPresent("FileContents") ||
+                   e.Data.GetDataPresent(DataFormats.Serializable);
+        }
 
-            // Überprüfen, ob eines der relevanten Datenformate übereinstimmt
-            if (e.Data.GetDataPresent("Shell IDList Array") || e.Data.GetDataPresent("FileDrop") || e.Data.GetDataPresent("FileNameW") || e.Data.GetDataPresent("FileName") || e.Data.GetDataPresent("FileGroupDescriptorW") || e.Data.GetDataPresent("FileContents") || e.Data.GetDataPresent(DataFormats.Serializable))
+        private void ProcessRelevantDataFormats(DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.Move;
+            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
+            Console.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt");
+
+            var categoryName = CategoryDockContainer.Tag as string;
+            Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete categoryName: {categoryName}");
+
+            if (!string.IsNullOrEmpty(categoryName))
             {
-                e.Effects = DragDropEffects.Move;
-                // CategoryDockContainer.Background = new SolidColorBrush(Colors.Blue); // Visuelles Feedback Farbe
-                CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
-
-                Console.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt");
-
-                // Den Tag der geöffneten Kategorie lesen
-                var categoryName = CategoryDockContainer.Tag as string;
-
-                Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete categoryName: {categoryName}");
-
-                if (!string.IsNullOrEmpty(categoryName))
-                {
-                    currentOpenCategory = categoryName;
-                    Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete Kategorie: {currentOpenCategory}");
-                }
+                currentOpenCategory = categoryName;
+                Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete Kategorie: {currentOpenCategory}");
             }
-            else
-            {
-                e.Effects = DragDropEffects.None;
-                Console.WriteLine("CategoryDockContainer_DragEnter: Kein passendes Datenformat erkannt");
-                CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
+        }
 
-            }
-            CheckAllConditions();
+        private void ProcessNoRelevantDataFormat(DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+            Console.WriteLine("CategoryDockContainer_DragEnter: Kein passendes Datenformat erkannt");
+            CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
         }
 
         public void CategoryDockContainer_DragLeave(object sender, DragEventArgs e)
