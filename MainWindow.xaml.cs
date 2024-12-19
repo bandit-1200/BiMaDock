@@ -1311,48 +1311,6 @@ namespace BiMaDock
         }
 
 
-        // public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
-        // {
-        //     Console.WriteLine("CategoryDockContainer_DragEnter aufgerufen");
-
-        //     // Debug-Ausgabe aller vorhandenen Datenformate
-        //     var formats = e.Data.GetFormats();
-        //     Console.WriteLine("Vorhandene Datenformate:");
-        //     foreach (var format in formats)
-        //     {
-        //         Console.WriteLine($" - {format}");
-        //     }
-
-        //     // Überprüfen, ob eines der relevanten Datenformate übereinstimmt
-        //     if (e.Data.GetDataPresent("Shell IDList Array") || e.Data.GetDataPresent("FileDrop") || e.Data.GetDataPresent("FileNameW") || e.Data.GetDataPresent("FileName") || e.Data.GetDataPresent("FileGroupDescriptorW") || e.Data.GetDataPresent("FileContents") || e.Data.GetDataPresent(DataFormats.Serializable))
-        //     {
-        //         e.Effects = DragDropEffects.Move;
-        //         // CategoryDockContainer.Background = new SolidColorBrush(Colors.Blue); // Visuelles Feedback Farbe
-        //         CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
-
-        //         Console.WriteLine("CategoryDockContainer_DragEnter: Element über dem Kategoriedock erkannt");
-
-        //         // Den Tag der geöffneten Kategorie lesen
-        //         var categoryName = CategoryDockContainer.Tag as string;
-
-        //         Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete categoryName: {categoryName}");
-
-        //         if (!string.IsNullOrEmpty(categoryName))
-        //         {
-        //             currentOpenCategory = categoryName;
-        //             Console.WriteLine($"CategoryDockContainer_DragEnter: Geöffnete Kategorie: {currentOpenCategory}");
-        //         }
-        //     }
-        //     else
-        //     {
-        //         e.Effects = DragDropEffects.None;
-        //         Console.WriteLine("CategoryDockContainer_DragEnter: Kein passendes Datenformat erkannt");
-        //         CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
-
-        //     }
-        //     CheckAllConditions();
-        // }
-
         private void CreateCategoryDockPlaceholder(Point dropPosition)
         {
             var placeholder = new Border
