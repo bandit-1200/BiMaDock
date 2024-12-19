@@ -419,6 +419,7 @@ namespace BiMaDock
             }
         }
 
+
         private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
         {
             currentDockStatus |= DockStatus.MainDockHover; // Setzt das MainDockHover-Flag
@@ -728,14 +729,11 @@ namespace BiMaDock
 
         private void DockPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            // Debug.WriteLine($"DockPanel_MouseMove: aufgerufen"); // Debugging
-
             // Entferne gnadenlos alle Platzhalter, bevor der neue erstellt wird
             var allPlaceholders = DockPanel.Children.OfType<Border>().Where(border => border.Tag as string == "Placeholder").ToList();
             foreach (var placeholder in allPlaceholders)
             {
                 DockPanel.Children.Remove(placeholder);
-                // Debug.WriteLine($"DockPanel_MouseMove: Entferne Platzhalter mit ID {placeholder.Uid}.");
             }
 
             if (dragStartPoint.HasValue && draggedButton != null)
@@ -747,11 +745,14 @@ namespace BiMaDock
                     (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                      Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
                 {
-                    // Debug.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
-                    DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
-                    dragStartPoint = null;
-                    draggedButton = null;
-                    isDragging = false; // Setze Dragging-Flag zurück
+                    if (!isDragging)
+                    {
+                        isDragging = true;
+                        DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
+                        dragStartPoint = null;
+                        draggedButton = null;
+                        isDragging = false; // Setze Dragging-Flag zurück
+                    }
                 }
             }
             else
@@ -767,9 +768,7 @@ namespace BiMaDock
 
                         if (elementRect.Contains(mousePosition))
                         {
-                            // Debug.WriteLine($"Maus über Element: {button.Tag}, Position: {mousePosition}"); // Debugging
                             isOverElement = true;
-
                             break;
                         }
                     }
@@ -777,7 +776,7 @@ namespace BiMaDock
 
                 if (!isOverElement)
                 {
-                    // Debug.WriteLine($"Maus über Dock ohne Element, Position: {mousePosition}"); // Debugging
+                    // Debugging
                 }
             }
         }
