@@ -499,6 +499,51 @@ public class DockManager
                     // SaveDockItems(droppedItem.Category);
                 }
             }
+            else if (e.Data.GetDataPresent(DataFormats.Text))
+            {
+                Debug.WriteLine("DockPanel_Drop: Text-Daten gefunden");
+
+                string? rawData = e.Data.GetData(DataFormats.Text) as string;
+                if (rawData != null)
+                {
+                    string url = rawData.ToString();
+                    var dockItem = new DockItem
+                    {
+                        FilePath = url,
+                        DisplayName = url,
+                    };
+
+                    Point dropPosition = e.GetPosition(dockPanel);
+                    double dropCenterX = dropPosition.X;
+                    Debug.WriteLine($"DockPanel_Drop: Drop-Position X: {dropPosition.X}, Y: {dropPosition.Y}");
+
+                    int newIndex = 0;
+                    bool inserted = false;
+                    for (int i = 0; i < dockPanel.Children.Count; i++)
+                    {
+                        if (dockPanel.Children[i] is Button button)
+                        {
+                            Point elementPosition = button.TranslatePoint(new Point(0, 0), dockPanel);
+                            double elementCenterX = elementPosition.X + (button.ActualWidth / 2);
+                            Debug.WriteLine($"DockPanel_Drop: Button an Position {i} mit CenterX: {elementCenterX}");
+
+                            if (dropCenterX < elementCenterX)
+                            {
+                                Debug.WriteLine($"DockPanel_Drop: URL wird vor Element {i} eingefügt");
+                                AddDockItemAt(dockItem, i, dockItem.Category);
+                                inserted = true;
+                                break;
+                            }
+                        }
+                        newIndex++;
+                    }
+                    if (!inserted)
+                    {
+                        Debug.WriteLine("DockPanel_Drop: URL wird am Ende eingefügt");
+                        AddDockItemAt(dockItem, newIndex, dockItem.Category);
+                    }
+                }
+            }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 Debug.WriteLine("DockPanel_Drop: FileDrop-Daten gefunden");
@@ -598,9 +643,6 @@ public class DockManager
             dockPanel.UpdateLayout();
         }
     }
-
-
-
 
     private void ListAllDockPanelElements()
     {
