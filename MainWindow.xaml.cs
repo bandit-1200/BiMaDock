@@ -94,7 +94,8 @@ namespace BiMaDock
             CategoryDockHover = 2,
             ContextMenuOpen = 4,
             CategoryElementClicked = 8,
-            DraggingToDock = 16
+            DraggingToDock = 16,
+            EditSettingsDock = 32
 
         }
 
@@ -1404,68 +1405,6 @@ namespace BiMaDock
             }
         }
 
-        // public void ShowCategoryDockPanel(StackPanel categoryDock)
-        // {
-        //     // Debug.WriteLine("ShowCategoryDockPanel: Methode aufgerufen");
-        //     CategoryDockContainer.Children.Clear();
-        //     CategoryDockContainer.Children.Add(categoryDock);
-        //     CategoryDockContainer.Visibility = Visibility.Visible;
-        //     CategoryDockBorder.Visibility = Visibility.Visible;
-        //     OverlayCanvas.Visibility = Visibility.Visible;
-        //     Panel.SetZIndex(OverlayCanvas, 1000);
-        //     Panel.SetZIndex(CategoryDockBorder, 0);
-
-        //     currentDockStatus |= DockStatus.CategoryElementClicked;
-        //     currentOpenCategory = categoryDock.Tag?.ToString() ?? string.Empty;
-        //     CategoryDockContainer.Tag = currentOpenCategory;
-        //     // Debug.WriteLine($"ShowCategoryDockPanel: currentOpenCategory = {currentOpenCategory}");
-
-        //     var items = SettingsManager.LoadSettings();
-        //     foreach (var item in items)
-        //     {
-        //         if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
-        //         {
-        //             dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory);
-        //             // Debug.WriteLine($"ShowCategoryDockPanel: DockItem {item.DisplayName} zur Kategorie {currentOpenCategory} hinzugefügt");
-        //         }
-        //     }
-
-        //     Application.Current.Dispatcher.InvokeAsync(() =>
-        //     {
-        //         // Debug.WriteLine("ShowCategoryDockPanel: Dispatcher aufgerufen");
-
-        //         if (CategoryDockBorder.ActualWidth > 0)
-        //         {
-        //             double mainWindowCenterX = Application.Current.MainWindow.ActualWidth / 2;
-        //             double mainStackPanelCenterX = MainStackPanel.ActualWidth / 2;
-        //             double elementCenterX = dockManager.mousePositionSave + mainStackPanelCenterX;
-        //             double categoryDockPositionX = dockManager.mousePositionSave + dockManager.mousePositionSave;
-        //             // Setze die neue Position
-        //             CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
-
-        //             double categoryDockCenterX = categoryDockPositionX + (CategoryDockBorder.ActualWidth / 2);
-        //             double positionRelativeToCenter = categoryDockCenterX - mainWindowCenterX;
-
-        //             double overlayPositionX = dockManager.mousePositionSaveleft - 10;
-        //             double overlayPositionY = 80;
-
-        //             Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
-        //             Canvas.SetTop(OverlayCanvasHorizontalLine, overlayPositionY);
-        //             Panel.SetZIndex(OverlayCanvasHorizontalLine, 1000); // Höherer Wert bringt es in den Vordergrund
-
-        //         }
-        //         else
-        //         {
-        //             // Debug.WriteLine("ShowCategoryDockPanel: CategoryDockBorder.ActualWidth ist 0 oder kleiner");
-        //         }
-        //     }, System.Windows.Threading.DispatcherPriority.Loaded);
-
-        //     MainStackPanel.Margin = new Thickness(0);
-        //     categoryHideTimer.Start();
-        //     CheckAllConditions();
-        // }
-
-
         public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
             // Debug.WriteLine("ShowCategoryDockPanel: Methode aufgerufen");
@@ -1561,6 +1500,7 @@ namespace BiMaDock
 
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
+            currentDockStatus |= DockStatus.EditSettingsDock;  // Flag setzen
             try
             {
                 if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
