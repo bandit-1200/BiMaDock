@@ -192,6 +192,7 @@ namespace BiMaDock
                 OpenMenuItem.Visibility = Visibility.Collapsed;
                 DeleteMenuItem.Visibility = Visibility.Collapsed;
                 EditMenuItem.Visibility = Visibility.Collapsed;
+                FindFileItem.Visibility = Visibility.Collapsed;
                 DockContextMenu.IsOpen = true;
                 if (DockContextMenu.IsOpen)
                 {
@@ -225,8 +226,11 @@ namespace BiMaDock
             }
 
             HideCategoryDockPanel();
+            Debug.WriteLine("MainWindow: HideCategoryDockPanel");
             HideDock();
+            Debug.WriteLine("MainWindow: HideDock");
             UpdateCheck();
+            Debug.WriteLine("MainWindow: UpdateCheck");
 
         }
         // Weitere Initialisierung
@@ -1897,7 +1901,21 @@ namespace BiMaDock
 
         }
 
-
+        private void OpenFilePath_Click(object sender, RoutedEventArgs e)
+        {
+            // Debug.WriteLine($"Edit_Click: Übergebenes DockItem: ID = {settings.Id}, Name = {settings.DisplayName}, IconSource = {settings.IconSource}, Kategorie = {settings.Category}, Ist Kategorie = {settings.IsCategory}");
+            Debug.WriteLine($"OpenFilePath_Click: ");
+            if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+            {
+                Debug.WriteLine($"OpenFilePath_Click: Geklicktes Item: ID = {dockItem.Id}, Name = {dockItem.DisplayName} Category= {dockItem.Category}, Pfad= {dockItem.FilePath}");
+                string filePath = dockItem.FilePath;
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                // Startet den Explorer und zeigt die Datei an 
+                Process.Start("explorer.exe", $"/select,{filePath}");
+                }
+            }
+        }
 
 
 

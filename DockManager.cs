@@ -572,6 +572,7 @@ public class DockManager
 
         Debug.WriteLine("DockPanel_Drop: Drop-Vorgang abgeschlossen");
         ListAllDockPanelElements(); // Auflisten aller Elemente im DockPanel
+
         mainWindow.HideCategoryDockPanel();
 
         dockPanel.InvalidateVisual();
@@ -794,6 +795,7 @@ public class DockManager
             mainWindow.OpenMenuItem.Visibility = Visibility.Visible;
             mainWindow.DeleteMenuItem.Visibility = Visibility.Visible;
             mainWindow.EditMenuItem.Visibility = Visibility.Visible;
+            mainWindow.FindFileItem.Visibility = Visibility.Visible;
             mainWindow.DockContextMenu.PlacementTarget = button;
             mainWindow.DockContextMenu.IsOpen = true;
             mainWindow.currentDockStatus |= MainWindow.DockStatus.ContextMenuOpen;
