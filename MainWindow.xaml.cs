@@ -110,7 +110,8 @@ namespace BiMaDock
             InitializeComponent();
             CheckAutostart();
 
-
+            this.SizeChanged += MainWindow_SizeChanged;     // Event abonnieren, um auf Änderungen der Fenstergröße zu reagieren
+            CenterWindow();     // Initiale Zentrierung des Fensters
             this.WindowStyle = WindowStyle.None;
             this.ResizeMode = ResizeMode.NoResize;
             this.Topmost = true;
@@ -1911,16 +1912,32 @@ namespace BiMaDock
                 string filePath = dockItem.FilePath;
                 if (!string.IsNullOrEmpty(filePath))
                 {
-                // Startet den Explorer und zeigt die Datei an 
-                Process.Start("explorer.exe", $"/select,{filePath}");
+                    // Startet den Explorer und zeigt die Datei an 
+                    Process.Start("explorer.exe", $"/select,{filePath}");
                 }
             }
         }
 
 
+        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            CenterWindow();
+        }
 
+        private void CenterWindow()
+        {
+            // Bildschirmbreite und -höhe abrufen
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
 
+            // Fensterbreite und -höhe abrufen
+            double windowWidth = this.Width;
+            double windowHeight = this.Height;
 
+            // Neue Position berechnen
+            this.Left = (screenWidth - windowWidth) / 2;
+            this.Top = (screenHeight - windowHeight) / 2;
+        }
 
 
     }
