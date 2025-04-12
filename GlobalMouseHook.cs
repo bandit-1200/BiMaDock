@@ -43,17 +43,14 @@ public class GlobalMouseHook
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     var window = mainWindow;
-                    Rect windowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
+                    var editPropertiesWindow = GetOpenEditPropertiesWindow();
 
-                    if (!windowRect.Contains(mousePosition))
+                    // Prüfen, ob das EditPropertiesWindow noch geöffnet ist
+                    bool isEditPropertiesWindowOpen = editPropertiesWindow != null && editPropertiesWindow.IsVisible;
+
+                    if (!isEditPropertiesWindowOpen)
                     {
-                        // Mausklick außerhalb der Anwendung erkannt
-                        window.HideDock();
-                        window.HideCategoryDockPanel(); // Schließt das Kategoriedock
-                        Console.WriteLine("Klick außerhalb der Anwendung erkannt!");
-                    }
-                    else
-                    {
+                        Rect mainWindowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
                         Point relativePoint = window.PointFromScreen(mousePosition);
                         HitTestResult result = VisualTreeHelper.HitTest(window, relativePoint);
 
@@ -73,6 +70,13 @@ public class GlobalMouseHook
                                 }
                             }
                         }
+                        else
+                        {
+                            // Mausklick außerhalb der Anwendung erkannt
+                            window.HideDock();
+                            window.HideCategoryDockPanel(); // Schließt das Kategoriedock
+                            Console.WriteLine("Klick außerhalb der Anwendung erkannt!");
+                        }
                     }
                 });
             }
@@ -85,20 +89,55 @@ public class GlobalMouseHook
         return CallNextHookEx(_hookID, nCode, wParam, lParam);
     }
 
-
-
-
-    private bool IsElementChildOf(DependencyObject element, DependencyObject parent)
+    private bool IsElementChildOf(FrameworkElement element, FrameworkElement parent)
     {
         while (element != null)
         {
             if (element == parent)
+            {
                 return true;
+            }
 
-            element = VisualTreeHelper.GetParent(element);
+            var parentElement = VisualTreeHelper.GetParent(element) as FrameworkElement;
+            if (parentElement == null)
+            {
+                return false;
+            }
+            element = parentElement;
         }
         return false;
     }
+
+
+    private EditPropertiesWindow? GetOpenEditPropertiesWindow()
+    {
+        foreach (Window window in Application.Current.Windows)
+        {
+            if (window is EditPropertiesWindow)
+            {
+                return (EditPropertiesWindow)window;
+            }
+        }
+        return null;
+    }
+
+
+
+
+
+
+
+    // private bool IsElementChildOf(DependencyObject element, DependencyObject parent)
+    // {
+    //     while (element != null)
+    //     {
+    //         if (element == parent)
+    //             return true;
+
+    //         element = VisualTreeHelper.GetParent(element);
+    //     }
+    //     return false;
+    // }
 
 
     // private void OnClickOutsideGrid()

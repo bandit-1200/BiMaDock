@@ -39,6 +39,7 @@
                         <ContextMenu x:Name="DockContextMenu" Panel.ZIndex="6">
                             <MenuItem x:Name="OpenMenuItem" Header="Öffnen" Click="Open_Click"/>
                             <MenuItem x:Name="EditMenuItem" Header="Eigenschaften bearbeiten" Click="Edit_Click"/>
+                            <MenuItem x:Name="FindFileItem" Header="Dateifad öffnen" Click="OpenFilePath_Click"/>
                             <!-- <MenuItem x:Name="TestUpdateDialog" Header="TestUpdateDialog" Click="TestUpdateDialogButton_Click"/> -->
                             <MenuItem Header="Kategorie erstellen" Click="AddCategory_Click"/>
                             <MenuItem x:Name="DeleteMenuItem" Header="Löschen" Click="Delete_Click"/>
