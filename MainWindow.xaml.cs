@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Microsoft.Win32; // Für SystemEvents
 
 namespace BiMaDock
 {
@@ -111,6 +112,7 @@ namespace BiMaDock
             CheckAutostart();
 
             this.SizeChanged += MainWindow_SizeChanged;     // Event abonnieren, um auf Änderungen der Fenstergröße zu reagieren
+            SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged; // Event abonnieren, um auf Änderungen der Bildschirmauflösung zu reagieren
             CenterWindow();     // Initiale Zentrierung des Fensters
             this.WindowStyle = WindowStyle.None;
             this.ResizeMode = ResizeMode.NoResize;
@@ -1865,8 +1867,8 @@ namespace BiMaDock
 
         protected override void OnClosed(EventArgs e)
         {
-            // mouseHook.Stop();
-            // base.OnClosed(e);
+            SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged; // Event abmelden, um Speicherlecks zu vermeiden
+            base.OnClosed(e);
         }
 
         private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
@@ -1926,20 +1928,24 @@ namespace BiMaDock
 
         private void CenterWindow()
         {
-            // Bildschirmbreite und -höhe abrufen
+            // Bildschirmbreite abrufen
             double screenWidth = SystemParameters.PrimaryScreenWidth;
-            double screenHeight = SystemParameters.PrimaryScreenHeight;
 
-            // Fensterbreite und -höhe abrufen
+            // Fensterbreite abrufen
             double windowWidth = this.Width;
-            double windowHeight = this.Height;
 
-            // Neue Position berechnen
+            // Neue horizontale Position berechnen (zentriert)
             this.Left = (screenWidth - windowWidth) / 2;
-            this.Top = (screenHeight - windowHeight) / 2;
+
+            // Vertikale Position fixieren (am oberen Bildschirmrand)
+            this.Top = 0;
         }
 
-
+        private void OnDisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            Debug.WriteLine("Die Bildschirmauflösung hat sich geändert."); // Debug-Ausgabe
+            CenterWindow(); // Fenster neu zentrieren
+        }
     }
 
 }
