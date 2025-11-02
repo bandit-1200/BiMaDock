@@ -104,16 +104,16 @@ namespace BiMaDock
         private Dictionary<Button, bool> animationPlayed = new Dictionary<Button, bool>();
         private Point? previousCategoryMousePosition = null;
 
-
+        private DispatcherTimer? showDockTimer; // neu: Verzögerung beim Einblenden (nullable)
 
         public MainWindow()
         {
             InitializeComponent();
             CheckAutostart();
 
-            this.SizeChanged += MainWindow_SizeChanged;     // Event abonnieren, um auf Änderungen der Fenstergröße zu reagieren
-            SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged; // Event abonnieren, um auf Änderungen der Bildschirmauflösung zu reagieren
-            CenterWindow();     // Initiale Zentrierung des Fensters
+            this.SizeChanged += MainWindow_SizeChanged;
+            SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+            CenterWindow();
             this.WindowStyle = WindowStyle.None;
             this.ResizeMode = ResizeMode.NoResize;
             this.Topmost = true;
@@ -121,7 +121,7 @@ namespace BiMaDock
             this.StateChanged += MainWindow_StateChanged;
 
             timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1); // Überprüfe jede Sekunde
+            timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += CheckForRdpFullScreen;
             timer.Start();
 
@@ -431,23 +431,24 @@ namespace BiMaDock
 
         private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
         {
-            currentDockStatus |= DockStatus.MainDockHover; // Setzt das MainDockHover-Flag
-            CheckAllConditions();
+            // Verzögertes Einblenden
+            StartShowDelay(300);
+            // Stoppe Versteck-Timer
+            dockHideTimer?.Stop();
+            categoryHideTimer?.Stop();
         }
 
 
         private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
         {
-            currentDockStatus &= ~DockStatus.MainDockHover; // Löscht das MainDockHover-Flag
-            // currentDockStatus &= ~DockStatus.DraggingToDock;
+            // Abbrechen, falls noch nicht eingeblendet
+            CancelShowDelay();
+
+            currentDockStatus &= ~DockStatus.MainDockHover;
             CheckAllConditions();
 
-            if (!DockContextMenu.IsOpen)
-            {
-                // ShowDock(); // Dock sichtbar halten
-                currentDockStatus &= ~DockStatus.ContextMenuOpen;
-                CheckAllConditions();
-            }
+            // Alt-Verhalten: Hide mit Timer starten
+            dockHideTimer?.Start();
         }
 
 
@@ -553,14 +554,56 @@ namespace BiMaDock
 
         }
 
-
-        public void InitializeCategoryDockContainer(StackPanel container)
+        // --- Einfügen: StartShowDelay / CancelShowDelay (behebt CS0103) ---
+        // Startet verzögertes Einblenden des Docks (aufrufbar von DockManager)
+        public void StartShowDelay(int milliseconds = 300)
         {
-            CategoryDockContainer = container;
+            // UI-Thread verwenden
+            Dispatcher.Invoke(() =>
+            {
+                if (showDockTimer == null)
+                {
+                    showDockTimer = new DispatcherTimer();
+                    showDockTimer.Tick += (s, e) =>
+                    {
+                        try
+                        {
+                            showDockTimer.Stop();
+                            if (!isDragging)
+                            {
+                                ShowDock();
+                                currentDockStatus |= DockStatus.MainDockHover;
+                                CheckAllConditions();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"StartShowDelay: {ex.Message}");
+                        }
+                    };
+                }
+
+                showDockTimer.Interval = TimeSpan.FromMilliseconds(milliseconds);
+                showDockTimer.Stop();
+                showDockTimer.Start();
+            });
         }
 
-
-
+        // Bricht ein geplantes verzögertes Einblenden ab
+        public void CancelShowDelay()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    showDockTimer?.Stop();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"CancelShowDelay: {ex.Message}");
+                }
+            });
+        }
 
         private void CheckMousePosition(object sender, MouseEventArgs e)
         {
@@ -1469,8 +1512,6 @@ namespace BiMaDock
 
 
 
-
-
         public void OpenDockItem(DockItem dockItem)
         {
             Debug.WriteLine($"OpenDockItem aufgerufen"); // Debug-Ausgabe
@@ -1506,9 +1547,6 @@ namespace BiMaDock
                         Tag = dockItem.Id
                         // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
                     });
-
-
-
 
 
 
@@ -1589,9 +1627,6 @@ namespace BiMaDock
                 }
             }
         }
-
-
-
 
 
 

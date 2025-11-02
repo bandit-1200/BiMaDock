@@ -59,14 +59,17 @@ public class DockManager
 
     private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
     {
-        mainWindow.ShowDock();
+        // vorher: mainWindow.ShowDock();
+        mainWindow.StartShowDelay(300); // 300 ms Verzögerung
     }
 
     private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
     {
+        // Abbrechen des geplanten Einblendens, falls noch nicht ausgeführt
+        mainWindow.CancelShowDelay();
+
         if (!mainWindow.isDragging && mainWindow.dockVisible) // Prüfen, ob das Dock sichtbar ist, bevor es ausgeblendet wird
         {
-            // Debug.WriteLine("DockPanel verlassen, HideDock wird aufgerufen"); // Debugging
             mainWindow.HideDock();
         }
     }
