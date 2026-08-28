@@ -380,6 +380,11 @@ public class DockManager
 
     public void AddCategoryItem(string categoryName)
     {
+        if (string.IsNullOrWhiteSpace(categoryName))
+        {
+            throw new ArgumentException("Der Kategoriename darf nicht leer sein.", nameof(categoryName));
+        }
+
         // Aktuellen Stand der Dock-Settings einlesen
         var existingItems = SettingsManager.LoadSettings();
 
@@ -388,7 +393,7 @@ public class DockManager
         {
             Id = Guid.NewGuid().ToString(),
             FilePath = "",
-            DisplayName = categoryName,
+            DisplayName = categoryName.Trim(),
             Category = "",
             IsCategory = true,
             IconSource = "", // IconSource bleibt leer beim ersten Anlegen

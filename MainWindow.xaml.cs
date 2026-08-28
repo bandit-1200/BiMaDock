@@ -10,6 +10,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using System.Collections;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -110,123 +111,120 @@ namespace BiMaDock
 
         public MainWindow()
         {
-            InitializeComponent();
-            mainDockNavigation = new DockNavigationController(
-                MainDockScrollViewer, MainDockPreviousButton, MainDockNextButton);
-            categoryDockNavigation = new DockNavigationController(
-                CategoryDockScrollViewer, CategoryDockPreviousButton, CategoryDockNextButton);
-            CheckAutostart();
-
-            this.SizeChanged += MainWindow_SizeChanged;
-            SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
-            CenterWindow();
-            this.WindowStyle = WindowStyle.None;
-            this.ResizeMode = ResizeMode.NoResize;
-            this.Topmost = true;
-
-            this.StateChanged += MainWindow_StateChanged;
-
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += CheckForRdpFullScreen;
-            timer.Start();
-
-            // GlobalMouseHook.SetHook();
-            mouseHook = new GlobalMouseHook(this);
-
-            //  SettingsWindow.LoadSettings();
-            SettingsWindow settingsWindow = new SettingsWindow(this);
-            double screenWidth = SystemParameters.PrimaryScreenWidth;
-
-            ButtonAnimations.LoadSettings(); //Animation
-            settingsWindow.LoadSettings(); // Einstellungen laden
-            AllowDrop = true;
-            Debug.WriteLine("Hauptfenster initialisiert."); // Debugging
-            dockManager = new DockManager(DockPanel, CategoryDockContainer, this); // Übergeben von CategoryDockContainer
-            dockManager.LoadDockItems();
-            RefreshDockNavigation();
-            Debug.WriteLine("Dock-Elemente geladen."); // Debugging
-
-
-            // Timer initialisieren
-            dockHideTimer = new DispatcherTimer();
-            dockHideTimer.Interval = TimeSpan.FromSeconds(0.3); // Zeitintervall auf 5 Sekunden setzen
-            dockHideTimer.Tick += (s, e) => { HideDock(); };
-
-            // Timer initialisieren
-            categoryHideTimer = new DispatcherTimer();
-            categoryHideTimer.Interval = TimeSpan.FromSeconds(0.3); // Zeitintervall auf 5 Sekunden setzen
-            categoryHideTimer.Tick += (s, e) => { HideCategoryDockPanel(); };
-
-            this.Closing += (s, e) =>
+            try
             {
-                // Sicherstellen, dass die aktuelle Kategorie übergeben wird
-                string currentCategory = ""; // Hier die aktuelle Kategorie ermitteln
-                dockManager.SaveDockItems(currentCategory);
-            };
+                InitializeComponent();
+                File.AppendAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "startup.log"), $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] MainWindow constructor after InitializeComponent{Environment.NewLine}");
 
-            DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
-            DockPanel.PreviewMouseMove += DockPanel_MouseMove;
-            DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
-            // DockPanel.PreviewGiveFeedback += DockPanel_PreviewGiveFeedback; 
-            DockPanel.DragEnter += DockPanel_DragEnter;
-            DockPanel.DragLeave += DockPanel_DragLeave;
-            DockPanel.Drop += dockManager.DockPanel_Drop;
+                mainDockNavigation = new DockNavigationController(
+                    MainDockScrollViewer, MainDockPreviousButton, MainDockNextButton);
+                categoryDockNavigation = new DockNavigationController(
+                    CategoryDockScrollViewer, CategoryDockPreviousButton, CategoryDockNextButton);
+                CheckAutostart();
 
-            this.Loaded += (s, e) =>
-            {
+                this.SizeChanged += MainWindow_SizeChanged;
+                SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+                CenterWindow();
+                this.WindowStyle = WindowStyle.None;
+                this.ResizeMode = ResizeMode.NoResize;
+                this.Topmost = true;
+
+                this.StateChanged += MainWindow_StateChanged;
+
+                timer = new DispatcherTimer();
+                timer.Interval = TimeSpan.FromSeconds(1);
+                timer.Tick += CheckForRdpFullScreen;
+                timer.Start();
+
+                mouseHook = new GlobalMouseHook(this);
+
+                SettingsWindow settingsWindow = new SettingsWindow(this);
+                double screenWidth = SystemParameters.PrimaryScreenWidth;
+
+                ButtonAnimations.LoadSettings();
+                settingsWindow.LoadSettings();
+                AllowDrop = true;
+                Debug.WriteLine("Hauptfenster initialisiert.");
+                dockManager = new DockManager(DockPanel, CategoryDockContainer, this);
+                dockManager.LoadDockItems();
                 RefreshDockNavigation();
-                var screenWidth = SystemParameters.PrimaryScreenWidth;
-                var screenHeight = SystemParameters.PrimaryScreenHeight;
-                this.Left = (screenWidth / 2) - (this.Width / 2);
-                this.Top = 0; // Fenster am oberen Bildschirmrand positionieren
-                DockPanel.DragEnter += (s, e) =>
+                Debug.WriteLine("Dock-Elemente geladen.");
+
+                dockHideTimer = new DispatcherTimer();
+                dockHideTimer.Interval = TimeSpan.FromSeconds(0.3);
+                dockHideTimer.Tick += (s, e) => { HideDock(); };
+
+                categoryHideTimer = new DispatcherTimer();
+                categoryHideTimer.Interval = TimeSpan.FromSeconds(0.3);
+                categoryHideTimer.Tick += (s, e) => { HideCategoryDockPanel(); };
+
+                this.Closing += (s, e) =>
                 {
-                    e.Effects = DragDropEffects.All;
-                    if (!dockVisible) ShowDock();
+                    string currentCategory = "";
+                    dockManager.SaveDockItems(currentCategory);
                 };
 
-            };
+                DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
+                DockPanel.PreviewMouseMove += DockPanel_MouseMove;
+                DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
+                DockPanel.DragEnter += DockPanel_DragEnter;
+                DockPanel.DragLeave += DockPanel_DragLeave;
+                DockPanel.Drop += dockManager.DockPanel_Drop;
 
-            DockPanel.MouseRightButtonDown += (s, e) =>
-            {
-                OpenMenuItem.Visibility = Visibility.Collapsed;
-                DeleteMenuItem.Visibility = Visibility.Collapsed;
-                EditMenuItem.Visibility = Visibility.Collapsed;
-                FindFileItem.Visibility = Visibility.Collapsed;
-                DockContextMenu.IsOpen = true;
-                if (DockContextMenu.IsOpen)
+                this.Loaded += (s, e) =>
                 {
-                    // ShowDock(); // Dock sichtbar halten
-                    currentDockStatus |= DockStatus.ContextMenuOpen;
-                    CheckAllConditions();
+                    RefreshDockNavigation();
+                    var screenWidthLoaded = SystemParameters.PrimaryScreenWidth;
+                    var screenHeightLoaded = SystemParameters.PrimaryScreenHeight;
+                    this.Left = (screenWidthLoaded / 2) - (this.Width / 2);
+                    this.Top = 0;
+                    DockPanel.DragEnter += (s, e) =>
+                    {
+                        e.Effects = DragDropEffects.All;
+                        if (!dockVisible) ShowDock();
+                    };
+                };
+
+                DockPanel.MouseRightButtonDown += (s, e) =>
+                {
+                    OpenMenuItem.Visibility = Visibility.Collapsed;
+                    DeleteMenuItem.Visibility = Visibility.Collapsed;
+                    EditMenuItem.Visibility = Visibility.Collapsed;
+                    FindFileItem.Visibility = Visibility.Collapsed;
+                    DockContextMenu.IsOpen = true;
+                    if (DockContextMenu.IsOpen)
+                    {
+                        currentDockStatus |= DockStatus.ContextMenuOpen;
+                        CheckAllConditions();
+                    }
+                };
+
+                CategoryDockContainer.AllowDrop = true;
+
+                var categoryDockContainer = this.FindName("CategoryDockContainer") as StackPanel;
+                if (categoryDockContainer != null)
+                {
+                    dockManager.InitializeCategoryDockContainer(categoryDockContainer);
                 }
-            };
+                else
+                {
+                    Debug.WriteLine("CategoryDockContainer konnte nicht gefunden werden");
+                }
 
-            // Registriere die Event-Handler für das Kategoriedock
-            CategoryDockContainer.AllowDrop = true;
-
-
-
-
-
-            var categoryDockContainer = this.FindName("CategoryDockContainer") as StackPanel;
-            if (categoryDockContainer != null)
-            {
-                dockManager.InitializeCategoryDockContainer(categoryDockContainer);
+                HideCategoryDockPanel();
+                Debug.WriteLine("MainWindow: HideCategoryDockPanel");
+                HideDock();
+                Debug.WriteLine("MainWindow: HideDock");
+                UpdateCheck();
+                Debug.WriteLine("MainWindow: UpdateCheck");
+                File.AppendAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "startup.log"), $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] MainWindow constructor complete{Environment.NewLine}");
             }
-            else
+            catch (Exception ex)
             {
-                Debug.WriteLine("CategoryDockContainer konnte nicht gefunden werden");
+                var logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "startup.log");
+                File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] MainWindow constructor exception: {ex}{Environment.NewLine}");
+                throw;
             }
-
-            HideCategoryDockPanel();
-            Debug.WriteLine("MainWindow: HideCategoryDockPanel");
-            HideDock();
-            Debug.WriteLine("MainWindow: HideDock");
-            UpdateCheck();
-            Debug.WriteLine("MainWindow: UpdateCheck");
-
         }
         // Weitere Initialisierung
         private void CheckForRdpFullScreen(object? sender, EventArgs e)
@@ -1037,21 +1035,25 @@ namespace BiMaDock
 
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
-
-
-
-            if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
+            try
             {
-                var customMessageBox = new CustomMessageBox($"Möchtest du BiMaDock wirklich beenden?");
+                var customMessageBox = new CustomMessageBox("Möchtest du BiMaDock wirklich beenden?")
+                {
+                    Owner = this
+                };
+
                 customMessageBox.ShowDialog();
 
                 if (customMessageBox.Result)
                 {
                     Application.Current.Shutdown();
-
                 }
             }
-
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exit_Click Fehler: {ex}");
+                MessageBox.Show(this, "Beim Beenden von BiMaDock ist ein Fehler aufgetreten.", "Beenden", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         public void UpdateDockItemLocation(Button button)
@@ -1549,11 +1551,41 @@ namespace BiMaDock
 
         private void AddCategory_Click(object sender, RoutedEventArgs e)
         {
-            var inputDialog = new InputDialog("Kategorie erstellen", "Bitte geben Sie den Namen der Kategorie ein:");
-            if (inputDialog.ShowDialog() == true)
+            try
             {
-                string categoryName = inputDialog.Answer;
-                dockManager.AddCategoryItem(categoryName);
+                var inputDialog = new InputDialog("Kategorie erstellen", "Bitte geben Sie den Namen der Kategorie ein:")
+                {
+                    Owner = this
+                };
+
+                if (inputDialog.ShowDialog() == true)
+                {
+                    string categoryName = inputDialog.Answer?.Trim() ?? string.Empty;
+
+                    if (string.IsNullOrWhiteSpace(categoryName))
+                    {
+                        MessageBox.Show(this, "Bitte geben Sie einen gültigen Kategorienamen ein.", "Kategorie erstellen", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    var existingItems = SettingsManager.LoadSettings();
+                    bool alreadyExists = existingItems.Any(item =>
+                        item.IsCategory &&
+                        string.Equals(item.DisplayName, categoryName, StringComparison.OrdinalIgnoreCase));
+
+                    if (alreadyExists)
+                    {
+                        MessageBox.Show(this, $"Die Kategorie \"{categoryName}\" existiert bereits.", "Kategorie erstellen", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    dockManager.AddCategoryItem(categoryName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"AddCategory_Click Fehler: {ex}");
+                MessageBox.Show(this, $"Beim Erstellen der Kategorie ist ein Fehler aufgetreten:\n{ex.Message}", "Kategorie erstellen", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1868,8 +1900,19 @@ namespace BiMaDock
 
         private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            AboutWindow aboutWindow = new AboutWindow();
-            aboutWindow.ShowDialog();
+            try
+            {
+                AboutWindow aboutWindow = new AboutWindow
+                {
+                    Owner = this
+                };
+                aboutWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"AboutMenuItem_Click Fehler: {ex}");
+                MessageBox.Show(this, $"Beim Öffnen des Info-Fensters ist ein Fehler aufgetreten:\n{ex.Message}", "Über BiMaDock", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void UpdateCheck()

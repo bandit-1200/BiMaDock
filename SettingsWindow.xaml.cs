@@ -566,11 +566,10 @@ namespace BiMaDock
                         // Ressourcen aktualisieren
                         var newPrimaryColor = new SolidColorBrush(primaryColor);
                         Application.Current.Resources["PrimaryColor"] = newPrimaryColor;
-                        // resources["PrimaryColor"] = new SolidColorBrush(primaryColor);
 
-                        mainWindow.DockPanel.Background = settings.PrimaryColor;
-                        mainWindow.CategoryDockBorder.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
-                        mainWindow.OverlayCanvasHorizontalLine.Stroke = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
+                        mainWindow.DockPanel.Background = newPrimaryColor;
+                        mainWindow.CategoryDockBorder.Background = newPrimaryColor;
+                        mainWindow.OverlayCanvasHorizontalLine.Stroke = newPrimaryColor;
 
 
 
