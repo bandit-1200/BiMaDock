@@ -36,7 +36,6 @@ public class DockManager
         categoryDockContainer = categoryPanel; // Zuweisung des Kategorie-Docks
         mainWindow = window;
         dockPanel.MouseMove += DockPanel_MouseMove;  // Event-Handler für MouseMove hinzufügen
-        dockPanel.MouseEnter += DockPanel_MouseEnter;  // Event-Handler für MouseEnter hinzufügen
         categories = new List<string>(); // Initialisierung der Kategorienliste
         dockItems = new List<DockItem>(); // Initialisierung der Dock-Items-Liste
                                           // categoryDockContainer.PreviewMouseLeftButtonDown += mainWindow.CategoryDockContainer_PreviewMouseLeftButtonDown;
@@ -292,7 +291,7 @@ public class DockManager
                 Position = 0,
                 IconSource = ""
             };
-            AddDockItemAt(explorerItem, 0, explorerItem.Category); // currentCategory übergeben
+            AddDockItemAt(explorerItem, 0, explorerItem.Category, saveChanges: false);
 
             var cmdItem = new DockItem
             {
@@ -303,30 +302,14 @@ public class DockManager
                 Position = 1,
                 IconSource = ""
             };
-            AddDockItemAt(cmdItem, 1, cmdItem.Category); // currentCategory übergeben
+            AddDockItemAt(cmdItem, 1, cmdItem.Category, saveChanges: false);
+            SaveDockItems(string.Empty);
         }
         else
         {
             foreach (var item in items)
             {
-                AddDockItemAt(item, item.Position, item.Category); // currentCategory übergeben
-
-                // Sicherstellen, dass Event-Handler gesetzt sind
-                if (!string.IsNullOrEmpty(item.Category) && categoryDockContainer != null)
-                {
-                    // Überprüfen, ob das Element im Kategorie-Dock eingefügt wurde
-                    foreach (Button button in categoryDockContainer.Children)
-                    {
-                        if (button.Tag == item)
-                        {
-                            button.PreviewMouseLeftButtonDown += mainWindow.CategoryDockContainer_PreviewMouseLeftButtonDown;
-                            button.MouseMove += mainWindow.CategoryDockContainer_MouseMove;
-                            button.Drop += mainWindow.CategoryDockContainer_Drop;
-                            button.DragEnter += mainWindow.CategoryDockContainer_DragEnter;
-                            button.DragLeave += mainWindow.CategoryDockContainer_DragLeave;
-                        }
-                    }
-                }
+                AddDockItemAt(item, item.Position, item.Category, saveChanges: false);
             }
         }
 
@@ -410,9 +393,7 @@ public class DockManager
             IsCategory = true,
             IconSource = "", // IconSource bleibt leer beim ersten Anlegen
         };
-        AddDockItemAt(categoryItem, dockPanel.Children.Count, categoryItem.DisplayName);
-
-        // Erstelle und füge ein neues "cmd"-Element zur neuen Kategorie hinzu
+        // Erstelle das Start-Element der neuen Kategorie.
         var cmdItem = new DockItem
         {
             Id = Guid.NewGuid().ToString(), // Neue eindeutige ID für das "Command Prompt"-Element
@@ -422,12 +403,10 @@ public class DockManager
             IsCategory = false,
             IconSource = "" // cmdItem hat keine IconSource
         };
-        AddDockItemAt(cmdItem, 0, categoryName); // Füge neues cmdItem hinzu
-
-        // Speichern der aktualisierten Settings mit den neuen Elementen
         existingItems.Add(categoryItem);
         existingItems.Add(cmdItem);
         SettingsManager.SaveSettings(existingItems);
+        AddDockItemAt(categoryItem, dockPanel.Children.Count, string.Empty, saveChanges: false);
     }
 
 
@@ -574,12 +553,7 @@ public class DockManager
         mainWindow.SetDragging(false);
 
         Debug.WriteLine("DockPanel_Drop: Drop-Vorgang abgeschlossen");
-        ListAllDockPanelElements(); // Auflisten aller Elemente im DockPanel
-
         mainWindow.HideCategoryDockPanel();
-
-        dockPanel.InvalidateVisual();
-        dockPanel.UpdateLayout();
     }
 
 
@@ -692,7 +666,7 @@ public class DockManager
                 dockPanel.Children.Remove(button);
 
                 // Auch alle Kindelemente entfernen, die zu dieser Kategorie gehören
-                RemoveCategoryChildren(dockItem.DisplayName);
+                RemoveCategoryChildren(dockItem.Id);
             }
             else
             {
@@ -707,11 +681,10 @@ public class DockManager
             // Aktualisiere und speichere die Dock-Items nach dem Löschen
             SaveDockItems(currentCategory);
         }
-        SaveDockItems(currentCategory);
     }
 
 
-    private void RemoveCategoryChildren(string categoryName)
+    private void RemoveCategoryChildren(string categoryId)
     {
         // Laden der aktuellen Dock-Items
         var items = SettingsManager.LoadSettings();
@@ -721,7 +694,7 @@ public class DockManager
 
         foreach (var item in items)
         {
-            if (item.Category == categoryName)
+            if (item.Category == categoryId)
             {
                 itemsToRemove.Add(item);
             }
@@ -741,57 +714,9 @@ public class DockManager
 
 
 
-    public void AddDockItemAt(DockItem item, int index, string currentCategory)
+    public void AddDockItemAt(DockItem item, int index, string currentCategory, bool saveChanges = true)
     {
-        // Check if the item is a category and has an IconSource
-        // var iconSource = item.IsCategory && !string.IsNullOrEmpty(item.IconSource) ? item.IconSource : item.FilePath;
-        var iconSource = !string.IsNullOrEmpty(item.IconSource) ? item.IconSource : item.FilePath;
-        var icon = IconHelper.GetIcon(item.FilePath, iconSource);
-
-
-        var image = new Image
-        {
-            Source = icon,
-            Width = 32,
-            Height = 32,
-            Margin = new Thickness(5)
-        };
-        var textBlock = new TextBlock
-        {
-            Text = item.DisplayName,
-            TextAlignment = TextAlignment.Center,
-            TextWrapping = TextWrapping.NoWrap,
-            TextTrimming = TextTrimming.CharacterEllipsis,
-            Width = 60,
-            Margin = new Thickness(5)
-        };
-        var stackPanel = new StackPanel
-        {
-            Orientation = Orientation.Vertical,
-            Width = 70
-        };
-        stackPanel.Children.Add(image);
-        stackPanel.Children.Add(textBlock);
-        var button = new Button
-        {
-            Content = stackPanel,
-            Tag = item,
-            Margin = new Thickness(5),
-            Width = 70,
-            ToolTip = new ToolTip
-            {
-                Content = new TextBlock
-                {
-                    Text = item.DisplayName,
-                    FontFamily = new FontFamily("Arial"), // Schriftart festlegen 
-                    FontSize = 16, // Schriftgröße festlegen 
-                    Foreground = Brushes.DarkBlue // Schriftfarbe festlegen }
-                },
-                Placement = PlacementMode.Center,
-                HorizontalOffset = 0,
-                VerticalOffset = 55
-            }
-        };
+        var button = DockItemButtonFactory.Create(item);
         button.MouseRightButtonDown += (s, e) =>
         {
             e.Handled = true;
@@ -846,7 +771,10 @@ public class DockManager
             int adjustedIndex = Math.Clamp(index, 0, dockPanel.Children.Count);
             dockPanel.Children.Insert(adjustedIndex, button);
         }
-        SaveDockItems(currentCategory);
+        if (saveChanges)
+        {
+            SaveDockItems(currentCategory);
+        }
     }
 
 
