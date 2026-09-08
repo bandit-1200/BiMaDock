@@ -26,6 +26,16 @@ internal sealed class DockNavigationController
 
     public void ScrollNext() => ScrollBy(ItemScrollStep);
 
+    /// <summary>
+    /// Scrollt das Dock horizontal basierend auf dem Mausrad-Delta.
+    /// Positive Werte (Rad nach oben) scrollen nach links, negative nach rechts.
+    /// </summary>
+    public void ScrollByWheelDelta(int mouseWheelDelta)
+    {
+        double scrollAmount = -mouseWheelDelta / 120.0 * ItemScrollStep;
+        ScrollBy(scrollAmount);
+    }
+
     public void Refresh()
     {
         bool hasOverflow = scrollViewer.ScrollableWidth > 0;

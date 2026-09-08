@@ -154,34 +154,49 @@
     </Style>
 
     <Style x:Key="DockNavigationButtonStyle" TargetType="Button">
-        <Setter Property="Width" Value="32"/>
+        <Setter Property="Width" Value="34"/>
         <Setter Property="Height" Value="80"/>
         <Setter Property="Margin" Value="0"/>
         <Setter Property="Padding" Value="0"/>
-        <Setter Property="FontFamily" Value="Segoe UI"/>
-        <Setter Property="FontSize" Value="26"/>
-        <Setter Property="FontWeight" Value="Light"/>
-        <Setter Property="Foreground" Value="#B3FFFFFF"/>
-        <Setter Property="Background" Value="{DynamicResource PrimaryColor}"/>
+        <Setter Property="Foreground" Value="#D9FFFFFF"/>
+        <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Opacity" Value="0.72"/>
+        <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="ToolTip" Value="Dock-Inhalte blättern"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="NavigationSurface" Background="{TemplateBinding Background}" CornerRadius="14">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
+                    <Grid Background="Transparent">
+                        <Border x:Name="HoverWell"
+                                Width="34" Height="34"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Background="#22FFFFFF"
+                                CornerRadius="9"
+                                Opacity="0"/>
+                        <Path x:Name="Chevron"
+                              Width="20" Height="20"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Stroke="{TemplateBinding Foreground}"
+                              StrokeThickness="2.4"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              StrokeLineJoin="Round"
+                              Data="M 15 4 L 5 10 L 15 16"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" Value="Right">
+                            <Setter TargetName="Chevron" Property="Data" Value="M 4 5 L 12 10 L 4 15"/>
+                        </DataTrigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="NavigationSurface" Property="Background" Value="#2EFFFFFF"/>
-                            <Setter Property="Opacity" Value="1"/>
+                            <Setter TargetName="HoverWell" Property="Opacity" Value="1"/>
+                            <Setter Property="Foreground" Value="#FFFFFF"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="NavigationSurface" Property="Background" Value="#4AFFFFFF"/>
+                            <Setter TargetName="HoverWell" Property="Background" Value="#38FFFFFF"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.25"/>
+                            <Setter TargetName="Chevron" Property="Opacity" Value="0.28"/>
+                            <Setter Property="Cursor" Value="Arrow"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

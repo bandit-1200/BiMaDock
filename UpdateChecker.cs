@@ -12,7 +12,7 @@ namespace BiMaDock
     public class UpdateChecker
     {
         private const string GitHubApiUrl = "https://api.github.com/repos/bandit-1200/BiMaDock/releases/latest";
-        private static string ConfigFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "update_config.txt");
+        private static string ConfigFilePath => AppPaths.GetUpdateConfigFilePath();
 
         public static async Task CheckForUpdatesAsync(bool ignoreDefer = false)
         {
@@ -26,7 +26,7 @@ namespace BiMaDock
             Debug.WriteLine($"Installierte Version: {currentVersion}");
             Console.WriteLine($"Installierte Version: {currentVersion}");
 
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) })
             {
                 client.DefaultRequestHeaders.Add("User-Agent", "BiMaDock-Update-Checker");
                 try
@@ -84,16 +84,35 @@ namespace BiMaDock
 
         private static bool IsNewVersionAvailable(string currentVersion, string latestVersion)
         {
-            Version current = new Version(TrimBuildNumber(currentVersion));
-            Version latest = new Version(TrimBuildNumber(latestVersion));
+            if (!TryParseVersion(currentVersion, out var current) || !TryParseVersion(latestVersion, out var latest))
+            {
+                return false;
+            }
+
             return latest > current;
         }
 
-        private static string TrimBuildNumber(string version)
+        private static bool TryParseVersion(string input, out Version version)
         {
-            // Entfernt das "-BuildN" Suffix
-            var buildIndex = version.IndexOf("-Build");
-            return buildIndex > -1 ? version.Substring(0, buildIndex) : version;
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                version = new Version(0, 0);
+                return false;
+            }
+
+            string normalized = input.Trim();
+            normalized = normalized.TrimStart('v', 'V');
+            normalized = normalized.Split('+')[0];
+            normalized = normalized.Split('-')[0];
+
+            if (Version.TryParse(normalized, out var parsedVersion))
+            {
+                version = parsedVersion;
+                return true;
+            }
+
+            version = new Version(0, 0);
+            return false;
         }
 
 

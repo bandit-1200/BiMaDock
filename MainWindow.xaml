@@ -1,11 +1,13 @@
 ﻿<Window x:Class="BiMaDock.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="BiMaDock" Height="400" Width="{Binding ElementName=MainStackPanel}"
+        Title="BiMaDock" SizeToContent="Height" Width="{Binding ElementName=MainStackPanel}"
         
-        VerticalAlignment="Top" AllowsTransparency="True" Background="Transparent"
+        VerticalAlignment="Top" AllowsTransparency="True" Background="#01000000"
         AllowDrop="True"
-        ShowInTaskbar="False">
+        ShowInTaskbar="False"
+        DragEnter="MainWindow_DragEnter"
+        DragOver="MainWindow_DragOver">
     
     <!-- Sicherstellen, dass das Haupt-Grid den niedrigsten Z-Index hat -->
     <Grid Background="#00FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Top" Panel.ZIndex="0">
@@ -20,6 +22,9 @@
                     VerticalAlignment="Top"
                     Margin="0"
                     Panel.ZIndex="2"
+                    AllowDrop="True"
+                    DragEnter="MainDockBorder_DragEnter"
+                    DragOver="MainDockBorder_DragOver"
                     MouseEnter="MainDockArea_MouseEnter" MouseLeave="MainDockArea_MouseLeave">
                 <Grid x:Name="MainGrid" Background="Transparent">
                 <Grid.ColumnDefinitions>
@@ -28,13 +33,14 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Button x:Name="MainDockPreviousButton" Grid.Column="0" Content="‹"
+                <Button x:Name="MainDockPreviousButton" Grid.Column="0" Content="‹" Tag="Left"
                         Style="{DynamicResource DockNavigationButtonStyle}" Click="MainDockPreviousButton_Click"/>
 
                 <!-- Die Breite folgt dem Inhalt und wird erst ab dem elften Symbol begrenzt. -->
                 <ScrollViewer x:Name="MainDockScrollViewer" Grid.Column="1" Height="80" MaxWidth="800"
                               HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled"
-                              CanContentScroll="False" ScrollChanged="DockScrollViewer_ScrollChanged">
+                              CanContentScroll="False" ScrollChanged="DockScrollViewer_ScrollChanged"
+                              PreviewMouseWheel="MainDockScrollViewer_PreviewMouseWheel">
                     <!-- Dock-Panel -->
                     <StackPanel Orientation="Horizontal" x:Name="DockPanel"
                                 AllowDrop="True" Style="{DynamicResource MainDockStyle}"
@@ -73,7 +79,7 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <Button x:Name="MainDockNextButton" Grid.Column="2" Content="›"
+                <Button x:Name="MainDockNextButton" Grid.Column="2" Content="›" Tag="Right"
                         Style="{DynamicResource DockNavigationButtonStyle}" Click="MainDockNextButton_Click"/>
 
                 <!-- Overlay für die Lücke am oberen Rand -->
@@ -102,11 +108,12 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="CategoryDockPreviousButton" Grid.Column="0" Content="‹"
+                    <Button x:Name="CategoryDockPreviousButton" Grid.Column="0" Content="‹" Tag="Left"
                             Style="{DynamicResource DockNavigationButtonStyle}" Click="CategoryDockPreviousButton_Click"/>
                     <ScrollViewer x:Name="CategoryDockScrollViewer" Grid.Column="1" MaxWidth="800"
                                   HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled"
-                                  CanContentScroll="False" ScrollChanged="DockScrollViewer_ScrollChanged">
+                                  CanContentScroll="False" ScrollChanged="DockScrollViewer_ScrollChanged"
+                                  PreviewMouseWheel="CategoryDockScrollViewer_PreviewMouseWheel">
                         <StackPanel x:Name="CategoryDockContainer"
                                     Background="Transparent"
                                     Tag="KategorieDockContainer"
@@ -117,7 +124,7 @@
                                     MouseLeave="CategoryDockContainer_MouseLeave"
                                     MouseMove="CategoryDockContainer_MouseMove"/>
                     </ScrollViewer>
-                    <Button x:Name="CategoryDockNextButton" Grid.Column="2" Content="›"
+                    <Button x:Name="CategoryDockNextButton" Grid.Column="2" Content="›" Tag="Right"
                             Style="{DynamicResource DockNavigationButtonStyle}" Click="CategoryDockNextButton_Click"/>
                 </Grid>
             </Border>

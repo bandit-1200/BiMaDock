@@ -19,9 +19,6 @@ public class DockManager
     private StackPanel dockPanel;
     private StackPanel? categoryDockContainer; // Referenz zu CategoryDockContainer
     private MainWindow mainWindow;
-    private Point? dragStartPoint = null;  // Definition hinzugefügt
-    private Button? draggedButton = null;  // Definition hinzugefügt
-    // private bool isDragging = false;       // Definition hinzugefügt
     private bool isDropInProgress = false;
     private List<string> categories; // Liste zur Verwaltung der Kategorien
     private List<DockItem> dockItems = new List<DockItem>();
@@ -59,7 +56,7 @@ public class DockManager
     private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
     {
         // vorher: mainWindow.ShowDock();
-        mainWindow.StartShowDelay(300); // 300 ms Verzögerung
+        mainWindow.StartShowDelay();
     }
 
     private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
@@ -103,18 +100,18 @@ public class DockManager
 
 
 
-        if (dragStartPoint.HasValue && draggedButton != null)
+        if (mainWindow.ActiveDragStartPoint.HasValue && mainWindow.ActiveDraggedButton != null)
         {
             Point position = e.GetPosition(dockPanel);
-            Vector diff = dragStartPoint.Value - position;
+            Vector diff = mainWindow.ActiveDragStartPoint.Value - position;
 
             if (e.LeftButton == MouseButtonState.Pressed &&
                 (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                  Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
             {
-                DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
-                dragStartPoint = null;
-                draggedButton = null;
+                DragDrop.DoDragDrop(mainWindow.ActiveDraggedButton, new DataObject(DataFormats.Serializable, mainWindow.ActiveDraggedButton), DragDropEffects.Move);
+                mainWindow.ActiveDragStartPoint = null;
+                mainWindow.ActiveDraggedButton = null;
             }
         }
         else
@@ -736,22 +733,22 @@ public class DockManager
         };
         button.PreviewMouseLeftButtonDown += (s, e) =>
         {
-            dragStartPoint = e.GetPosition(button);
-            draggedButton = button;
+            mainWindow.ActiveDragStartPoint = e.GetPosition(button);
+            mainWindow.ActiveDraggedButton = button;
         };
         button.PreviewMouseMove += (s, e) =>
         {
-            if (dragStartPoint.HasValue && draggedButton == button)
+            if (mainWindow.ActiveDragStartPoint.HasValue && mainWindow.ActiveDraggedButton == button)
             {
                 Point position = e.GetPosition(button);
-                Vector diff = dragStartPoint.Value - position;
+                Vector diff = mainWindow.ActiveDragStartPoint.Value - position;
                 if (e.LeftButton == MouseButtonState.Pressed &&
                     (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                      Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
                 {
-                    DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
-                    dragStartPoint = null;
-                    draggedButton = null;
+                    DragDrop.DoDragDrop(mainWindow.ActiveDraggedButton, new DataObject(DataFormats.Serializable, mainWindow.ActiveDraggedButton), DragDropEffects.Move);
+                    mainWindow.ActiveDragStartPoint = null;
+                    mainWindow.ActiveDraggedButton = null;
                 }
             }
         };

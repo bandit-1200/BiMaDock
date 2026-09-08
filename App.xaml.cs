@@ -9,10 +9,7 @@ namespace BiMaDock
     public partial class App : Application
     {
         private static Mutex? singleInstanceMutex;
-        private static readonly string LogFilePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "BiMaDock",
-            "startup.log");
+        private static readonly string LogFilePath = AppPaths.GetLogFilePath();
 
         public App()
         {
@@ -63,15 +60,25 @@ namespace BiMaDock
                     return;
                 }
 
+                AppPaths.EnsureAppDataDirectory();
+
                 base.OnStartup(e);
                 Log("base.OnStartup completed");
 
-                foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+                bool shouldLogResources = Debugger.IsAttached || string.Equals(
+                    Environment.GetEnvironmentVariable("BIMADOCK_DEBUG_LOGGING"),
+                    "1",
+                    StringComparison.OrdinalIgnoreCase);
+
+                if (shouldLogResources && Application.Current?.Resources != null)
                 {
-                    Log("ResourceDictionary loaded");
-                    foreach (var key in dictionary.Keys)
+                    foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
                     {
-                        Log("Resource key: " + key);
+                        Log("ResourceDictionary loaded");
+                        foreach (var key in dictionary.Keys)
+                        {
+                            Log("Resource key: " + key);
+                        }
                     }
                 }
             }

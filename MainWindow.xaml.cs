@@ -38,6 +38,8 @@ namespace BiMaDock
 
         private DispatcherTimer timer;
         private IntPtr lastForegroundWindow = IntPtr.Zero;
+        private bool? rdpActiveCache;
+        private DateTime lastRdpCheck = DateTime.MinValue;
 
         [StructLayout(LayoutKind.Sequential)]
         struct WINDOWPLACEMENT
@@ -63,7 +65,7 @@ namespace BiMaDock
         const int SW_MAXIMIZE = 3;
         const int SW_MINIMIZE = 6;
 
-        private GlobalMouseHook mouseHook;
+        private GlobalMouseHook? mouseHook;
         private DockManager dockManager;
         private readonly DockNavigationController mainDockNavigation;
         private readonly DockNavigationController categoryDockNavigation;
@@ -88,6 +90,18 @@ namespace BiMaDock
         public void SetDragging(bool value)
         {
             isDragging = value;
+        }
+
+        public Point? ActiveDragStartPoint
+        {
+            get => dragStartPoint;
+            set => dragStartPoint = value;
+        }
+
+        public Button? ActiveDraggedButton
+        {
+            get => draggedButton;
+            set => draggedButton = value;
         }
 
         [Flags]
@@ -132,11 +146,9 @@ namespace BiMaDock
                 this.StateChanged += MainWindow_StateChanged;
 
                 timer = new DispatcherTimer();
-                timer.Interval = TimeSpan.FromSeconds(1);
+                timer.Interval = TimeSpan.FromSeconds(20);
                 timer.Tick += CheckForRdpFullScreen;
                 timer.Start();
-
-                mouseHook = new GlobalMouseHook(this);
 
                 SettingsWindow settingsWindow = new SettingsWindow(this);
                 double screenWidth = SystemParameters.PrimaryScreenWidth;
@@ -160,12 +172,15 @@ namespace BiMaDock
 
                 this.Closing += (s, e) =>
                 {
+                    timer.Stop();
+                    mouseHook?.Unhook();
+                    mouseHook = null;
+
                     string currentCategory = "";
                     dockManager.SaveDockItems(currentCategory);
                 };
 
                 DockPanel.PreviewMouseLeftButtonDown += DockPanel_MouseLeftButtonDown;
-                DockPanel.PreviewMouseMove += DockPanel_MouseMove;
                 DockPanel.PreviewMouseLeftButtonUp += DockPanel_MouseLeftButtonUp;
                 DockPanel.DragEnter += DockPanel_DragEnter;
                 DockPanel.DragLeave += DockPanel_DragLeave;
@@ -174,6 +189,12 @@ namespace BiMaDock
                 this.Loaded += (s, e) =>
                 {
                     RefreshDockNavigation();
+
+                    if (mouseHook == null)
+                    {
+                        mouseHook = new GlobalMouseHook(this);
+                    }
+
                     var screenWidthLoaded = SystemParameters.PrimaryScreenWidth;
                     var screenHeightLoaded = SystemParameters.PrimaryScreenHeight;
                     this.Left = (screenWidthLoaded / 2) - (this.Width / 2);
@@ -226,12 +247,27 @@ namespace BiMaDock
                 throw;
             }
         }
+        /// <summary>
+        /// Ermittelt, ob eine RDP/Remote-Desktop-Sitzung aktiv ist.
+        /// Die Prozessabfrage ist teuer und wird deshalb nur alle 30 Sekunden wiederholt.
+        /// </summary>
+        private bool IsRdpSessionActive()
+        {
+            if (rdpActiveCache == null || (DateTime.UtcNow - lastRdpCheck).TotalSeconds > 30)
+            {
+                rdpActiveCache = Process.GetProcessesByName("mstsc").Any();
+                lastRdpCheck = DateTime.UtcNow;
+            }
+
+            return rdpActiveCache.Value;
+        }
+
         // Weitere Initialisierung
         private void CheckForRdpFullScreen(object? sender, EventArgs e)
         {
             // Debug.WriteLine("CheckForRdpFullScreen: Überprüfe RDP-Sitzung...");
 
-            bool rdpSessionActive = Process.GetProcessesByName("mstsc").Any();
+            bool rdpSessionActive = IsRdpSessionActive();
             // Debug.WriteLine($"CheckForRdpFullScreen: RDP-Sitzung aktiv: {rdpSessionActive}");
 
             IntPtr foregroundWindow = GetForegroundWindow();
@@ -421,7 +457,7 @@ namespace BiMaDock
 
         private void MainDockArea_MouseEnter(object sender, MouseEventArgs e)
         {
-            StartShowDelay(300);
+            StartShowDelay();
             dockHideTimer?.Stop();
             categoryHideTimer?.Stop();
         }
@@ -436,6 +472,13 @@ namespace BiMaDock
 
 
 
+
+        public int DockShowDelayMilliseconds { get; private set; } = 300;
+
+        public void SetDockShowDelayMilliseconds(int milliseconds)
+        {
+            DockShowDelayMilliseconds = Math.Clamp(milliseconds, 100, 1000);
+        }
 
         public void ShowDock()
         {
@@ -503,7 +546,7 @@ namespace BiMaDock
 
         // --- Einfügen: StartShowDelay / CancelShowDelay (behebt CS0103) ---
         // Startet verzögertes Einblenden des Docks (aufrufbar von DockManager)
-        public void StartShowDelay(int milliseconds = 300)
+        public void StartShowDelay(int? milliseconds = null)
         {
             // UI-Thread verwenden
             Dispatcher.Invoke(() =>
@@ -530,7 +573,8 @@ namespace BiMaDock
                     };
                 }
 
-                showDockTimer.Interval = TimeSpan.FromMilliseconds(milliseconds);
+                var delay = milliseconds ?? DockShowDelayMilliseconds;
+                showDockTimer.Interval = TimeSpan.FromMilliseconds(Math.Clamp(delay, 100, 1000));
                 showDockTimer.Stop();
                 showDockTimer.Start();
             });
@@ -564,6 +608,54 @@ namespace BiMaDock
         {
             currentDockStatus &= ~DockStatus.CategoryDockHover; // Löscht das CategoryDockHover-Flag
             CheckAllConditions();
+        }
+
+        private void MainWindow_DragEnter(object sender, DragEventArgs e)
+        {
+            if (IsDragDataRelevant(e.Data))
+            {
+                ShowDock();
+                e.Effects = DragDropEffects.Move;
+            }
+        }
+
+        private void MainWindow_DragOver(object sender, DragEventArgs e)
+        {
+            if (IsDragDataRelevant(e.Data))
+            {
+                ShowDock();
+                e.Effects = DragDropEffects.Move;
+            }
+        }
+
+        private void MainDockBorder_DragEnter(object sender, DragEventArgs e)
+        {
+            if (IsDragDataRelevant(e.Data))
+            {
+                ShowDock();
+                e.Effects = DragDropEffects.Move;
+            }
+        }
+
+        private void MainDockBorder_DragOver(object sender, DragEventArgs e)
+        {
+            if (IsDragDataRelevant(e.Data))
+            {
+                ShowDock();
+                e.Effects = DragDropEffects.Move;
+            }
+        }
+
+        private static bool IsDragDataRelevant(IDataObject data)
+        {
+            return data.GetDataPresent(DataFormats.FileDrop)
+                || data.GetDataPresent(DataFormats.Text)
+                || data.GetDataPresent(DataFormats.UnicodeText)
+                || data.GetDataPresent(DataFormats.Serializable)
+                || data.GetDataPresent("Shell IDList Array")
+                || data.GetDataPresent("FileNameW")
+                || data.GetDataPresent("FileName")
+                || data.GetDataPresent("FileGroupDescriptorW");
         }
 
         private void DockPanel_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -609,20 +701,19 @@ namespace BiMaDock
             Point mousePosition = e.GetPosition(CategoryDockContainer);
             // LogMousePositionAndElements(mousePosition); // Optional, falls benötigt
 
-            if (dragStartPoint.HasValue && draggedButton != null)
+            if (ActiveDragStartPoint.HasValue && ActiveDraggedButton != null)
             {
                 Point position = e.GetPosition(CategoryDockContainer);
-                Vector diff = dragStartPoint.Value - position;
+                Vector diff = ActiveDragStartPoint.Value - position;
 
                 if (e.LeftButton == MouseButtonState.Pressed &&
                     (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                      Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
                 {
-                    // Debug.WriteLine($"Dragging: {draggedButton.Tag}, Position: {position}"); // Debugging
-                    DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
-                    dragStartPoint = null;
-                    draggedButton = null;
-                    isDragging = false; // Setze Dragging-Flag zurück
+                    DragDrop.DoDragDrop(ActiveDraggedButton, new DataObject(DataFormats.Serializable, ActiveDraggedButton), DragDropEffects.Move);
+                    ActiveDragStartPoint = null;
+                    ActiveDraggedButton = null;
+                    isDragging = false;
                 }
             }
             else
@@ -693,18 +784,22 @@ namespace BiMaDock
                 if (e.OriginalSource is FrameworkElement element && element.DataContext is DockItem)
                 {
                     draggedButton = element as Button;
-                    Debug.WriteLine($"Drag start point gesetzt: {dragStartPoint}, Element: {draggedButton?.Tag}"); // Debugging
+                    Debug.WriteLine($"Drag start point gesetzt: {dragStartPoint}, Element: {draggedButton?.Tag}");
                 }
             }
         }
 
         private void DockPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            // Entferne gnadenlos alle Platzhalter, bevor der neue erstellt wird
-            var allPlaceholders = DockPanel.Children.OfType<Border>().Where(border => border.Tag as string == "Placeholder").ToList();
-            foreach (var placeholder in allPlaceholders)
+            // Platzhalter nur während eines Drags bereinigen – spart Arbeit im Leerlauf
+            bool isDraggingOrClick = dragStartPoint.HasValue || isDragging;
+            if (isDraggingOrClick)
             {
-                DockPanel.Children.Remove(placeholder);
+                var allPlaceholders = DockPanel.Children.OfType<Border>().Where(border => border.Tag as string == "Placeholder").ToList();
+                foreach (var placeholder in allPlaceholders)
+                {
+                    DockPanel.Children.Remove(placeholder);
+                }
             }
 
             if (dragStartPoint.HasValue && draggedButton != null)
@@ -722,7 +817,7 @@ namespace BiMaDock
                         DragDrop.DoDragDrop(draggedButton, new DataObject(DataFormats.Serializable, draggedButton), DragDropEffects.Move);
                         dragStartPoint = null;
                         draggedButton = null;
-                        isDragging = false; // Setze Dragging-Flag zurück
+                        isDragging = false;
                     }
                 }
             }
@@ -962,6 +1057,11 @@ namespace BiMaDock
         private void DockPanel_DragEnter(object sender, DragEventArgs e)
         {
             Debug.WriteLine("DockPanel_DragEnter: Aufgerufen");
+
+            if (!dockVisible)
+            {
+                ShowDock();
+            }
 
             Point mousePosition = e.GetPosition(DockPanel);
             dockManager.LogMousePositionAndElements(mousePosition);
@@ -1352,8 +1452,12 @@ namespace BiMaDock
 
         public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
         {
-
             DebugLogDataFormats(e);
+
+            if (!dockVisible)
+            {
+                ShowDock();
+            }
 
             Point dropPosition = e.GetPosition(CategoryDockContainer); // Ermitteln der Drop-Position
 
@@ -1720,6 +1824,18 @@ namespace BiMaDock
         private void CategoryDockNextButton_Click(object sender, RoutedEventArgs e) =>
             categoryDockNavigation.ScrollNext();
 
+        private void MainDockScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            e.Handled = true;
+            mainDockNavigation.ScrollByWheelDelta(e.Delta);
+        }
+
+        private void CategoryDockScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            e.Handled = true;
+            categoryDockNavigation.ScrollByWheelDelta(e.Delta);
+        }
+
         private void DockScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             if (ReferenceEquals(sender, MainDockScrollViewer))
@@ -1894,6 +2010,9 @@ namespace BiMaDock
 
         protected override void OnClosed(EventArgs e)
         {
+            timer?.Stop();
+            mouseHook?.Unhook();
+            mouseHook = null;
             SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged; // Event abmelden, um Speicherlecks zu vermeiden
             base.OnClosed(e);
         }
