@@ -1,32 +1,85 @@
 # BiMaDock
 
-BiMaDock ist eine WPF-basierte Anwendung für Windows, die eine personalisierbare Dock-Leiste zur Organisation von Programmen und Dateien bietet. Die Anwendung wurde entwickelt, um eine optisch ansprechende und funktionale Alternative zu gängigen Dock-Programmen zu schaffen, mit modernem Design und einer intuitiven Benutzeroberfläche.
+BiMaDock ist eine Windows-Anwendung auf Basis von WPF, die eine personalisierbare Dock-Leiste für Programme, Dateien und häufig genutzte Aufgaben bereitstellt. Die App soll einen schnellen Zugriff auf wichtige Elemente am Bildschirmrand ermöglichen, ohne den Desktop zu überladen.
 
 ## Funktionen
 
-- **Drag & Drop-Unterstützung**: Dateien und Programme können per Drag & Drop in die Dock-Leiste hinzugefügt werden und sind direkt per Klick ausführbar.
-- **Automatisches Ausblenden**: Die Dock-Leiste kann sich automatisch ausblenden und erscheint beim Bewegen der Maus zum oberen Bildschirmrand.
-- **Kategorien und Organisation**: Dateien können in benutzerdefinierten Kategorien angeordnet werden, um eine saubere und einfache Struktur zu schaffen.
-- **Einstellungen für Design und Layout**: Nutzer können Farben, Transparenz und Deckkraft der Dock-Leiste und des Einstellungsfensters nach ihren Wünschen anpassen.
-- **Moderne Benutzeroberfläche**: Verwendung von Material Design für ein ansprechendes visuelles Erlebnis.
+- Drag & Drop zum Hinzufügen von Dateien, Ordnern und Programmen
+- Automatisches Ein- und Ausblenden der Dock-Leiste
+- Unterstützung für Kategorien und organisierte Gruppen
+- Konfigurierbare Darstellung mit Design- und Layout-Einstellungen
+- Kontextmenüs für schnelle Aktionen wie Bearbeiten, Löschen und Öffnen
+- Flexible Anpassung der Reaktionszeit und Dock-Verhalten
+- Optimierte WPF-Implementierung für ein sauberes und reaktionsschnelles Verhalten
 
-## Aufbau der Anwendung
+## Warum BiMaDock?
 
-BiMaDock ist in C# und WPF entwickelt und besteht aus modularen Komponenten für:
+BiMaDock verbindet die Flexibilität eines schnellen Startbereichs mit der Übersichtlichkeit eines modernen Desktop-Layouts. Sie eignet sich besonders für Nutzer, die häufig auf bestimmte Programme, Ordner oder Dateien zugreifen und dabei eine kompakte, gut organisierte Oberfläche bevorzugen.
 
-- **Symbole und Layout**: Verwaltung der Position und des Aussehens von Symbolen und deren Speicherung für die Wiederherstellung.
-- **Einstellungs- und Konfigurationsspeicherung**: Anpassungen werden lokal gespeichert und automatisch geladen, sodass die Anwendung beim Neustart den gewohnten Look behält.
-- **Benutzerfreundliche Schnittstellen**: Ein Kontextmenü bietet schnelle Aktionen wie das Bearbeiten, Löschen und Einstellen von Symbolen und Kategorien.
+## Voraussetzungen
 
-## Technologien
+- Windows 10 oder höher
+- .NET 8 Desktop Runtime
+- WPF-Unterstützung durch das Betriebssystem
 
-- **C# und WPF**: Die Hauptanwendung ist in C# mit Windows Presentation Foundation (WPF) entwickelt.
-- **Material Design**: Die Benutzeroberfläche nutzt Material Design Themes für ein modernes und ansprechendes Design.
+## Download
 
+- [Neueste Version herunterladen](https://github.com/bandit-1200/BiMaDock/releases/latest)
+- [Projekt-Website](https://bandit-1200.github.io/BiMaDock/)
 
-> **Download:**   
-> [Neueste Version herunterladen](https://github.com/bandit-1200/BiMaDock/releases/latest)
+## Schnellstart
 
+1. Die neueste Version herunterladen und installieren.
+2. BiMaDock starten.
+3. Objekte per Drag & Drop in das Dock legen.
+4. Über das Einstellungsmenü Design, Verhalten und Dock-Optionen anpassen.
 
-> **Projekt Webseite:**  
-> [https://bandit-1200.github.io/BiMaDock/](https://bandit-1200.github.io/BiMaDock/)
+## Verwendung
+
+### Programme oder Dateien hinzufügen
+- Dateien, Ordner oder Verknüpfungen per Drag & Drop in das Dock ziehen.
+- Ein Klick auf ein Element startet es direkt.
+
+### Kategorien nutzen
+- Objekte nach Typen oder Aufgaben gruppieren.
+- So lassen sich häufig genutzte Einträge schnell finden und sauber strukturieren.
+
+### Dock-Verhalten anpassen
+- Ein- und Ausblendung konfigurieren
+- Reaktionszeit und Erscheinungsbild individuell definieren
+- Layout- und Designoptionen über die Einstellungen anpassen
+
+## Entwicklung
+
+BiMaDock wird in C# mit WPF entwickelt und nutzt eine modulare Struktur für:
+
+- Dock-Management und Anordnung
+- Drag & Drop-Logik
+- Einstellungs- und Persistenzverwaltung
+- UI- und Theme-Anpassungen
+- Start- und Laufzeitlogik
+
+### Projekt lokal bauen
+
+```bash
+dotnet build
+```
+
+Oder direkt ausführen:
+
+```bash
+dotnet run --project .\BiMaDock.csproj
+```
+
+## Projektstatus
+
+BiMaDock ist ein aktives Desktop-Projekt mit Fokus auf:
+
+- praktische Dock-Funktionalität
+- stabilen Start und Laufzeitverhalten
+- nutzerfreundliche Konfigurierbarkeit
+- saubere WPF-Integration unter Windows
+
+## Lizenz
+
+Das Projekt steht unter der MIT-Lizenz. Weitere Details finden sich in der LICENSE-Datei.
