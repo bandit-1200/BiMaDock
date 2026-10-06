@@ -1,36 +1,42 @@
-# Wechseln zum Verzeichnis des Projekts
-Set-Location -Path "C:\Users\Marco\Documents\VisualStudioCode\BiMaDock"
+$ErrorActionPreference = "Stop"
 
-# Installieren Sie Nerdbank.GitVersioning CLI, falls noch nicht geschehen
-dotnet tool install --global nbgv
+if (-not (Get-Command nbgv -ErrorAction SilentlyContinue)) {
+    dotnet tool install --global nbgv
+    if ($LASTEXITCODE -ne 0) {
+        throw "Nerdbank.GitVersioning konnte nicht installiert werden."
+    }
 
-# Abrufen der Versionsnummer aus Nerdbank.GitVersioning mit JSON-Format
-$versionJson = nbgv get-version --format json
-Write-Host "VersionJson: $versionJson"
+    $env:PATH = "$(Join-Path $env:USERPROFILE '.dotnet\tools');$env:PATH"
+}
 
-# Konvertieren der JSON-Ausgabe in ein PowerShell-Objekt
+$versionJson = (& nbgv get-version --format json) -join [Environment]::NewLine
+if ($LASTEXITCODE -ne 0) {
+    throw "Die Version konnte mit Nerdbank.GitVersioning nicht ermittelt werden."
+}
+
 $versionInfo = $versionJson | ConvertFrom-Json
 $version = $versionInfo.SemVer2
-
-# Debugging-Ausgabe zur Überprüfung der Versionsermittlung
-if ($version -eq $null -or $version -eq "") {
-    Write-Host "Fehler: Die abgerufene Versionsnummer ist leer."
-} else {
-    Write-Host "Ermittelte Version: $version"
-
-    # Lesen Sie die Inno Setup-Datei
-    $innoSetupFile = "C:\Users\Marco\Documents\VisualStudioCode\BiMaDock\BiMaDock_local.iss"
-    $content = Get-Content $innoSetupFile
-
-    # Debugging-Ausgabe zur Überprüfung des Datei-Inhalts vor der Änderung
-    Write-Host "Inhalt vor der Aenderung:`n$content"
-
-    # Aktualisieren der Versionsnummer in der Inno Setup-Datei
-    $updatedContent = $content -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$version`""
-
-    # Debugging-Ausgabe zur Überprüfung des Datei-Inhalts nach der Änderung
-    Write-Host ("Inhalt nach der Aenderung:`n" + $updatedContent)
-
-    # Schreiben Sie die aktualisierte Datei zurück
-    Set-Content $innoSetupFile -Value $updatedContent
+if ([string]::IsNullOrWhiteSpace($version)) {
+    throw "Nerdbank.GitVersioning hat keine gültige SemVer2-Version geliefert."
 }
+
+$innoSetupFile = Join-Path $PSScriptRoot "BiMaDock_local.iss"
+$content = Get-Content -Raw -Path $innoSetupFile
+$versionPattern = '(?m)(^#define MyAppVersion ")[^"]*(")'
+if ($content -notmatch $versionPattern) {
+    throw "Die Versionsdefinition wurde in BiMaDock_local.iss nicht gefunden."
+}
+
+$updatedContent = [regex]::Replace(
+    $content,
+    $versionPattern,
+    ('${1}' + $version + '${2}'))
+
+if ($updatedContent -ne $content) {
+    [System.IO.File]::WriteAllText(
+        $innoSetupFile,
+        $updatedContent,
+        [System.Text.UTF8Encoding]::new($false))
+}
+
+Write-Host "BiMaDock_local.iss ist auf Version $version synchronisiert."

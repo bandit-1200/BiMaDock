@@ -36,8 +36,8 @@
                 <Button x:Name="MainDockPreviousButton" Grid.Column="0" Content="‹" Tag="Left"
                         Style="{DynamicResource DockNavigationButtonStyle}" Click="MainDockPreviousButton_Click"/>
 
-                <!-- Die Breite folgt dem Inhalt und wird erst ab dem elften Symbol begrenzt. -->
-                <ScrollViewer x:Name="MainDockScrollViewer" Grid.Column="1" Height="80" MaxWidth="800"
+                <!-- Der Scrollbereich nutzt die verfügbare Bildschirmbreite; weitere Elemente bleiben navigierbar. -->
+                <ScrollViewer x:Name="MainDockScrollViewer" Grid.Column="1" Height="80"
                               HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled"
                               CanContentScroll="False" ScrollChanged="DockScrollViewer_ScrollChanged"
                               PreviewMouseWheel="MainDockScrollViewer_PreviewMouseWheel">
@@ -110,7 +110,7 @@
                     </Grid.ColumnDefinitions>
                     <Button x:Name="CategoryDockPreviousButton" Grid.Column="0" Content="‹" Tag="Left"
                             Style="{DynamicResource DockNavigationButtonStyle}" Click="CategoryDockPreviousButton_Click"/>
-                    <ScrollViewer x:Name="CategoryDockScrollViewer" Grid.Column="1" MaxWidth="800"
+                    <ScrollViewer x:Name="CategoryDockScrollViewer" Grid.Column="1"
                                   HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled"
                                   CanContentScroll="False" ScrollChanged="DockScrollViewer_ScrollChanged"
                                   PreviewMouseWheel="CategoryDockScrollViewer_PreviewMouseWheel">

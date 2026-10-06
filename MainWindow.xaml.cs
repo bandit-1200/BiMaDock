@@ -195,10 +195,7 @@ namespace BiMaDock
                         mouseHook = new GlobalMouseHook(this);
                     }
 
-                    var screenWidthLoaded = SystemParameters.PrimaryScreenWidth;
-                    var screenHeightLoaded = SystemParameters.PrimaryScreenHeight;
-                    this.Left = (screenWidthLoaded / 2) - (this.Width / 2);
-                    this.Top = 0;
+                    CenterWindow();
                     DockPanel.DragEnter += (s, e) =>
                     {
                         e.Effects = DragDropEffects.All;
@@ -2085,17 +2082,26 @@ namespace BiMaDock
 
         private void CenterWindow()
         {
-            // Bildschirmbreite abrufen
             double screenWidth = SystemParameters.PrimaryScreenWidth;
+            UpdateDockScrollWidths(screenWidth);
 
-            // Fensterbreite abrufen
-            double windowWidth = this.Width;
+            double windowWidth = ActualWidth > 0 ? ActualWidth : Width;
 
-            // Neue horizontale Position berechnen (zentriert)
             this.Left = (screenWidth - windowWidth) / 2;
-
-            // Vertikale Position fixieren (am oberen Bildschirmrand)
             this.Top = 0;
+        }
+
+        private void UpdateDockScrollWidths(double screenWidth)
+        {
+            double mainDockFixedWidth = MainDockPreviousButton.ActualWidth + MainDockNextButton.ActualWidth
+                + MainDockBorder.BorderThickness.Left + MainDockBorder.BorderThickness.Right
+                + MainDockBorder.Padding.Left + MainDockBorder.Padding.Right;
+            double categoryDockFixedWidth = CategoryDockPreviousButton.ActualWidth + CategoryDockNextButton.ActualWidth
+                + CategoryDockBorder.BorderThickness.Left + CategoryDockBorder.BorderThickness.Right
+                + CategoryDockBorder.Padding.Left + CategoryDockBorder.Padding.Right;
+
+            MainDockScrollViewer.MaxWidth = Math.Max(0, screenWidth - mainDockFixedWidth);
+            CategoryDockScrollViewer.MaxWidth = Math.Max(0, screenWidth - categoryDockFixedWidth);
         }
 
         private void OnDisplaySettingsChanged(object? sender, EventArgs e)
