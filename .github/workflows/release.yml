@@ -10,6 +10,8 @@ on:
 jobs:
   release:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Test timestamp server
@@ -108,21 +110,13 @@ jobs:
       if: steps.decode-certificate.outcome == 'failure' || steps.sign-executable.outcome == 'failure'
       run: Write-Warning "The installer could not be signed and will be published unsigned. Check the CERTIFICATE_FILE and CERTIFICATE_PASSWORD repository secrets."
 
-    - name: Determine tag
-      id: determine_tag
-      env:
-        RELEASE_TAG: ${{ github.ref_name }}
-      run: echo "RELEASE_TAG=$env:RELEASE_TAG" >> $env:GITHUB_OUTPUT
-
     - name: Create release
-      id: create_release
-      uses: marvinpinto/action-automatic-releases@latest
+      uses: softprops/action-gh-release@v2
       with:
-        repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        automatic_release_tag: ${{ steps.determine_tag.outputs.RELEASE_TAG }}
-        title: "Release ${{ steps.determine_tag.outputs.RELEASE_TAG }}"
+        token: ${{ github.token }}
+        tag_name: ${{ github.ref_name }}
+        name: "Release ${{ github.ref_name }}"
+        generate_release_notes: true
+        fail_on_unmatched_files: true
         files: |
           ./publish/BiMaDockSetup.exe
-
-    - name: Save Release URL
-      run: echo "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/${{ steps.determine_tag.outputs.RELEASE_TAG }}" >> $GITHUB_OUTPUT  # Ausgabe in GITHUB_OUTPUT
