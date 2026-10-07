@@ -49,11 +49,14 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
 
+    - name: Test project
+      run: dotnet test BiMaDock.sln --configuration Release
+
     - name: Build project
-      run: dotnet build --configuration Release
+      run: dotnet build --configuration Release "-p:ReleaseTag=${{ github.ref_name }}"
 
     - name: Publish project
-      run: dotnet publish ./BiMaDock.csproj --configuration Release --output ./publish --runtime win-x64
+      run: dotnet publish ./BiMaDock.csproj --configuration Release --output ./publish --runtime win-x64 "-p:ReleaseTag=${{ github.ref_name }}"
 
     - name: Update Inno Setup version
       run: pwsh -File update_version.ps1

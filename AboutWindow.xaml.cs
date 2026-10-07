@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Navigation;
 
@@ -15,13 +14,7 @@ namespace BiMaDock
 
         private void ShowVersion()
         {
-            var informationalVersionAttribute = Assembly.GetExecutingAssembly()
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-
-            string informationalVersion = informationalVersionAttribute?.InformationalVersion ?? "Unbekannte Version";
-            string clearVersion = informationalVersion.Split('+')[0];
-
-            VersionTextBox.Text = $"Version: {clearVersion}";
+            VersionTextBox.Text = $"Version: {UpdateChecker.GetCurrentVersion()}";
         }
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)

@@ -27,6 +27,8 @@ BiMaDock verbindet die Flexibilität eines schnellen Startbereichs mit der Über
 - [Neueste Version herunterladen](https://github.com/bandit-1200/BiMaDock/releases/latest)
 - [Projekt-Website](https://bandit-1200.github.io/BiMaDock/)
 
+BiMaDock prüft beim Start auf neue veröffentlichte Releases. Über **Über BiMaDock → Auf Update prüfen** lässt sich die Prüfung jederzeit manuell starten. Zurückstellen gilt nur für das angezeigte Release; eine spätere Version wird weiterhin angeboten.
+
 ## Schnellstart
 
 1. Die neueste Version herunterladen und installieren.

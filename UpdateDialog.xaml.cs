@@ -1,12 +1,13 @@
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 
 namespace BiMaDock
 {
     public partial class UpdateDialog : Window
     {
-        private string latestVersion;
-        private string downloadUrl;
+        private readonly string latestVersion;
+        private readonly string downloadUrl;
 
         public UpdateDialog(string latestVersion, string downloadUrl)
         {
@@ -35,9 +36,23 @@ namespace BiMaDock
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            // Setzt das Update für 30 Tage aus
-            UpdateChecker.DeferUpdate();
-            Close();
+            try
+            {
+                UpdateChecker.DeferUpdate(latestVersion);
+                Close();
+            }
+            catch (IOException ex)
+            {
+                MessageBox.Show($"Das Update konnte nicht zurückgestellt werden:\n{ex.Message}", "BiMaDock-Update", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                MessageBox.Show($"Das Update konnte nicht zurückgestellt werden:\n{ex.Message}", "BiMaDock-Update", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (InvalidOperationException ex)
+            {
+                MessageBox.Show($"Das Update konnte nicht zurückgestellt werden:\n{ex.Message}", "BiMaDock-Update", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
     }
 }
