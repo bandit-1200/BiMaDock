@@ -8,83 +8,95 @@ using BiMaDock;  // Importiere den richtigen Namespace
 
 public class GlobalMouseHook
 {
-    private MainWindow mainWindow;
+    private readonly MainWindow mainWindow;
     private IntPtr _hookID = IntPtr.Zero;
-    private LowLevelMouseProc _proc;
+    private readonly LowLevelMouseProc _proc;
+    private bool _isHookInstalled;
 
     public GlobalMouseHook(MainWindow window)
     {
         mainWindow = window;
-        _proc = HookCallback; // HookCallback delegieren
+        _proc = HookCallback;
         SetHook();
     }
 
     public void SetHook()
     {
+        if (_isHookInstalled || mainWindow == null)
+        {
+            return;
+        }
+
         _hookID = SetWindowsHookEx(WH_MOUSE_LL, _proc, IntPtr.Zero, 0);
+        _isHookInstalled = _hookID != IntPtr.Zero;
     }
 
     public void Unhook()
     {
-        UnhookWindowsHookEx(_hookID);
+        if (_hookID != IntPtr.Zero)
+        {
+            UnhookWindowsHookEx(_hookID);
+            _hookID = IntPtr.Zero;
+            _isHookInstalled = false;
+        }
     }
 
     private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
-        if (nCode >= 0 && (MouseMessages)wParam == MouseMessages.WM_LBUTTONDOWN)
+        if (nCode < 0 || (MouseMessages)wParam != MouseMessages.WM_LBUTTONDOWN)
         {
-            var hookStruct = Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+        }
 
-            if (hookStruct != null)
+        if (mainWindow == null || !mainWindow.IsLoaded)
+        {
+            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+        }
+
+        var hookStruct = Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+        if (hookStruct == null)
+        {
+            Debug.WriteLine("Fehler: Die Struktur konnte nicht erstellt werden (lParam ungültig).");
+            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+        }
+
+        MSLLHOOKSTRUCT msllHookStruct = (MSLLHOOKSTRUCT)hookStruct;
+        Point mousePosition = new Point(msllHookStruct.pt.x, msllHookStruct.pt.y);
+
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            var window = mainWindow;
+            var editPropertiesWindow = GetOpenEditPropertiesWindow();
+            bool isEditPropertiesWindowOpen = editPropertiesWindow != null && editPropertiesWindow.IsVisible;
+
+            if (!isEditPropertiesWindowOpen)
             {
-                MSLLHOOKSTRUCT msllHookStruct = (MSLLHOOKSTRUCT)hookStruct;
-                Point mousePosition = new Point(msllHookStruct.pt.x, msllHookStruct.pt.y);
+                Rect mainWindowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
+                Point relativePoint = window.PointFromScreen(mousePosition);
+                HitTestResult result = VisualTreeHelper.HitTest(window, relativePoint);
 
-                Application.Current.Dispatcher.Invoke(() =>
+                if (result != null)
                 {
-                    var window = mainWindow;
-                    var editPropertiesWindow = GetOpenEditPropertiesWindow();
-
-                    // Prüfen, ob das EditPropertiesWindow noch geöffnet ist
-                    bool isEditPropertiesWindowOpen = editPropertiesWindow != null && editPropertiesWindow.IsVisible;
-
-                    if (!isEditPropertiesWindowOpen)
+                    var element = result.VisualHit as FrameworkElement;
+                    if (element != null)
                     {
-                        Rect mainWindowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
-                        Point relativePoint = window.PointFromScreen(mousePosition);
-                        HitTestResult result = VisualTreeHelper.HitTest(window, relativePoint);
-
-                        if (result != null)
+                        if (!IsElementChildOf(element, window.MainGrid) && !IsElementChildOf(element, window.CategoryDockBorder))
                         {
-                            var element = result.VisualHit as FrameworkElement;
-                            if (element != null)
-                            {
-                                // Überprüfen, ob das Element innerhalb des Hauptdocks oder Kategoriedocks ist
-                                if (!IsElementChildOf(element, window.MainGrid) && !IsElementChildOf(element, window.CategoryDockBorder))
-                                {
-                                    // Klick außerhalb des ersten Grids und des CategoryDockPanels erkannt
-                                    window.HideDock();
-                                    window.HideCategoryDockPanel();
-                                    window.currentDockStatus = MainWindow.DockStatus.None;
-                                    Console.WriteLine("Klick außerhalb des ersten Grids und des CategoryDockPanels erkannt!");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // Mausklick außerhalb der Anwendung erkannt
                             window.HideDock();
-                            window.HideCategoryDockPanel(); // Schließt das Kategoriedock
-                            Console.WriteLine("Klick außerhalb der Anwendung erkannt!");
+                            window.HideCategoryDockPanel();
+                            window.currentDockStatus = MainWindow.DockStatus.None;
+                            Console.WriteLine("Klick außerhalb des ersten Grids und des CategoryDockPanels erkannt!");
                         }
                     }
-                });
+                }
+                else
+                {
+                    window.HideDock();
+                    window.HideCategoryDockPanel();
+                    Console.WriteLine("Klick außerhalb der Anwendung erkannt!");
+                }
             }
-            else
-            {
-                Debug.WriteLine("Fehler: Die Struktur konnte nicht erstellt werden (lParam ungültig).");
-            }
-        }
+        });
 
         return CallNextHookEx(_hookID, nCode, wParam, lParam);
     }

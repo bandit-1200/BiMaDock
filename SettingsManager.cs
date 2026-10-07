@@ -18,8 +18,9 @@ using System.Windows.Threading; // Für den DispatcherTimer
 public class SettingsManager
 {
     private MainWindow mainWindow;
-    private static string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock");
-    private static string settingsFilePath = Path.Combine(appDataPath, "docksettings.json");
+    private static string appDataPath = AppPaths.AppDataDirectory;
+    private static string settingsFilePath = AppPaths.GetSettingsFilePath("docksettings.json");
+    private static List<DockItem>? cachedItems;
 
     public SettingsManager(MainWindow mainWindow)
     {
@@ -31,24 +32,28 @@ public class SettingsManager
 
     public static void SaveSettings(List<DockItem> items)
     {
-        if (!Directory.Exists(appDataPath))
-        {
-            Directory.CreateDirectory(appDataPath);
-        }
-        var json = JsonConvert.SerializeObject(items, Formatting.Indented);
+        AppPaths.EnsureAppDataDirectory();
+        cachedItems = items;
+        var json = JsonConvert.SerializeObject(cachedItems, Formatting.Indented);
         File.WriteAllText(settingsFilePath, json);
     }
 
 
     public static List<DockItem> LoadSettings()
     {
+        if (cachedItems != null)
+        {
+            return cachedItems;
+        }
+
         if (File.Exists(settingsFilePath))
         {
             var json = File.ReadAllText(settingsFilePath);
-            var items = JsonConvert.DeserializeObject<List<DockItem>>(json);
-            return items ?? new List<DockItem>();
+            cachedItems = JsonConvert.DeserializeObject<List<DockItem>>(json) ?? new List<DockItem>();
+            return cachedItems;
         }
-        return new List<DockItem>();
+        cachedItems = new List<DockItem>();
+        return cachedItems;
     }
 
 

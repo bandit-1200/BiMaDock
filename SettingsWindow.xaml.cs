@@ -12,6 +12,10 @@ namespace BiMaDock
 {
     public partial class SettingsWindow : Window
     {
+        private const int MinDockShowDelayMs = 100;
+        private const int MaxDockShowDelayMs = 1000;
+        private const int DefaultDockShowDelayMs = 300;
+
         private MainWindow mainWindow;
         private readonly string settingsFilePath;
 
@@ -19,6 +23,7 @@ namespace BiMaDock
         private ScaleSettings scaleSettings;
         private RotateSettings rotateSettings;
         private TranslateSettings translateSettings;
+        private int dockShowDelayMilliseconds = DefaultDockShowDelayMs;
 
         public class ScaleSettings
         {
@@ -66,6 +71,12 @@ namespace BiMaDock
 
             mainWindow = window;
 
+            DockShowDelaySlider.Minimum = MinDockShowDelayMs;
+            DockShowDelaySlider.Maximum = MaxDockShowDelayMs;
+            DockShowDelaySlider.Value = dockShowDelayMilliseconds;
+            DockShowDelaySlider.ValueChanged += DockShowDelaySlider_ValueChanged;
+            UpdateDockShowDelayText();
+
             // Initialisieren der Einstellungsvariablen
             scaleSettings = new ScaleSettings();
             rotateSettings = new RotateSettings();
@@ -86,12 +97,53 @@ namespace BiMaDock
 
 
             // animationEffectComboBox = new ComboBox();
-            settingsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "StyleSettings.json");
+            settingsFilePath = AppPaths.GetSettingsFilePath("StyleSettings.json");
             CreateAnimationEffectDropdown();
             ShowVersionInConsole();
             AutoStartCheckBox.IsChecked = StartupManager.IsInStartup();
+            if (DockShowDelaySlider != null)
+            {
+                DockShowDelaySlider.Minimum = MinDockShowDelayMs;
+                DockShowDelaySlider.Maximum = MaxDockShowDelayMs;
+                DockShowDelaySlider.Value = dockShowDelayMilliseconds;
+                DockShowDelaySlider.ValueChanged += DockShowDelaySlider_ValueChanged;
+                UpdateDockShowDelayText();
+            }
             LoadSettings();
 
+        }
+
+        private void UpdateDockShowDelayText()
+        {
+            if (DockShowDelaySlider == null || DockShowDelayValueText == null)
+            {
+                return;
+            }
+
+            var value = (int)Math.Round(DockShowDelaySlider.Value);
+            dockShowDelayMilliseconds = value;
+            DockShowDelayValueText.Text = $"Aktuelle Einblendzeit: {dockShowDelayMilliseconds} ms";
+        }
+
+        private void DockShowDelaySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (DockShowDelaySlider == null || DockShowDelayValueText == null)
+            {
+                return;
+            }
+
+            var clampedValue = Math.Clamp(DockShowDelaySlider.Value, MinDockShowDelayMs, MaxDockShowDelayMs);
+            if (Math.Abs(DockShowDelaySlider.Value - clampedValue) > 0.001)
+            {
+                DockShowDelaySlider.Value = clampedValue;
+                return;
+            }
+
+            UpdateDockShowDelayText();
+            if (mainWindow != null)
+            {
+                mainWindow.SetDockShowDelayMilliseconds(dockShowDelayMilliseconds);
+            }
         }
 
 
@@ -566,11 +618,10 @@ namespace BiMaDock
                         // Ressourcen aktualisieren
                         var newPrimaryColor = new SolidColorBrush(primaryColor);
                         Application.Current.Resources["PrimaryColor"] = newPrimaryColor;
-                        // resources["PrimaryColor"] = new SolidColorBrush(primaryColor);
 
-                        mainWindow.DockPanel.Background = settings.PrimaryColor;
-                        mainWindow.CategoryDockBorder.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
-                        mainWindow.OverlayCanvasHorizontalLine.Stroke = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
+                        mainWindow.DockPanel.Background = newPrimaryColor;
+                        mainWindow.CategoryDockBorder.Background = newPrimaryColor;
+                        mainWindow.OverlayCanvasHorizontalLine.Stroke = newPrimaryColor;
 
 
 
@@ -626,6 +677,17 @@ namespace BiMaDock
                     }
 
 
+
+                    if (settings.DockShowDelayMilliseconds != null)
+                    {
+                        dockShowDelayMilliseconds = Math.Clamp((int)settings.DockShowDelayMilliseconds, MinDockShowDelayMs, MaxDockShowDelayMs);
+                        if (DockShowDelaySlider != null)
+                        {
+                            DockShowDelaySlider.Value = dockShowDelayMilliseconds;
+                        }
+                        mainWindow.SetDockShowDelayMilliseconds(dockShowDelayMilliseconds);
+                        UpdateDockShowDelayText();
+                    }
 
                     // Animationseinstellungen laden
                     if (settings.Scale != null)
@@ -704,6 +766,10 @@ namespace BiMaDock
                 var selectedEffectIndex = animationEffectComboBox.SelectedIndex;
                 Debug.WriteLine($"SelectedEffectIndex in SaveButton_Click: {selectedEffectIndex}");
 
+                var dockShowDelay = (int)Math.Round(DockShowDelaySlider?.Value ?? dockShowDelayMilliseconds);
+                dockShowDelay = Math.Clamp(dockShowDelay, MinDockShowDelayMs, MaxDockShowDelayMs);
+                dockShowDelayMilliseconds = dockShowDelay;
+
                 // Setze den festen Effektindex für jede Animation
                 scaleSettings.EffectIndex = 1;
                 rotateSettings.EffectIndex = 2;
@@ -715,6 +781,7 @@ namespace BiMaDock
                     SecondaryColor = secondaryColor.ToString(),
                     AccentColor = accentColor.ToString(),
                     FeedbackColor = feedbackColor.ToString(),
+                    DockShowDelayMilliseconds = dockShowDelay,
                     SelectedEffectIndex = selectedEffectIndex,
                     Scale = scaleSettings,
                     Rotate = rotateSettings,
@@ -722,10 +789,8 @@ namespace BiMaDock
                 };
 
                 string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
-                string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string directoryPath = Path.Combine(appDataPath, "BiMaDock");
+                string directoryPath = AppPaths.EnsureAppDataDirectory();
 
-                Directory.CreateDirectory(directoryPath);
                 await File.WriteAllTextAsync(Path.Combine(directoryPath, "StyleSettings.json"), json);
 
                 // Schließen des Fensters
