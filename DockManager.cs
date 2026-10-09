@@ -16,7 +16,6 @@ public class DockManager
     private StackPanel dockPanel;
     private readonly StackPanel categoryDockContainer; // Referenz zu CategoryDockContainer
     private MainWindow mainWindow;
-    private bool isDropInProgress = false;
 
 
 
@@ -260,17 +259,36 @@ public class DockManager
     }
 
 
-    private Task HandleFileDrop(string[] files, Point dropPosition)
+    private void HandleFileDrop(string[] files, Point dropPosition)
     {
+        // Bereits im Hauptdock vorhandene Pfade überspringen (Groß-/Kleinschreibung egal)
+        var existingPaths = new HashSet<string>(
+            dockPanel.Children.OfType<Button>()
+                .Select(button => button.Tag)
+                .OfType<DockItem>()
+                .Where(item => string.IsNullOrEmpty(item.Category) && !string.IsNullOrEmpty(item.FilePath))
+                .Select(item => item.FilePath),
+            StringComparer.OrdinalIgnoreCase);
+
         var dockItemsToAdd = new List<DockItem>(files.Length);
         foreach (var file in files)
         {
+            if (string.IsNullOrWhiteSpace(file) || !existingPaths.Add(file))
+            {
+                continue;
+            }
 
+            // .lnk-Dateien bleiben als Pfad erhalten (Start funktioniert), der Name kommt ohne Endung
             dockItemsToAdd.Add(new DockItem
             {
                 FilePath = file,
-                DisplayName = System.IO.Path.GetFileNameWithoutExtension(file) ?? string.Empty,
+                DisplayName = DockDropPosition.GetDisplayName(file),
             });
+        }
+
+        if (dockItemsToAdd.Count == 0)
+        {
+            return;
         }
 
         int insertionIndex = DockDropPosition.FindInsertionIndex(dockPanel, dropPosition.X);
@@ -280,16 +298,14 @@ public class DockManager
         }
 
         SaveDockItems(string.Empty);
-        return Task.CompletedTask;
     }
 
-    private void HandleTextDrop(string rawData, Point dropPosition)
+    private void HandleLinkDrop(string link, Point dropPosition)
     {
-        string url = rawData;
         var dockItem = new DockItem
         {
-            FilePath = url,
-            DisplayName = url,
+            FilePath = link,
+            DisplayName = DockDropPosition.GetDisplayName(link),
         };
         InsertDockItem(dockItem, dropPosition);
     }
@@ -299,14 +315,33 @@ public class DockManager
     {
         if (droppedButton != null && droppedButton.Tag is DockItem droppedItem)
         {
-
-            droppedItem.Category = "";
-
             var parent = VisualTreeHelper.GetParent(droppedButton) as Panel;
-            parent?.Children.Remove(droppedButton);
+            int oldIndex = parent?.Children.IndexOf(droppedButton) ?? -1;
+            string oldCategory = droppedItem.Category;
 
-            InsertDockButton(droppedButton, dropPosition);
-            SaveDockItems(string.Empty);
+            try
+            {
+                parent?.Children.Remove(droppedButton);
+                InsertDockButton(droppedButton, dropPosition);
+                droppedItem.Category = "";
+                SaveDockItems(string.Empty);
+            }
+            catch
+            {
+                // Rückgängig machen, damit Oberfläche und Daten konsistent bleiben
+                droppedItem.Category = oldCategory;
+                if (VisualTreeHelper.GetParent(droppedButton) is Panel currentParent)
+                {
+                    currentParent.Children.Remove(droppedButton);
+                }
+
+                if (parent != null && oldIndex >= 0)
+                {
+                    parent.Children.Insert(Math.Clamp(oldIndex, 0, parent.Children.Count), droppedButton);
+                }
+
+                throw;
+            }
         }
     }
 
@@ -325,15 +360,9 @@ public class DockManager
 
     private void CleanupAfterDrop()
     {
-        RemovePlaceholders();
+        // Platzhalter, Hintergründe und DraggingToDock-Flag zentral im MainWindow zurücksetzen
+        mainWindow.CleanupAfterDrag();
 
-        SolidColorBrush? primaryColor = Application.Current.Resources["PrimaryColor"] as SolidColorBrush;
-        if (primaryColor != null)
-        {
-            dockPanel.Background = primaryColor;
-        }
-
-        mainWindow.currentDockStatus &= ~MainWindow.DockStatus.DraggingToDock;
         mainWindow.currentDockStatus |= MainWindow.DockStatus.MainDockHover;
         mainWindow.CheckAllConditions();
         mainWindow.SetDragging(false);
@@ -341,33 +370,15 @@ public class DockManager
         mainWindow.HideCategoryDockPanel();
     }
 
-    private void RemovePlaceholders()
+    public void DockPanel_Drop(object sender, DragEventArgs e)
     {
-        for (int i = dockPanel.Children.Count - 1; i >= 0; i--)
-        {
-            if (dockPanel.Children[i] is Border border && border.Tag as string == "Placeholder")
-            {
-                dockPanel.Children.RemoveAt(i);
-            }
-        }
-    }
-
-
-    public async void DockPanel_Drop(object sender, DragEventArgs e)
-    {
-
-        if (isDropInProgress)
-        {
-            Debug.WriteLine("DockPanel_Drop: Drop bereits in Bearbeitung, Vorgang abgebrochen");
-            return; // Doppelte Drop-Verhinderung
-        }
-
-        isDropInProgress = true;
+        e.Handled = true;
         try
         {
             Point dropPosition = e.GetPosition(dockPanel); // Berechne die Drop-Position einmal und übergebe sie
 
-            RemovePlaceholders();
+            // Platzhalter vor der Positionsberechnung entfernen
+            mainWindow.CleanupAfterDrag();
             if (e.Data.GetDataPresent(DockDropPosition.DockItemButtonFormat))
             {
                 Button? droppedButton = e.Data.GetData(DockDropPosition.DockItemButtonFormat) as Button;
@@ -378,20 +389,13 @@ public class DockManager
             }
             else if (DockDropPosition.GetDroppedFilePaths(e.Data) is string[] files)
             {
-                await HandleFileDrop(files, dropPosition);
+                HandleFileDrop(files, dropPosition);
             }
-            else if (e.Data.GetDataPresent(DataFormats.UnicodeText) || e.Data.GetDataPresent(DataFormats.Text))
+            else if (DockDropPosition.TryGetLinkText(e.Data, out string link))
             {
-                string format = e.Data.GetDataPresent(DataFormats.UnicodeText)
-                    ? DataFormats.UnicodeText
-                    : DataFormats.Text;
-                if (e.Data.GetData(format) is string rawData)
-                {
-                    HandleTextDrop(rawData, dropPosition);
-                }
+                HandleLinkDrop(link, dropPosition);
             }
-
-            e.Handled = true;
+            // Ungültiger Text wird ignoriert
         }
         catch (Exception ex)
         {
@@ -401,7 +405,6 @@ public class DockManager
         }
         finally
         {
-            isDropInProgress = false;
             CleanupAfterDrop();
         }
     }
@@ -513,6 +516,8 @@ public class DockManager
                     finally
                     {
                         mainWindow.SetDragging(false);
+                        // Platzhalter und Hervorhebungen auch bei Abbruch (Esc) oder Drop außerhalb entfernen
+                        mainWindow.CleanupAfterDrag();
                     }
                 }
             }

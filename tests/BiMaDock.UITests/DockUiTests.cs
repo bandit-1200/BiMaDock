@@ -240,6 +240,70 @@ public sealed class DockUiTests
         }
     }
 
+    /// <summary>Zieht die Daten der Quelle hinter das letzte Element des Hauptdocks.</summary>
+    private static void DragFromSourceToDockEnd(BiMaDockSession session, FileDragSource source, string lastItemName)
+    {
+        var dock = session.MainWindow.BoundingRectangle;
+        var edge = new Point(dock.Left + dock.Width / 2, dock.Top + 2);
+        BiMaDockSession.DragStart(source.Center);
+        BiMaDockSession.DragMove(source.Center, edge);
+        BiMaDockSession.WaitUntil(() => session.IsDockVisible(lastItemName), "Dock wurde beim Ziehen nicht eingeblendet.");
+        var last = session.GetDockButton(lastItemName).BoundingRectangle;
+        BiMaDockSession.DragMove(edge, new Point(last.Right - 5, last.Top + last.Height / 2));
+        BiMaDockSession.DragEnd();
+    }
+
+    [UiFact]
+    public void DragAndDrop_LinkWirdMitHostnamenHinzugefuegt()
+    {
+        using var session = StartWithTwoItems();
+        var screen = session.Automation.GetDesktop().BoundingRectangle;
+        using var source = new FileDragSource(
+            () => new System.Windows.DataObject(System.Windows.DataFormats.UnicodeText, "  https://www.example.com/seite  "),
+            screen.Left + 100, screen.Top + screen.Height / 2);
+
+        bool IsSaved() => session.ReadDockItems().Any(i => i.FilePath == "https://www.example.com/seite");
+        for (int attempt = 1; attempt <= 2 && !IsSaved(); attempt++)
+        {
+            DragFromSourceToDockEnd(session, source, "Konsole");
+            try
+            {
+                BiMaDockSession.WaitUntil(IsSaved, "Link wurde nicht gespeichert.", TimeSpan.FromSeconds(5));
+            }
+            catch (TimeoutException) when (attempt < 2)
+            {
+                session.MoveMouseAway();
+            }
+        }
+
+        Assert.Contains(session.ReadDockItems(), i => i.FilePath == "https://www.example.com/seite" && i.DisplayName == "example.com");
+    }
+
+    [UiFact]
+    public void DragAndDrop_BeliebigerTextWirdIgnoriert()
+    {
+        using var session = StartWithTwoItems();
+        var screen = session.Automation.GetDesktop().BoundingRectangle;
+        using var source = new FileDragSource(
+            () => new System.Windows.DataObject(System.Windows.DataFormats.UnicodeText, "Das ist kein Link"),
+            screen.Left + 100, screen.Top + screen.Height / 2);
+
+        // Nicht ablegbare Daten: Das Dock blendet sich beim Ziehen an den Rand gar nicht erst ein.
+        session.MoveMouseAway();
+        BiMaDockSession.WaitUntil(() => !session.IsDockVisible("Konsole"), "Dock ist vor dem Ziehen nicht ausgeblendet.");
+        var dock = session.MainWindow.BoundingRectangle;
+        var edge = new Point(dock.Left + dock.Width / 2, dock.Top + 2);
+        BiMaDockSession.DragStart(source.Center);
+        BiMaDockSession.DragMove(source.Center, edge);
+        Thread.Sleep(1000);
+        bool shownDuringDrag = session.IsDockVisible("Konsole");
+        BiMaDockSession.DragEnd();
+
+        Assert.False(shownDuringDrag, "Dock wurde für nicht ablegbaren Text eingeblendet.");
+        Assert.Equal(2, session.ReadDockItems().Count);
+        Assert.Null(session.FindDockButton("Das ist kein Link"));
+    }
+
     [UiFact]
     public void DragAndDrop_ElementVerschiebenAendertReihenfolge()
     {

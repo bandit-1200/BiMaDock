@@ -5,8 +5,9 @@ using System.Windows.Media;
 namespace BiMaDock.UITests;
 
 /// <summary>
-/// Kleines WPF-Fenster im Testprozess, das beim Ziehen eine Datei als FileDrop anbietet –
-/// so wie der Windows-Explorer. Läuft auf einem eigenen STA-Thread.
+/// Kleines WPF-Fenster im Testprozess, das beim Ziehen Daten anbietet – standardmäßig eine Datei
+/// als FileDrop wie der Windows-Explorer, alternativ beliebige Daten (z. B. Text oder Links).
+/// Läuft auf einem eigenen STA-Thread.
 /// </summary>
 public sealed class FileDragSource : IDisposable
 {
@@ -17,6 +18,11 @@ public sealed class FileDragSource : IDisposable
     public System.Drawing.Point Center { get; private set; }
 
     public FileDragSource(string filePath, int left, int top)
+        : this(() => new DataObject(DataFormats.FileDrop, new[] { filePath }), left, top)
+    {
+    }
+
+    public FileDragSource(Func<DataObject> createData, int left, int top)
     {
         thread = new Thread(() =>
         {
@@ -26,7 +32,7 @@ public sealed class FileDragSource : IDisposable
                 Child = new TextBlock { Text = "Drag-Quelle", Foreground = Brushes.White, Margin = new Thickness(8) }
             };
             border.MouseLeftButtonDown += (_, _) =>
-                DragDrop.DoDragDrop(border, new DataObject(DataFormats.FileDrop, new[] { filePath }), DragDropEffects.Copy);
+                DragDrop.DoDragDrop(border, createData(), DragDropEffects.Copy);
 
             window = new Window
             {

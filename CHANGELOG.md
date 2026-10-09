@@ -15,6 +15,13 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 
 ### Verbesserungen
 
+- Drag & Drop flüssiger: Der Einfügestrich wird nur noch bei einer echten Positionsänderung verschoben statt bei jeder Mausbewegung neu eingefügt; das Dock wackelt beim Ziehen nicht mehr.
+- Beim Ziehen öffnet sich eine Kategorie zuverlässig, sobald man über sie fährt, und wird nicht mehr mehrfach neu aufgebaut; kein Flackern mehr beim Wechsel zwischen Elementen.
+- Der Cursor zeigt nur noch dort „Ablegen möglich“, wo tatsächlich abgelegt werden kann; bei nicht ablegbaren Daten blendet sich das Dock gar nicht erst ein.
+- Überfüllte Docks scrollen beim Ziehen automatisch, wenn man an den linken oder rechten Rand kommt.
+- Nach dem Ablegen in einer Kategorie bleibt diese sichtbar, statt das Dock aus- und die Kategorie neu aufzubauen.
+- Abgelegte Links werden geprüft (http, https, file) und erhalten den Hostnamen als Namen; Links aus dem Browser werden bevorzugt aus dem URL-Format gelesen. Verknüpfungen (`.lnk`) erhalten ihren Namen ohne Endung, Laufwerke einen lesbaren Namen; doppelt abgelegte Dateien werden übersprungen.
+
 - Schnellerer Start (Hauptfenster-Aufbau etwa 0,7 statt 2 Sekunden bei rund 50 Einträgen): Icons werden zwischengespeichert, PNG-Icons nur in benötigter Größe dekodiert und ohne Dateisperre geladen; Shell-Icons ohne GDI+-Umweg erzeugt. `System.Drawing.Common` wird nicht mehr benötigt.
 - Release-Builds werden mit ReadyToRun veröffentlicht (schnellerer Kaltstart).
 - `StyleSettings.json` wird typisiert statt über `dynamic` gelesen; ein ungültiger Inhalt führt nicht mehr zu einem Fehler.
@@ -32,6 +39,11 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 - Tests für Einfügepositionen, Windows-Datei-Dropformate, Einstellungsspeicherung, Versionen und Autostart ergänzt.
 
 ### Fehlerbehebungen
+
+- Beliebiger oder leerer Text wird beim Ablegen nicht mehr als Dock-Element übernommen.
+- Ablegen in einer Kategorie geht nicht mehr verloren, wenn die geöffnete Kategorie zwischenzeitlich zurückgesetzt wurde.
+- Nach abgebrochenem Ziehen (Esc) oder Ablegen außerhalb werden Einfügestrich und Hervorhebung zuverlässig entfernt.
+- Verschieben aus einer Kategorie ins Hauptdock bleibt bei einem Fehler konsistent (Rückgängig statt halb verschobenem Element).
 
 - Eine fehlende oder beschädigte Icon-Datei bricht das Laden des Docks nicht mehr ab; einzelne fehlerhafte Einträge werden übersprungen, Lesefehler der Dock-Einstellungen abgefangen.
 - Speicherleck behoben: Hover-Zustände hielten alle jemals erzeugten Dock-Buttons im Speicher.
