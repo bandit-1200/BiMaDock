@@ -2,15 +2,16 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace BiMaDock
 {
     public partial class MainWindow
     {
-        private Border? currentPlaceholder = null; // Referenz auf den Platzhalter
-
         public void SetDragging(bool value)
         {
             isDragging = value;
@@ -99,11 +100,16 @@ namespace BiMaDock
             }
         }
 
-        // Wird nach DoDragDrop aufgerufen und räumt alle Drag-Rückmeldungen auf.
+        // Wird nach DoDragDrop (auch bei Abbruch) und zu Beginn von DockManager.DockPanel_Drop aufgerufen
+        // und räumt alle Drag-Rückmeldungen auf.
         public void CleanupAfterDrag()
         {
-            RemoveDockPanelPlaceholders();
-            RemoveCategoryDockPlaceholders();
+            // Lücken und ausgeblendeten Quell-Button erst nach dem laufenden Ereignis zurücksetzen:
+            // DockManager berechnet die Einfügeposition erst nach diesem Aufruf und soll dabei dasselbe
+            // Layout sehen wie das letzte DragOver. Die Priorität liegt über Render, daher ist vor dem
+            // nächsten Bild alles entfernt (sichtbar wie ein sofortiges Entfernen).
+            Dispatcher.InvokeAsync(ResetDropGaps, DispatcherPriority.Normal);
+            dragLeaveCheckTimer?.Stop();
             lastDragCategoryId = null;
 
             var primaryBrush = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
@@ -114,66 +120,357 @@ namespace BiMaDock
             CheckAllConditions();
         }
 
-        private static readonly SolidColorBrush PlaceholderBrush = CreateFrozenBrush(Colors.LightGray);
-        private Border? categoryPlaceholder = null; // Wiederverwendeter Platzhalter im Kategorie-Dock
         private string? lastDragCategoryId = null; // Zuletzt beim Ziehen geöffnete Kategorie
 
-        private static SolidColorBrush CreateFrozenBrush(Color color)
+        #region Animierte Einfügelücke
+
+        // Breite eines Dock-Buttons inklusive Außenabstand (70 + 2 * 5), falls nichts gemessen werden kann.
+        private const double DefaultDropGapWidth = 80.0;
+        private const int DragLeaveConfirmMilliseconds = 400;
+
+        private DockDropGap? mainDockGap;
+        private DockDropGap? categoryDockGap;
+        private Button? hiddenDragSource; // Beim internen Ziehen ausgeblendeter Quell-Button
+        private double dragSourceSlotWidth = DefaultDropGapWidth;
+        private long lastDragActivityTick;
+        private DispatcherTimer? dragLeaveCheckTimer;
+
+        private DockDropGap MainDockGap => mainDockGap ??= new DockDropGap(DockPanel);
+        private DockDropGap CategoryDockGap => categoryDockGap ??= new DockDropGap(CategoryDockContainer);
+
+        private static double GetSlotWidth(FrameworkElement element)
         {
-            var brush = new SolidColorBrush(color);
-            brush.Freeze();
-            return brush;
+            return element.ActualWidth + element.Margin.Left + element.Margin.Right;
         }
 
-        private static Border CreatePlaceholder(string tag, double width)
+        // Breite der Lücke: Platz des gezogenen Buttons, sonst eines vorhandenen Buttons, sonst Standard.
+        private double GetDropGapWidth(Panel panel)
         {
-            return new Border
+            if (hiddenDragSource != null)
             {
-                Background = PlaceholderBrush,
-                Opacity = 1.0,
-                Height = 60.0, // Höhe des Platzhalters
-                Width = width, // Breite des Platzhalters
-                Tag = tag
-            };
+                return dragSourceSlotWidth;
+            }
+
+            var sample = panel.Children.OfType<Button>()
+                .FirstOrDefault(button => button.Visibility == Visibility.Visible && button.ActualWidth > 0);
+            return sample != null ? GetSlotWidth(sample) : DefaultDropGapWidth;
         }
 
-        // Verschiebt den Platzhalter nur, wenn sich die Einfügeposition tatsächlich ändert.
-        // FindInsertionIndex zählt nur Buttons, liefert aber einen Index in Children (inklusive Platzhalter).
-        private static void MovePlaceholder(Panel panel, Border placeholder, double dropX)
+        // Blendet beim internen Ziehen den Quell-Button aus. An seiner Stelle steht zunächst eine gleich
+        // breite Lücke: Im Ziel-Dock bleibt sie offen (nichts springt), in einem anderen Dock schließt sie sich.
+        private void HideDragSource(IDataObject data, Panel targetPanel)
         {
-            int targetIndex = DockDropPosition.FindInsertionIndex(panel, dropX);
-            int currentIndex = panel.Children.IndexOf(placeholder);
-            if (currentIndex >= 0)
+            if (!data.GetDataPresent(DockDropPosition.DockItemButtonFormat) ||
+                data.GetData(DockDropPosition.DockItemButtonFormat) is not Button source ||
+                ReferenceEquals(source, hiddenDragSource) ||
+                source.Visibility != Visibility.Visible)
             {
-                if (targetIndex == currentIndex || targetIndex == currentIndex + 1)
+                return;
+            }
+
+            RestoreDragSource();
+            hiddenDragSource = source;
+            dragSourceSlotWidth = source.ActualWidth > 0 ? GetSlotWidth(source) : DefaultDropGapWidth;
+
+            var owner = VisualTreeHelper.GetParent(source) as Panel;
+            DockDropGap? ownerGap = ReferenceEquals(owner, DockPanel) ? MainDockGap
+                : ReferenceEquals(owner, CategoryDockContainer) ? CategoryDockGap
+                : null;
+            if (ownerGap == null)
+            {
+                source.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            ownerGap.ReplaceButton(source, dragSourceSlotWidth, keepOpen: ReferenceEquals(owner, targetPanel));
+        }
+
+        private void RestoreDragSource()
+        {
+            if (hiddenDragSource != null)
+            {
+                hiddenDragSource.Visibility = Visibility.Visible;
+                hiddenDragSource = null;
+            }
+        }
+
+        // Entfernt alle Lücken sofort und blendet den Quell-Button (an seiner aktuellen Position) wieder ein.
+        private void ResetDropGaps()
+        {
+            mainDockGap?.RemoveAll();
+            categoryDockGap?.RemoveAll();
+            RestoreDragSource();
+        }
+
+        // Öffnet die Lücke an der Einfügeposition; bleibt diese gleich, passiert nichts.
+        private void UpdateDropGap(Panel panel, DockDropGap gap, IDataObject data, double dropX)
+        {
+            HideDragSource(data, panel);
+            int itemIndex = DockDropPosition.FindItemInsertionIndex(panel, dropX);
+            gap.OpenAt(itemIndex, GetDropGapWidth(panel));
+        }
+
+        private void NoteDragActivity()
+        {
+            lastDragActivityTick = Environment.TickCount64;
+        }
+
+        // Ein DragLeave innerhalb der Grenzen ist meist nur ein Wechsel auf ein Kindelement, kann aber
+        // auch ein Abbruch (Esc) eines externen Drags sein. Folgt kein DragOver mehr, wird die Lücke geschlossen.
+        private void ConfirmDragLeaveLater()
+        {
+            if (dragLeaveCheckTimer == null)
+            {
+                dragLeaveCheckTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(DragLeaveConfirmMilliseconds)
+                };
+                dragLeaveCheckTimer.Tick += DragLeaveCheckTimer_Tick;
+            }
+
+            dragLeaveCheckTimer.Stop();
+            dragLeaveCheckTimer.Start();
+        }
+
+        private void DragLeaveCheckTimer_Tick(object? sender, EventArgs e)
+        {
+            dragLeaveCheckTimer?.Stop();
+
+            // Interne Drags räumt CleanupAfterDrag zuverlässig auf.
+            if (isDragging || Environment.TickCount64 - lastDragActivityTick < DragLeaveConfirmMilliseconds)
+            {
+                return;
+            }
+
+            mainDockGap?.Close(animate: true);
+            categoryDockGap?.Close(animate: true);
+
+            // Abgebrochener externer Drag (z. B. Esc): auch Hervorhebung und Drag-Status zurücksetzen,
+            // sonst bleibt das Dock eingeblendet.
+            lastDragCategoryId = null;
+            var primaryBrush = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
+            DockPanel.Background = primaryBrush;
+            CategoryDockContainer.Background = primaryBrush;
+            currentDockStatus &= ~DockStatus.DraggingToDock;
+            CheckAllConditions();
+        }
+
+        // Verwaltet die Lücke eines Docks, die beim Ziehen die Einfügeposition freihält.
+        // Die Breite der Lücke wird animiert; dadurch gleiten die Nachbarn im Layout zur Seite.
+        // Beim Wechsel der Position schließt sich die alte Lücke, während sich die neue öffnet
+        // (gleiche Dauer und Kurve, daher bleibt die Gesamtbreite konstant).
+        private sealed class DockDropGap
+        {
+            private static readonly Duration AnimationDuration = new(TimeSpan.FromMilliseconds(150));
+            private static readonly IEasingFunction Easing = CreateEasing();
+
+            private readonly Panel panel;
+            private readonly Dictionary<Border, DoubleAnimation> closingGaps = new();
+            private Border? openGap;
+            private int openIndex = -1; // Position unter den sichtbaren Buttons
+
+            public DockDropGap(Panel panel)
+            {
+                this.panel = panel;
+            }
+
+            private static IEasingFunction CreateEasing()
+            {
+                var easing = new QuadraticEase { EasingMode = EasingMode.EaseOut };
+                easing.Freeze();
+                return easing;
+            }
+
+            public void OpenAt(int itemIndex, double width)
+            {
+                ForgetDetachedGaps();
+                if (openGap != null && openIndex == itemIndex)
                 {
                     return;
                 }
 
-                panel.Children.RemoveAt(currentIndex);
-                if (targetIndex > currentIndex)
+                if (openGap != null)
                 {
-                    targetIndex--;
+                    BeginClose(openGap, animate: true);
+                }
+
+                // Schließt sich an dieser Stelle gerade eine Lücke, wird sie wieder geöffnet (kein Flackern).
+                Border gap = FindClosingGapAt(itemIndex) ?? InsertGap(itemIndex);
+                closingGaps.Remove(gap);
+                openGap = gap;
+                openIndex = itemIndex;
+                AnimateWidth(gap, width, null);
+            }
+
+            public void Close(bool animate)
+            {
+                ForgetDetachedGaps();
+                if (openGap != null)
+                {
+                    BeginClose(openGap, animate);
+                }
+
+                openGap = null;
+                openIndex = -1;
+            }
+
+            // Ersetzt den Button ohne sichtbaren Sprung durch eine gleich breite Lücke und blendet ihn aus.
+            public void ReplaceButton(Button source, double width, bool keepOpen)
+            {
+                Close(animate: true);
+
+                int childIndex = panel.Children.IndexOf(source);
+                if (childIndex < 0)
+                {
+                    source.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                int itemIndex = 0;
+                for (int i = 0; i < childIndex; i++)
+                {
+                    if (DockDropPosition.IsInsertionTarget(panel.Children[i]))
+                    {
+                        itemIndex++;
+                    }
+                }
+
+                var gap = CreateGap(width);
+                panel.Children.Insert(childIndex, gap);
+                source.Visibility = Visibility.Collapsed;
+
+                if (keepOpen)
+                {
+                    openGap = gap;
+                    openIndex = itemIndex;
+                }
+                else
+                {
+                    BeginClose(gap, animate: true);
                 }
             }
 
-            panel.Children.Insert(Math.Min(targetIndex, panel.Children.Count), placeholder);
-        }
-
-        private void RemoveDockPanelPlaceholders()
-        {
-            var allPlaceholders = DockPanel.Children.OfType<Border>().Where(border => border.Tag as string == "Placeholder").ToList();
-            foreach (var placeholder in allPlaceholders)
+            public void RemoveAll()
             {
-                DockPanel.Children.Remove(placeholder);
+                foreach (var gap in panel.Children.OfType<Border>().Where(DockDropPosition.IsDropGap).ToList())
+                {
+                    RemoveGap(gap);
+                }
+
+                foreach (var gap in closingGaps.Keys)
+                {
+                    gap.BeginAnimation(FrameworkElement.WidthProperty, null);
+                }
+
+                closingGaps.Clear();
+                openGap = null;
+                openIndex = -1;
+            }
+
+            // Das Kategorie-Dock leert beim Öffnen seine Kinder; dabei verschwundene Lücken vergessen.
+            private void ForgetDetachedGaps()
+            {
+                if (openGap != null && !panel.Children.Contains(openGap))
+                {
+                    openGap = null;
+                    openIndex = -1;
+                }
+
+                foreach (var gap in closingGaps.Keys.Where(gap => !panel.Children.Contains(gap)).ToList())
+                {
+                    gap.BeginAnimation(FrameworkElement.WidthProperty, null);
+                    closingGaps.Remove(gap);
+                }
+            }
+
+            private Border? FindClosingGapAt(int itemIndex)
+            {
+                int seen = 0;
+                foreach (UIElement child in panel.Children)
+                {
+                    if (DockDropPosition.IsInsertionTarget(child))
+                    {
+                        if (seen == itemIndex)
+                        {
+                            break;
+                        }
+
+                        seen++;
+                    }
+                    else if (seen == itemIndex && child is Border gap && closingGaps.ContainsKey(gap))
+                    {
+                        return gap;
+                    }
+                }
+
+                return null;
+            }
+
+            private Border InsertGap(int itemIndex)
+            {
+                var gap = CreateGap(0);
+                panel.Children.Insert(DockDropPosition.GetChildIndex(panel, itemIndex), gap);
+                return gap;
+            }
+
+            private static Border CreateGap(double width)
+            {
+                // Unsichtbar und ohne Treffertest: Drag-Ereignisse gehen an das Dock darunter.
+                return new Border
+                {
+                    Width = width,
+                    Tag = DockDropPosition.DropGapTag,
+                    IsHitTestVisible = false,
+                    Focusable = false
+                };
+            }
+
+            private void BeginClose(Border gap, bool animate)
+            {
+                if (!animate)
+                {
+                    closingGaps.Remove(gap);
+                    RemoveGap(gap);
+                    return;
+                }
+
+                DoubleAnimation? animation = null;
+                animation = AnimateWidth(gap, 0, () =>
+                {
+                    // Nur entfernen, wenn die Lücke inzwischen nicht wieder geöffnet wurde.
+                    if (closingGaps.TryGetValue(gap, out var current) && ReferenceEquals(current, animation))
+                    {
+                        closingGaps.Remove(gap);
+                        RemoveGap(gap);
+                    }
+                });
+                closingGaps[gap] = animation;
+            }
+
+            private void RemoveGap(Border gap)
+            {
+                gap.BeginAnimation(FrameworkElement.WidthProperty, null);
+                panel.Children.Remove(gap);
+            }
+
+            private static DoubleAnimation AnimateWidth(Border gap, double to, Action? completed)
+            {
+                // Ohne From startet die Animation beim aktuellen Wert (auch mitten in einer laufenden Animation).
+                var animation = new DoubleAnimation(to, AnimationDuration)
+                {
+                    EasingFunction = Easing
+                };
+                if (completed is { } onCompleted)
+                {
+                    animation.Completed += (_, _) => onCompleted();
+                }
+
+                gap.BeginAnimation(FrameworkElement.WidthProperty, animation);
+                return animation;
             }
         }
 
-        private void UpdateDockPanelPlaceholder(double dropX)
-        {
-            currentPlaceholder ??= CreatePlaceholder("Placeholder", 3);
-            MovePlaceholder(DockPanel, currentPlaceholder, dropX);
-        }
+        #endregion
 
         // Öffnet beim Ziehen über einen Kategorie-Button dessen Kategorie (nur bei Wechsel).
         private void UpdateCategoryForDragPosition(Point dropPosition)
@@ -193,7 +490,10 @@ namespace BiMaDock
 
                 if (dockItem.IsCategory)
                 {
-                    if (dockItem.Id != lastDragCategoryId || !isCategoryDockOpen)
+                    // Nur neu aufbauen, wenn wirklich eine andere Kategorie geöffnet werden soll; ein erneuter
+                    // Aufbau würde während des Ziehens Duplikate des gezogenen Elements erzeugen.
+                    if (CategoryDockContainer.Visibility != Visibility.Visible
+                        || !string.Equals(CategoryDockContainer.Tag as string, dockItem.Id, StringComparison.Ordinal))
                     {
                         lastDragCategoryId = dockItem.Id;
                         ShowCategoryDockPanel(new StackPanel { Tag = dockItem.Id });
@@ -219,6 +519,7 @@ namespace BiMaDock
                 return;
             }
 
+            NoteDragActivity();
             ShowDock();
             dockManager.LogMousePositionAndElements(e.GetPosition(DockPanel));
 
@@ -228,7 +529,7 @@ namespace BiMaDock
 
             Point dropPosition = e.GetPosition(DockPanel);
             UpdateCategoryForDragPosition(dropPosition);
-            UpdateDockPanelPlaceholder(dropPosition.X);
+            UpdateDropGap(DockPanel, MainDockGap, e.Data, dropPosition.X);
             DockPanel.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
         }
 
@@ -238,14 +539,15 @@ namespace BiMaDock
             e.Handled = true;
             if (e.Effects == DragDropEffects.None)
             {
-                RemoveDockPanelPlaceholders();
+                mainDockGap?.Close(animate: true);
                 return;
             }
 
+            NoteDragActivity();
             AutoScrollDuringDrag(MainDockScrollViewer, e);
             Point dropPosition = e.GetPosition(DockPanel);
             UpdateCategoryForDragPosition(dropPosition);
-            UpdateDockPanelPlaceholder(dropPosition.X);
+            UpdateDropGap(DockPanel, MainDockGap, e.Data, dropPosition.X);
         }
 
 
@@ -256,10 +558,11 @@ namespace BiMaDock
             Point position = e.GetPosition(DockPanel);
             if (new Rect(DockPanel.RenderSize).Contains(position))
             {
+                ConfirmDragLeaveLater();
                 return;
             }
 
-            RemoveDockPanelPlaceholders();
+            mainDockGap?.Close(animate: true);
 
             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"]; // Visuelles Feedback zurücksetzen Farbe
             currentDockStatus &= ~DockStatus.DraggingToDock;  // Flag zurücksetzen, wenn der Drag-Vorgang das DockPanel verlässt
@@ -275,7 +578,8 @@ namespace BiMaDock
 
         public void CategoryDockContainer_Drop(object sender, DragEventArgs e)
         {
-            RemoveCategoryDockPlaceholders();
+            // Die Lücke bleibt bis nach dem Einfügen stehen: Die Einfügeposition wird mit demselben
+            // Layout berechnet wie beim letzten DragOver (Lücken und ausgeblendete Buttons zählen nicht).
             Point dropPosition = e.GetPosition(CategoryDockContainer);
 
             try
@@ -331,6 +635,9 @@ namespace BiMaDock
             }
             finally
             {
+                // Lücken sofort entfernen und den gezogenen Button an seiner neuen Position einblenden.
+                ResetDropGaps();
+                dragLeaveCheckTimer?.Stop();
                 e.Handled = true;
                 CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
                 CheckAllConditions();
@@ -352,23 +659,6 @@ namespace BiMaDock
             }
 
             dockManager.SaveDockItems(categoryId);
-        }
-
-        private void UpdateCategoryDockPlaceholder(Point dropPosition)
-        {
-            categoryPlaceholder ??= CreatePlaceholder("CategoryPlaceholder", 1);
-            MovePlaceholder(CategoryDockContainer, categoryPlaceholder, dropPosition.X);
-        }
-
-
-
-        private void RemoveCategoryDockPlaceholders()
-        {
-            var allPlaceholders = CategoryDockContainer.Children.OfType<Border>().Where(border => border.Tag as string == "CategoryPlaceholder").ToList();
-            foreach (var placeholder in allPlaceholders)
-            {
-                CategoryDockContainer.Children.Remove(placeholder);
-            }
         }
 
         public void CategoryDockContainer_DragEnter(object sender, DragEventArgs e)
@@ -402,12 +692,13 @@ namespace BiMaDock
 
             if (e.Effects != DragDropEffects.None)
             {
-                UpdateCategoryDockPlaceholder(e.GetPosition(CategoryDockContainer));
+                NoteDragActivity();
+                UpdateDropGap(CategoryDockContainer, CategoryDockGap, e.Data, e.GetPosition(CategoryDockContainer).X);
                 CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["FeedbackColor"];
             }
             else
             {
-                RemoveCategoryDockPlaceholders();
+                categoryDockGap?.Close(animate: true);
                 CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];
             }
         }
@@ -417,10 +708,11 @@ namespace BiMaDock
             // Wechsel auf Kindelemente ignorieren, um Flackern zu vermeiden.
             if (new Rect(CategoryDockContainer.RenderSize).Contains(e.GetPosition(CategoryDockContainer)))
             {
+                ConfirmDragLeaveLater();
                 return;
             }
 
-            RemoveCategoryDockPlaceholders();
+            categoryDockGap?.Close(animate: true);
 
             if (!isDragging)
             {

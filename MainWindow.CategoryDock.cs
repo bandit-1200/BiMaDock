@@ -151,6 +151,14 @@ namespace BiMaDock
             {
                 if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
                 {
+                    // Wird gerade ein Element dieser Kategorie gezogen, den (ausgeblendeten) Original-Button
+                    // wiederverwenden statt einen zweiten Button für dasselbe Element zu erzeugen.
+                    if (hiddenDragSource is { Tag: DockItem draggedItem } && draggedItem.Id == item.Id && hiddenDragSource.Parent == null)
+                    {
+                        CategoryDockContainer.Children.Add(hiddenDragSource);
+                        continue;
+                    }
+
                     dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory, saveChanges: false);
                 }
             }

@@ -304,6 +304,88 @@ public sealed class DockUiTests
         Assert.Null(session.FindDockButton("Das ist kein Link"));
     }
 
+    private static BiMaDockSession StartWithThreeItems() => new(
+        TestDockItem.File("Editor", Notepad, 0),
+        TestDockItem.File("Konsole", Cmd, 1),
+        TestDockItem.File("Dritter", Notepad, 2));
+
+    private static List<string> MainDockOrder(BiMaDockSession session) => session.ReadDockItems()
+        .Where(i => string.IsNullOrEmpty(i.Category) && !i.IsCategory)
+        .OrderBy(i => i.Position)
+        .Select(i => i.DisplayName)
+        .ToList();
+
+    /// <summary>Zieht ein Dock-Element auf den Bruchteil <paramref name="fraction"/> der Breite des Ziel-Elements.</summary>
+    private static void DragDockItem(BiMaDockSession session, string itemName, string targetName, double fraction)
+    {
+        session.ShowDock(itemName);
+        var from = BiMaDockSession.Center(session.GetDockButton(itemName));
+        var target = session.GetDockButton(targetName).BoundingRectangle;
+        var to = new Point(target.Left + (int)(target.Width * fraction), target.Top + target.Height / 2);
+        BiMaDockSession.DragStart(from);
+        BiMaDockSession.DragMove(from, to);
+        // Lücke hat sich geöffnet; Ziel neu bestimmen, falls Nachbarn zur Seite geglitten sind
+        Thread.Sleep(300);
+        BiMaDockSession.DragEnd();
+    }
+
+    [UiFact]
+    public void DragAndDrop_NachLinksVerschiebenLandetGenauAnZielposition()
+    {
+        using var session = StartWithThreeItems();
+
+        DragDockItem(session, "Dritter", "Editor", 0.25);
+
+        BiMaDockSession.WaitUntil(
+            () => MainDockOrder(session).SequenceEqual(new[] { "Dritter", "Editor", "Konsole" }),
+            $"Unerwartete Reihenfolge: {string.Join(", ", MainDockOrder(session))}");
+    }
+
+    [UiFact]
+    public void DragAndDrop_NachRechtsVerschiebenLandetGenauAnZielposition()
+    {
+        using var session = StartWithThreeItems();
+
+        DragDockItem(session, "Editor", "Konsole", 0.75);
+
+        BiMaDockSession.WaitUntil(
+            () => MainDockOrder(session).SequenceEqual(new[] { "Konsole", "Editor", "Dritter" }),
+            $"Unerwartete Reihenfolge: {string.Join(", ", MainDockOrder(session))}");
+        // Nach dem Ablegen ist das verschobene Element wieder sichtbar und keine Lücke bleibt zurück
+        Assert.False(session.GetDockButton("Editor").IsOffscreen);
+    }
+
+    [UiFact]
+    public void DragAndDrop_InnerhalbDerKategorieVerschiebenLandetGenauAnZielposition()
+    {
+        var category = TestDockItem.CategoryItem("Werkzeuge", 1);
+        using var session = new BiMaDockSession(
+            TestDockItem.File("Editor", Notepad, 0),
+            category,
+            TestDockItem.File("Eins", Notepad, 0, category.Id),
+            TestDockItem.File("Zwei", Cmd, 1, category.Id),
+            TestDockItem.File("Drei", Notepad, 2, category.Id));
+
+        session.ShowDock("Werkzeuge");
+        session.GetDockButton("Werkzeuge").AsButton().Invoke();
+        BiMaDockSession.WaitUntil(() => session.FindDockButton("Drei") is { IsOffscreen: false }, "Kategorie wurde nicht geöffnet.");
+        Thread.Sleep(600); // Einblendanimation der Kategorie abwarten
+
+        var from = BiMaDockSession.Center(session.GetDockButton("Eins"));
+        var target = session.GetDockButton("Zwei").BoundingRectangle;
+        BiMaDockSession.Drag(from, new Point(target.Left + target.Width * 3 / 4, target.Top + target.Height / 2));
+
+        List<string> CategoryOrder() => session.ReadDockItems()
+            .Where(i => i.Category == category.Id)
+            .OrderBy(i => i.Position)
+            .Select(i => i.DisplayName)
+            .ToList();
+        BiMaDockSession.WaitUntil(
+            () => CategoryOrder().SequenceEqual(new[] { "Zwei", "Eins", "Drei" }),
+            $"Unerwartete Reihenfolge in der Kategorie: {string.Join(", ", CategoryOrder())}");
+        Assert.Equal(1, session.FindAll(FlaUI.Core.Definitions.ControlType.Button).Count(b => b.Name == "Eins"));
+    }
+
     [UiFact]
     public void DragAndDrop_ElementVerschiebenAendertReihenfolge()
     {

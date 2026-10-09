@@ -507,6 +507,9 @@ public class DockManager
                 {
                     mainWindow.ActiveDragStartPoint = null;
                     mainWindow.ActiveDraggedButton = null;
+                    // Abbild erzeugen, solange der Button noch sichtbar ist; folgt dem Mauszeiger
+                    // während DoDragDrop und wird beim Verlassen des Blocks (auch bei Esc/Ausnahme) geschlossen
+                    using var dragGhost = DragGhost.TryCreate(button);
                     mainWindow.SetDragging(true);
                     try
                     {

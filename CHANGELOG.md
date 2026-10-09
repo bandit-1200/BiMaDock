@@ -8,6 +8,9 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 
 ### Neuigkeiten
 
+- Verschieben wie beim macOS-Dock: Beim Ziehen öffnet sich im Haupt- und im Kategorie-Dock eine animierte Lücke in Elementgröße; vorhandene Elemente gleiten zur Seite, sobald das gezogene Element über die Hälfte eines Nachbarn hinausgeht. Das gezogene Element verschwindet an seinem alten Platz. Gilt auch für Dateien und Links von außen.
+- Beim Verschieben folgt ein halbtransparentes Bild des Elements der Maus, auch außerhalb des Docks.
+
 - Automatisierte UI-Tests mit FlaUI (`tests\BiMaDock.UITests`, Start über `.\ui-test.ps1`): Start, erster Start ohne Daten, Ein-/Ausblenden, Kontextmenü, Kategorien, Bearbeiten, Löschen, Einstellungen, Über-Fenster, Autostart, Drag & Drop von Dateien und Elementen sowie Beenden. Ohne `BIMADOCK_UI_TESTS=1` werden sie übersprungen.
 - Datenordner über `BIMADOCK_DATA_DIR` umstellbar, Update-Prüfung per `BIMADOCK_DISABLE_UPDATE_CHECK=1` abschaltbar, Autostart-Wertname per `BIMADOCK_STARTUP_VALUE_NAME` umstellbar (für Tests); mit eigenem Datenordner gilt eine eigene Einzelinstanz-Sperre.
 - Dock-Elemente tragen einen Automatisierungsnamen und eine -ID (Screenreader und UI-Tests).

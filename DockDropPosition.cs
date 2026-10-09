@@ -203,16 +203,47 @@ internal static class DockDropPosition
         return itemCenters.Count;
     }
 
-    internal static int FindInsertionIndex(Panel panel, double dropX)
+    // Kennzeichnet die animierte Lücke, die beim Ziehen die Einfügeposition freihält.
+    internal static readonly object DropGapTag = new();
+
+    internal static bool IsDropGap(object? element)
     {
-        var buttons = panel.Children.OfType<Button>().ToList();
-        var itemCenters = buttons
+        return element is FrameworkElement frameworkElement && ReferenceEquals(frameworkElement.Tag, DropGapTag);
+    }
+
+    // Nur sichtbare Buttons sind Einfügeziele; Lücken und der beim Ziehen ausgeblendete Quell-Button zählen nicht.
+    internal static bool IsInsertionTarget(object? element)
+    {
+        return element is Button button && button.Visibility == Visibility.Visible;
+    }
+
+    private static List<Button> GetInsertionTargets(Panel panel)
+    {
+        return panel.Children.OfType<Button>().Where(IsInsertionTarget).ToList();
+    }
+
+    // Einfügeposition unter den sichtbaren Buttons: vor dem ersten Button, dessen (aktuell angezeigte)
+    // Mitte rechts vom Zeiger liegt. Lücken verschieben die Buttons, zählen aber nicht als Element.
+    internal static int FindItemInsertionIndex(Panel panel, double dropX)
+    {
+        var itemCenters = GetInsertionTargets(panel)
             .Select(button => button.TranslatePoint(new Point(0, 0), panel).X + button.RenderSize.Width / 2)
             .ToList();
-        int buttonIndex = FindInsertionIndex(itemCenters, dropX);
+        return FindInsertionIndex(itemCenters, dropX);
+    }
 
-        return buttonIndex < buttons.Count
-            ? panel.Children.IndexOf(buttons[buttonIndex])
+    // Wandelt eine Position unter den sichtbaren Buttons in einen Index in panel.Children um.
+    internal static int GetChildIndex(Panel panel, int itemIndex)
+    {
+        var buttons = GetInsertionTargets(panel);
+        return itemIndex >= 0 && itemIndex < buttons.Count
+            ? panel.Children.IndexOf(buttons[itemIndex])
             : panel.Children.Count;
+    }
+
+    // Liefert einen Index in panel.Children (inklusive Lücken und ausgeblendeter Buttons).
+    internal static int FindInsertionIndex(Panel panel, double dropX)
+    {
+        return GetChildIndex(panel, FindItemInsertionIndex(panel, dropX));
     }
 }
