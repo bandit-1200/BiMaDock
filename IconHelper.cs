@@ -32,7 +32,9 @@ public class IconHelper
     public const uint SHGFI_ICON = 0x100;
     public const uint SHGFI_LARGEICON = 0x0;    // 'Large icon
 
-    private const int DecodePixelWidth = 64;
+    // Icons werden mit 32 DIP angezeigt; 96 px reichen für bis zu 300 % Anzeigeskalierung.
+    private const int IconPixelSize = 96;
+    private const int DecodePixelWidth = IconPixelSize;
 
     // Cache für geladene Icons (nur UI-Thread). Schlüssel: Pfade + Änderungszeitpunkte der beteiligten Dateien.
     private static readonly Dictionary<(string FilePath, string IconSource, DateTime FileStamp, DateTime IconStamp), BitmapSource> Cache = new();
@@ -159,6 +161,14 @@ public class IconHelper
 
     private static BitmapSource? LoadShellIcon(string path)
     {
+        // Bevorzugt die moderne Shell-Schnittstelle: liefert Icons in hoher Auflösung (inkl. Verknüpfungen und Ordner).
+        var highResolution = TryLoadShellImage(path, IconPixelSize);
+        if (highResolution != null)
+        {
+            return highResolution;
+        }
+
+        // Rückfall: klassisches 32x32-Icon
         SHFILEINFO shinfo = new SHFILEINFO();
         int result = SHGetFileInfo(path, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_LARGEICON);
 
@@ -218,6 +228,166 @@ public class IconHelper
             DestroyIcon(hIcon);
         }
     }
+
+    private static BitmapSource? TryLoadShellImage(string path, int size)
+    {
+        IShellItemImageFactory? factory = null;
+        IntPtr hBitmap = IntPtr.Zero;
+        try
+        {
+            SHCreateItemFromParsingName(path, IntPtr.Zero, typeof(IShellItemImageFactory).GUID, out factory);
+            int hr = factory.GetImage(new NativeSize { Width = size, Height = size }, SIIGBF_BIGGERSIZEOK | SIIGBF_ICONONLY, out hBitmap);
+            if (hr != 0 || hBitmap == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            return CreateBitmapSourceFromAlphaBitmap(hBitmap);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"IconHelper: Hochauflösendes Icon für '{path}' nicht verfügbar: {ex.Message}");
+            return null;
+        }
+        finally
+        {
+            if (hBitmap != IntPtr.Zero)
+            {
+                DeleteObject(hBitmap);
+            }
+            if (factory != null)
+            {
+                Marshal.ReleaseComObject(factory);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Liest ein 32-Bit-HBITMAP samt Alphakanal aus. Imaging.CreateBitmapSourceFromHBitmap würde die Transparenz verlieren.
+    /// </summary>
+    private static BitmapSource? CreateBitmapSourceFromAlphaBitmap(IntPtr hBitmap)
+    {
+        if (GetObject(hBitmap, Marshal.SizeOf<NativeBitmap>(), out NativeBitmap info) == 0 || info.Width <= 0 || info.Height == 0)
+        {
+            return null;
+        }
+
+        int width = info.Width;
+        int height = Math.Abs(info.Height);
+        var header = new BitmapInfoHeader
+        {
+            Size = Marshal.SizeOf<BitmapInfoHeader>(),
+            Width = width,
+            Height = -height, // negativ = Zeilen von oben nach unten
+            Planes = 1,
+            BitCount = 32
+        };
+        var pixels = new byte[width * height * 4];
+
+        IntPtr hdc = CreateCompatibleDC(IntPtr.Zero);
+        try
+        {
+            if (GetDIBits(hdc, hBitmap, 0, (uint)height, pixels, ref header, 0) == 0)
+            {
+                return null;
+            }
+        }
+        finally
+        {
+            DeleteDC(hdc);
+        }
+
+        // Bitmaps ohne Alphakanal (alle Werte 0) wären sonst unsichtbar.
+        bool hasAlpha = false;
+        for (int i = 3; i < pixels.Length; i += 4)
+        {
+            if (pixels[i] != 0)
+            {
+                hasAlpha = true;
+                break;
+            }
+        }
+        if (!hasAlpha)
+        {
+            for (int i = 3; i < pixels.Length; i += 4)
+            {
+                pixels[i] = 255;
+            }
+        }
+
+        var bitmap = BitmapSource.Create(width, height, 96, 96, PixelFormats.Pbgra32, null, pixels, width * 4);
+        bitmap.Freeze();
+        return bitmap;
+    }
+
+    private const int SIIGBF_BIGGERSIZEOK = 0x1;
+    private const int SIIGBF_ICONONLY = 0x4;
+
+    [ComImport]
+    [Guid("bcc18b79-ba16-442f-80c4-8a59c30c463b")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IShellItemImageFactory
+    {
+        [PreserveSig]
+        int GetImage(NativeSize size, int flags, out IntPtr phbm);
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeSize
+    {
+        public int Width;
+        public int Height;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeBitmap
+    {
+        public int Type;
+        public int Width;
+        public int Height;
+        public int WidthBytes;
+        public ushort Planes;
+        public ushort BitsPixel;
+        public IntPtr Bits;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct BitmapInfoHeader
+    {
+        public int Size;
+        public int Width;
+        public int Height;
+        public ushort Planes;
+        public ushort BitCount;
+        public uint Compression;
+        public uint SizeImage;
+        public int XPelsPerMeter;
+        public int YPelsPerMeter;
+        public uint ClrUsed;
+        public uint ClrImportant;
+    }
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
+    private static extern void SHCreateItemFromParsingName(
+        string pszPath,
+        IntPtr pbc,
+        [MarshalAs(UnmanagedType.LPStruct)] Guid riid,
+        [MarshalAs(UnmanagedType.Interface)] out IShellItemImageFactory ppv);
+
+    [DllImport("gdi32.dll")]
+    private static extern int GetObject(IntPtr hgdiobj, int cbBuffer, out NativeBitmap lpvObject);
+
+    [DllImport("gdi32.dll")]
+    private static extern int GetDIBits(IntPtr hdc, IntPtr hbmp, uint uStartScan, uint cScanLines, [Out] byte[] lpvBits, ref BitmapInfoHeader lpbi, uint uUsage);
+
+    [DllImport("gdi32.dll")]
+    private static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+
+    [DllImport("gdi32.dll")]
+    private static extern bool DeleteDC(IntPtr hdc);
+
+    [DllImport("gdi32.dll")]
+    private static extern bool DeleteObject(IntPtr hObject);
 
     private static BitmapSource CreatePlaceholderIcon()
     {

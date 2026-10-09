@@ -20,6 +20,8 @@ internal static class DockItemButtonFactory
             Height = 32,
             Margin = new Thickness(5)
         };
+        // Hochauflösende Icons beim Verkleinern sauber filtern
+        RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
         var textBlock = new TextBlock
         {
             Text = item.DisplayName,

@@ -15,6 +15,7 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 
 ### Verbesserungen
 
+- Schärfere Icons auf Bildschirmen mit hoher Skalierung: Programm-, Datei- und Ordnersymbole werden über `IShellItemImageFactory` in 96 px statt 32 px geladen (mit Transparenz), PNG-Icons ebenfalls in 96 px dekodiert und hochwertig verkleinert.
 - `MainWindow` und `SettingsWindow` in thematische Teildateien aufgeteilt (`MainWindow.DragDrop.cs`, `.CategoryDock.cs`, `.ContextMenu.cs`, `.Visibility.cs`, `.Native.cs`; `SettingsWindow.Colors.cs`, `.Animations.cs`, `.AnimationEditors.cs`); reine Verschiebung ohne Verhaltensänderung.
 - Drag & Drop flüssiger: Der Einfügestrich wird nur noch bei einer echten Positionsänderung verschoben statt bei jeder Mausbewegung neu eingefügt; das Dock wackelt beim Ziehen nicht mehr.
 - Beim Ziehen öffnet sich eine Kategorie zuverlässig, sobald man über sie fährt, und wird nicht mehr mehrfach neu aufgebaut; kein Flackern mehr beim Wechsel zwischen Elementen.
