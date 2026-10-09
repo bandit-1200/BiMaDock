@@ -15,6 +15,8 @@ namespace BiMaDock
         public string? AccentColor { get; set; }
         public string? FeedbackColor { get; set; }
         public int? DockShowDelayMilliseconds { get; set; }
+        public bool? CategoryFlowAnimationEnabled { get; set; }
+        public int? CategoryFlowAnimationMilliseconds { get; set; }
         public int? SelectedEffectIndex { get; set; }
         public ScaleSection? Scale { get; set; }
         public RotateSection? Rotate { get; set; }

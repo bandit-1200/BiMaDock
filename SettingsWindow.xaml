@@ -142,6 +142,22 @@
                         <TextBlock Text="Einblendzeit (Reaktionszeit zum Einblenden):" Foreground="{DynamicResource DialogMutedColor}" Margin="0,0,0,10"/>
                         <Slider x:Name="DockShowDelaySlider" Minimum="100" Maximum="1000" TickFrequency="50" IsSnapToTickEnabled="True" Margin="0,0,0,10"/>
                         <TextBlock x:Name="DockShowDelayValueText" Text="Aktuelle Einblendzeit: 300 ms" Foreground="{DynamicResource DialogMutedColor}" Margin="0,0,0,20"/>
+                        <!-- Fließendes Aufklappen des Kategorie-Docks -->
+                        <CheckBox x:Name="CategoryFlowAnimationCheckBox" Content="Kategorie-Dock fließend aufklappen" Foreground="{DynamicResource ForegroundColor}" Margin="0,0,0,10"/>
+                        <StackPanel x:Name="CategoryFlowAnimationPanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.45"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="Dauer der Aufklapp-Animation:" Foreground="{DynamicResource DialogMutedColor}" Margin="0,0,0,10"/>
+                            <Slider x:Name="CategoryFlowAnimationSlider" Minimum="150" Maximum="800" TickFrequency="50" IsSnapToTickEnabled="True" Value="300" Margin="0,0,0,10"/>
+                            <TextBlock x:Name="CategoryFlowAnimationValueText" Text="Animationsdauer: 300 ms" Foreground="{DynamicResource DialogMutedColor}" Margin="0,0,0,20"/>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

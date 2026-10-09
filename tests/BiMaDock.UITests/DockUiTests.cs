@@ -105,6 +105,40 @@ public sealed class DockUiTests
     }
 
     [UiFact]
+    public void Kategorie_AmRechtenRandBleibtUnterDemHauptdock()
+    {
+        var category = TestDockItem.CategoryItem("Werkzeuge", 4);
+        using var session = new BiMaDockSession(
+            TestDockItem.File("Editor", Notepad, 0),
+            TestDockItem.File("Konsole", Cmd, 1),
+            TestDockItem.File("Dritter", Notepad, 2),
+            TestDockItem.File("Vierter", Cmd, 3),
+            category,
+            TestDockItem.File("Inhalt A", Notepad, 0, category.Id),
+            TestDockItem.File("Inhalt B", Cmd, 1, category.Id),
+            TestDockItem.File("Inhalt C", Notepad, 2, category.Id));
+
+        session.ShowDock("Werkzeuge");
+        var editorBefore = session.GetDockButton("Editor").BoundingRectangle;
+        var categoryButton = session.GetDockButton("Werkzeuge").BoundingRectangle;
+        session.GetDockButton("Werkzeuge").AsButton().Invoke();
+
+        BiMaDockSession.WaitUntil(() =>
+            session.FindDockButton("Inhalt C") is { IsOffscreen: false },
+            "Kategorie-Dock zeigt die enthaltenen Elemente nicht.");
+        // Positionierung und Aufklapp-Animation abwarten
+        BiMaDockSession.WaitUntil(() =>
+        {
+            var right = session.GetDockButton("Inhalt C").BoundingRectangle.Right;
+            var left = session.GetDockButton("Inhalt A").BoundingRectangle.Left;
+            return right <= categoryButton.Right + 5 && left >= editorBefore.Left - 5;
+        }, "Kategorie-Dock ragt seitlich über das Hauptdock hinaus.");
+
+        var editorAfter = session.GetDockButton("Editor").BoundingRectangle;
+        Assert.InRange(editorAfter.Left - editorBefore.Left, -2, 2);
+    }
+
+    [UiFact]
     public void Kontextmenue_EigenschaftenBearbeiten_BenenntElementUm()
     {
         using var session = StartWithTwoItems();
@@ -369,7 +403,7 @@ public sealed class DockUiTests
         session.ShowDock("Werkzeuge");
         session.GetDockButton("Werkzeuge").AsButton().Invoke();
         BiMaDockSession.WaitUntil(() => session.FindDockButton("Drei") is { IsOffscreen: false }, "Kategorie wurde nicht geöffnet.");
-        Thread.Sleep(300); // Einblendanimation (Opacity, 500 ms) muss für Treffertests nicht ganz fertig sein
+        Thread.Sleep(450); // Aufklapp-Animation (Standard 300 ms) abwarten, bevor Positionen gelesen werden
 
         var from = BiMaDockSession.Center(session.GetDockButton("Eins"));
         var target = session.GetDockButton("Zwei").BoundingRectangle;

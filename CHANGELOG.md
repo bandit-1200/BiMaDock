@@ -8,6 +8,7 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 
 ### Neuigkeiten
 
+- Kategorie-Dock klappt fließend aus dem angeklickten Kategorie-Symbol heraus (wie ein Stapel im macOS-Dock): Die Leiste wächst aus dem Symbol, die Elemente gleiten nacheinander an ihren Platz. In den Einstellungen („Allgemein“) ein- und ausschaltbar, Dauer 150–800 ms (Standard 300 ms).
 - Kontextmenü „Aufräumen …“: Prüft, ob Programme, Dateien, Ordner und Verknüpfungsziele noch vorhanden sind, und listet entfernbare Einträge mit Kontrollkästchen. Fehlende lokale Einträge sind vorausgewählt; nicht erreichbare Netzwerk- oder USB-Pfade sowie leere oder nach dem Aufräumen leere Kategorien werden ohne Haken angeboten. Weblinks werden nicht geprüft.
 - Vor dem Aufräumen wird `docksettings.backup.json` angelegt; „Aufräumen rückgängig machen“ im Kontextmenü stellt die entfernten Einträge wieder her.
 - Verschieben wie beim macOS-Dock: Beim Ziehen öffnet sich im Haupt- und im Kategorie-Dock eine animierte Lücke in Elementgröße; vorhandene Elemente gleiten zur Seite, sobald das gezogene Element über die Hälfte eines Nachbarn hinausgeht. Das gezogene Element verschwindet an seinem alten Platz. Gilt auch für Dateien und Links von außen.
@@ -49,6 +50,7 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 
 ### Fehlerbehebungen
 
+- Die Kategorie-Dock bleibt innerhalb der Breite des Hauptdocks, statt links oder rechts überzustehen; das Hauptdock verschiebt sich beim Öffnen einer Kategorie nicht mehr. Nur eine Kategorie mit mehr Elementen als das Hauptdock steht mittig beidseitig über.
 - Beliebiger oder leerer Text wird beim Ablegen nicht mehr als Dock-Element übernommen.
 - Ablegen in einer Kategorie geht nicht mehr verloren, wenn die geöffnete Kategorie zwischenzeitlich zurückgesetzt wurde.
 - Nach abgebrochenem Ziehen (Esc) oder Ablegen außerhalb werden Einfügestrich und Hervorhebung zuverlässig entfernt.

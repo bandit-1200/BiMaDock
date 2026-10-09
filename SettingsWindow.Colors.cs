@@ -7,7 +7,7 @@ namespace BiMaDock
     public partial class SettingsWindow
     {
         /// <summary>
-        /// Wendet gespeicherte Farben und die Einblendverzögerung an, ohne ein Einstellungsfenster zu erzeugen.
+        /// Wendet gespeicherte Farben, die Einblendverzögerung und die Kategorie-Dock-Animation an, ohne ein Einstellungsfenster zu erzeugen.
         /// </summary>
         public static void ApplyStyleSettings(MainWindow mainWindow)
         {
@@ -46,6 +46,10 @@ namespace BiMaDock
             {
                 mainWindow.SetDockShowDelayMilliseconds(Math.Clamp(dockShowDelay, MinDockShowDelayMs, MaxDockShowDelayMs));
             }
+
+            mainWindow.SetCategoryFlowAnimation(
+                settings.CategoryFlowAnimationEnabled ?? DefaultCategoryFlowAnimationEnabled,
+                Math.Clamp(settings.CategoryFlowAnimationMilliseconds ?? DefaultCategoryFlowAnimationMs, MinCategoryFlowAnimationMs, MaxCategoryFlowAnimationMs));
 
             if (settings.Swing != null)
             {

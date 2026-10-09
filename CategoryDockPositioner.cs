@@ -7,30 +7,32 @@ using System.Windows.Shapes;
 namespace BiMaDock;
 
 /// <summary>
-/// Richtet eine Kategoriebar am auslösenden Hauptdock-Element aus und hält sie im sichtbaren Bereich.
+/// Richtet eine Kategoriebar unter dem auslösenden Hauptdock-Element aus und hält sie innerhalb
+/// der Breite des Hauptdocks. Nur eine Kategoriebar, die breiter als das Hauptdock ist, steht
+/// (mittig) beidseitig über.
 /// </summary>
 internal static class CategoryDockPositioner
 {
     public static void Position(
         string categoryId,
         Panel mainDockItems,
-        FrameworkElement dockHost,
+        FrameworkElement mainDock,
         FrameworkElement mainDockSurface,
         Border categoryDock,
         Line connectorLine)
     {
-        var categoryButton = mainDockItems.Children.OfType<Button>()
-            .FirstOrDefault(button => button.Tag is DockItem item && item.Id == categoryId);
+        var categoryButton = FindCategoryButton(mainDockItems, categoryId);
 
-        if (categoryButton == null || categoryDock.ActualWidth <= 0 || dockHost.ActualWidth <= 0)
+        if (categoryButton == null || categoryDock.ActualWidth <= 0 || mainDock.ActualWidth <= 0)
         {
             return;
         }
 
-        double buttonCenterX = categoryButton.TranslatePoint(
-            new Point(categoryButton.ActualWidth / 2, 0), dockHost).X;
-        double maximumLeft = Math.Max(0, dockHost.ActualWidth - categoryDock.ActualWidth);
-        double left = Math.Clamp(buttonCenterX - (categoryDock.ActualWidth / 2), 0, maximumLeft);
+        // Relativ zum Hauptdock rechnen: Der gemeinsame Container wächst mit der Kategoriebar mit
+        // und taugt deshalb nicht als Begrenzung.
+        double buttonCenterOnMainDock = categoryButton.TranslatePoint(
+            new Point(categoryButton.ActualWidth / 2, 0), mainDock).X;
+        double left = CalculateLeftMargin(buttonCenterOnMainDock, mainDock.ActualWidth, categoryDock.ActualWidth);
         categoryDock.Margin = new Thickness(left, 0, 0, 0);
 
         double centerOnSurface = categoryButton.TranslatePoint(
@@ -38,5 +40,28 @@ internal static class CategoryDockPositioner
         Canvas.SetLeft(connectorLine,
             centerOnSurface - ((connectorLine.X2 - connectorLine.X1) / 2) - connectorLine.X1);
         Canvas.SetTop(connectorLine, 80);
+    }
+
+    public static Button? FindCategoryButton(Panel mainDockItems, string categoryId) =>
+        mainDockItems.Children.OfType<Button>()
+            .FirstOrDefault(button => button.Tag is DockItem item && item.Id == categoryId);
+
+    /// <summary>
+    /// Linker Rand der Kategoriebar im gemeinsamen, zentrierten Container. Dieser ist so breit wie die
+    /// breitere der beiden Leisten; das Hauptdock liegt darin mittig.
+    /// </summary>
+    /// <param name="buttonCenterOnMainDock">Mitte des Kategorie-Elements relativ zum linken Rand des Hauptdocks.</param>
+    internal static double CalculateLeftMargin(double buttonCenterOnMainDock, double mainDockWidth, double categoryDockWidth)
+    {
+        double containerWidth = Math.Max(mainDockWidth, categoryDockWidth);
+        double mainDockLeft = (containerWidth - mainDockWidth) / 2;
+
+        if (categoryDockWidth >= mainDockWidth)
+        {
+            return 0; // Zu breit: mittig unter dem Hauptdock, steht beidseitig gleich weit über
+        }
+
+        double leftOnMainDock = Math.Clamp(buttonCenterOnMainDock - (categoryDockWidth / 2), 0, mainDockWidth - categoryDockWidth);
+        return mainDockLeft + leftOnMainDock;
     }
 }

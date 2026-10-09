@@ -166,41 +166,27 @@ namespace BiMaDock
             CategoryDockScrollViewer.ScrollToHorizontalOffset(0);
             categoryDockNavigation.Refresh();
 
-            Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                if (CategoryDockBorder.ActualWidth > 0)
+            Panel.SetZIndex(OverlayCanvasHorizontalLine, 1000); // Höherer Wert bringt es in den Vordergrund
+
+            // Bar bis zum Start der Animation unsichtbar halten (kein Bild an der Endposition vorab).
+            int flowToken = CategoryDockFlowAnimation.Prepare(CategoryDockBorder, CategoryDockContainer);
+            // Elemente beim Ziehen nicht gleiten lassen: Die Einfügeposition hängt an ihrer angezeigten Lage.
+            bool glideItems = !isDragging && hiddenDragSource == null
+                && (currentDockStatus & DockStatus.DraggingToDock) == 0;
+            Application.Current.Dispatcher.InvokeAsync(
+                () =>
                 {
-                    double mainWindowCenterX = Application.Current.MainWindow.ActualWidth / 2;
-                    double mainStackPanelCenterX = MainStackPanel.ActualWidth / 2;
-                    double elementCenterX = dockManager.mousePositionSave + mainStackPanelCenterX;
-                    double categoryDockPositionX = dockManager.mousePositionSave + dockManager.mousePositionSave;
-                    // Setze die neue Position
-                    CategoryDockBorder.Margin = new Thickness(categoryDockPositionX, 0, 0, 0);
-
-                    double categoryDockCenterX = categoryDockPositionX + (CategoryDockBorder.ActualWidth / 2);
-                    double positionRelativeToCenter = categoryDockCenterX - mainWindowCenterX;
-
-                    double overlayPositionX = dockManager.mousePositionSaveleft - 10;
-                    double overlayPositionY = 80;
-
-                    Canvas.SetLeft(OverlayCanvasHorizontalLine, overlayPositionX);
-                    Canvas.SetTop(OverlayCanvasHorizontalLine, overlayPositionY);
-                    Panel.SetZIndex(OverlayCanvasHorizontalLine, 1000); // Höherer Wert bringt es in den Vordergrund
-
-                }
-                PositionCategoryDock(currentOpenCategory);
-            }, System.Windows.Threading.DispatcherPriority.Loaded);
-
-            // Einblendanimation hinzufügen
-            DoubleAnimation fadeInAnimation = new DoubleAnimation
-            {
-                From = 0.0,
-                To = 1.0,
-                Duration = TimeSpan.FromSeconds(0.5) // Dauer der Animation
-            };
-
-            // Animation starten, wenn das Element sichtbar wird
-            CategoryDockContainer.BeginAnimation(UIElement.OpacityProperty, fadeInAnimation);
+                    PositionCategoryDock(currentOpenCategory);
+                    CategoryDockFlowAnimation.Play(
+                        flowToken,
+                        CategoryDockBorder,
+                        CategoryDockContainer,
+                        CategoryDockPositioner.FindCategoryButton(DockPanel, currentOpenCategory),
+                        CategoryFlowAnimationEnabled,
+                        CategoryFlowAnimationMilliseconds,
+                        glideItems);
+                },
+                System.Windows.Threading.DispatcherPriority.Loaded);
 
             MainStackPanel.Margin = new Thickness(0);
             categoryHideTimer.Start();
@@ -208,8 +194,20 @@ namespace BiMaDock
         }
 
 
+        public bool CategoryFlowAnimationEnabled { get; private set; } = true;
+        public int CategoryFlowAnimationMilliseconds { get; private set; } = CategoryDockFlowAnimation.DefaultMilliseconds;
+
+        public void SetCategoryFlowAnimation(bool enabled, int milliseconds)
+        {
+            CategoryFlowAnimationEnabled = enabled;
+            CategoryFlowAnimationMilliseconds = Math.Clamp(
+                milliseconds, CategoryDockFlowAnimation.MinMilliseconds, CategoryDockFlowAnimation.MaxMilliseconds);
+        }
+
         public void HideCategoryDockPanel()
         {
+            // Schließen bleibt sofort; laufende Öffnen-Animationen werden gestoppt und zurückgesetzt.
+            CategoryDockFlowAnimation.Reset(CategoryDockBorder, CategoryDockContainer);
             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
             CategoryDockContainer.Visibility = Visibility.Collapsed;
             CategoryDockBorder.Visibility = Visibility.Collapsed; // Sichtbarkeit der CategoryDockBorder ändern
@@ -241,7 +239,7 @@ namespace BiMaDock
             CategoryDockPositioner.Position(
                 categoryId,
                 DockPanel,
-                MainStackPanel,
+                MainDockBorder,
                 MainGrid,
                 CategoryDockBorder,
                 OverlayCanvasHorizontalLine);

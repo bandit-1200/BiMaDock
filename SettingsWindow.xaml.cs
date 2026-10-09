@@ -14,6 +14,10 @@ namespace BiMaDock
         private const int MinDockShowDelayMs = 100;
         private const int MaxDockShowDelayMs = 1000;
         private const int DefaultDockShowDelayMs = 300;
+        private const int MinCategoryFlowAnimationMs = 150;
+        private const int MaxCategoryFlowAnimationMs = 800;
+        private const int DefaultCategoryFlowAnimationMs = 300;
+        private const bool DefaultCategoryFlowAnimationEnabled = true;
 
         private MainWindow mainWindow;
         private readonly string settingsFilePath;
@@ -46,6 +50,16 @@ namespace BiMaDock
             DockShowDelaySlider.Value = dockShowDelayMilliseconds;
             DockShowDelaySlider.ValueChanged += DockShowDelaySlider_ValueChanged;
             UpdateDockShowDelayText();
+
+            // Aktuellen Zustand der Kategorie-Dock-Animation übernehmen, bevor Ereignisse angehängt werden
+            CategoryFlowAnimationCheckBox.IsChecked = mainWindow.CategoryFlowAnimationEnabled;
+            CategoryFlowAnimationSlider.Minimum = MinCategoryFlowAnimationMs;
+            CategoryFlowAnimationSlider.Maximum = MaxCategoryFlowAnimationMs;
+            CategoryFlowAnimationSlider.Value = Math.Clamp(mainWindow.CategoryFlowAnimationMilliseconds, MinCategoryFlowAnimationMs, MaxCategoryFlowAnimationMs);
+            CategoryFlowAnimationCheckBox.Checked += CategoryFlowAnimationControl_Changed;
+            CategoryFlowAnimationCheckBox.Unchecked += CategoryFlowAnimationControl_Changed;
+            CategoryFlowAnimationSlider.ValueChanged += CategoryFlowAnimationSlider_ValueChanged;
+            UpdateCategoryFlowAnimationControls();
 
             // Initialisieren der Einstellungsvariablen
             scaleSettings = new ScaleSettings();
@@ -91,6 +105,41 @@ namespace BiMaDock
             {
                 mainWindow.SetDockShowDelayMilliseconds(dockShowDelayMilliseconds);
             }
+        }
+
+        private bool IsCategoryFlowAnimationChecked => CategoryFlowAnimationCheckBox?.IsChecked == true;
+
+        private int CategoryFlowAnimationSliderMilliseconds =>
+            Math.Clamp((int)Math.Round(CategoryFlowAnimationSlider?.Value ?? DefaultCategoryFlowAnimationMs), MinCategoryFlowAnimationMs, MaxCategoryFlowAnimationMs);
+
+        /// <summary>
+        /// Aktualisiert Anzeige und Aktivierung der Regler für die Kategorie-Dock-Animation.
+        /// </summary>
+        private void UpdateCategoryFlowAnimationControls()
+        {
+            if (CategoryFlowAnimationPanel == null || CategoryFlowAnimationValueText == null)
+            {
+                return;
+            }
+
+            CategoryFlowAnimationPanel.IsEnabled = IsCategoryFlowAnimationChecked;
+            CategoryFlowAnimationValueText.Text = $"Animationsdauer: {CategoryFlowAnimationSliderMilliseconds} ms";
+        }
+
+        private void ApplyCategoryFlowAnimationLive()
+        {
+            UpdateCategoryFlowAnimationControls();
+            mainWindow?.SetCategoryFlowAnimation(IsCategoryFlowAnimationChecked, CategoryFlowAnimationSliderMilliseconds);
+        }
+
+        private void CategoryFlowAnimationControl_Changed(object sender, RoutedEventArgs e)
+        {
+            ApplyCategoryFlowAnimationLive();
+        }
+
+        private void CategoryFlowAnimationSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            ApplyCategoryFlowAnimationLive();
         }
 
         public void LoadSettings()
@@ -181,6 +230,17 @@ namespace BiMaDock
                         UpdateDockShowDelayText();
                     }
 
+                    // Kategorie-Dock-Animation laden (fehlende Werte = Standard: aktiv, 300 ms)
+                    if (CategoryFlowAnimationCheckBox != null && CategoryFlowAnimationSlider != null)
+                    {
+                        CategoryFlowAnimationCheckBox.IsChecked = settings.CategoryFlowAnimationEnabled ?? DefaultCategoryFlowAnimationEnabled;
+                        CategoryFlowAnimationSlider.Value = Math.Clamp(
+                            settings.CategoryFlowAnimationMilliseconds ?? DefaultCategoryFlowAnimationMs,
+                            MinCategoryFlowAnimationMs,
+                            MaxCategoryFlowAnimationMs);
+                        ApplyCategoryFlowAnimationLive();
+                    }
+
                     // Animationseinstellungen laden
                     if (settings.Scale != null)
                     {
@@ -248,6 +308,8 @@ namespace BiMaDock
                 var dockShowDelay = (int)Math.Round(DockShowDelaySlider?.Value ?? dockShowDelayMilliseconds);
                 dockShowDelay = Math.Clamp(dockShowDelay, MinDockShowDelayMs, MaxDockShowDelayMs);
                 dockShowDelayMilliseconds = dockShowDelay;
+                var categoryFlowAnimationEnabled = IsCategoryFlowAnimationChecked;
+                var categoryFlowAnimationMilliseconds = CategoryFlowAnimationSliderMilliseconds;
 
                 // Setze den festen Effektindex für jede Animation
                 scaleSettings.EffectIndex = 1;
@@ -261,6 +323,8 @@ namespace BiMaDock
                     AccentColor = accentColor.ToString(),
                     FeedbackColor = feedbackColor.ToString(),
                     DockShowDelayMilliseconds = dockShowDelay,
+                    CategoryFlowAnimationEnabled = categoryFlowAnimationEnabled,
+                    CategoryFlowAnimationMilliseconds = categoryFlowAnimationMilliseconds,
                     SelectedEffectIndex = selectedEffectIndex,
                     Scale = scaleSettings,
                     Rotate = rotateSettings,

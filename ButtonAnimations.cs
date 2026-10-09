@@ -78,7 +78,7 @@ public class ButtonAnimations
     /// Sie wird nur einmal pro Button angelegt, damit laufende Animationen nicht durch einen
     /// neuen RenderTransform abgeschnitten werden.
     /// </summary>
-    private static TransformGroup GetHoverTransform(Button button, Point origin)
+    internal static TransformGroup GetHoverTransform(Button button, Point origin)
     {
         button.RenderTransformOrigin = origin;
 

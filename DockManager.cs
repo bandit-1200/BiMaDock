@@ -10,8 +10,6 @@ using System.Windows.Media; // Für SolidColorBrush und Colors
 
 public class DockManager
 {
-    public double mousePositionSave = 0;
-    public double mousePositionSaveleft = 0;
 
     private StackPanel dockPanel;
     private readonly StackPanel categoryDockContainer; // Referenz zu CategoryDockContainer
@@ -66,19 +64,6 @@ public class DockManager
                 if (elementRect.Contains(mousePosition))
                 {
                     matchedButton = button;
-
-                    // Transformation ins Hauptfenster nur für den getroffenen Button berechnen
-                    Point elementPosition = button.TranslatePoint(new Point(0, 0), mainWindow);
-                    double elementCenterX = elementPosition.X + (elementRect.Width / 2);
-                    double mainWindowCenterX = mainWindow.ActualWidth / 2;
-                    double positionRelativeToCenter = elementCenterX - mainWindowCenterX;
-
-                    if (dockItem.IsCategory)
-                    {
-                        mousePositionSaveleft = elementRect.X;
-                        mousePositionSave = positionRelativeToCenter;
-
-                    }
 
                     if (dockItem.Id == mainWindow.isCategoryDockOpenID)
                     {
