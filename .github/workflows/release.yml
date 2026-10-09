@@ -2,10 +2,14 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release-Tag im Format v<VERSION>, passend zu version.json"
+        required: true
+        type: string
   push:
     tags:
       - 'v*'
-      - 'V*'
 
 jobs:
   release:
@@ -14,6 +18,42 @@ jobs:
       contents: write
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Lädt die gesamte Historie
+
+    - name: Validate release authorization and version
+      id: validate-release
+      shell: pwsh
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        REF_NAME: ${{ github.ref_name }}
+        REF_SHA: ${{ github.sha }}
+        RELEASE_TAG_INPUT: ${{ inputs.release_tag }}
+      run: |
+        if ($env:EVENT_NAME -eq "push") {
+          $releaseTag = $env:REF_NAME
+          $branches = @(git branch --remotes --contains $env:REF_SHA | ForEach-Object { $_.Trim() })
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not determine whether the tagged commit is on main."
+          }
+          if ($branches -notcontains "origin/main") {
+            throw "Releases may only be created from a commit that is on origin/main."
+          }
+        } else {
+          if ($env:REF_NAME -cne "main") {
+            throw "Manual release runs must use the main branch."
+          }
+          $releaseTag = $env:RELEASE_TAG_INPUT
+        }
+
+        & ./.github/scripts/validate-versioning.ps1 -ReleaseTag $releaseTag
+        if ($LASTEXITCODE -ne 0) {
+          throw "Release metadata validation failed."
+        }
+        "release_tag=$releaseTag" >> $env:GITHUB_OUTPUT
+
     - name: Test timestamp server
       shell: pwsh
       run: |
@@ -28,11 +68,6 @@ jobs:
           Write-Error "Timestamp server test failed."
           exit 1
         }
-
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Lädt die gesamte Historie
 
     - name: Set up .NET
       uses: actions/setup-dotnet@v2
@@ -53,10 +88,10 @@ jobs:
       run: dotnet test BiMaDock.sln --configuration Release
 
     - name: Build project
-      run: dotnet build --configuration Release "-p:ReleaseTag=${{ github.ref_name }}"
+      run: dotnet build --configuration Release "-p:ReleaseTag=${{ steps.validate-release.outputs.release_tag }}"
 
     - name: Publish project
-      run: dotnet publish ./BiMaDock.csproj --configuration Release --output ./publish --runtime win-x64 "-p:ReleaseTag=${{ github.ref_name }}"
+      run: dotnet publish ./BiMaDock.csproj --configuration Release --output ./publish --runtime win-x64 "-p:ReleaseTag=${{ steps.validate-release.outputs.release_tag }}"
 
     - name: Update Inno Setup version
       run: pwsh -File update_version.ps1
@@ -117,8 +152,8 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         token: ${{ github.token }}
-        tag_name: ${{ github.ref_name }}
-        name: "Release ${{ github.ref_name }}"
+        tag_name: ${{ steps.validate-release.outputs.release_tag }}
+        name: "Release ${{ steps.validate-release.outputs.release_tag }}"
         generate_release_notes: true
         fail_on_unmatched_files: true
         files: |

@@ -1,0 +1,55 @@
+name: Versioning
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+  push:
+    branches:
+      - dev
+      - main
+
+jobs:
+  validate-versioning:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine comparison commits
+        id: commits
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          $head = $env:HEAD_SHA
+          if ($env:EVENT_NAME -eq "pull_request") {
+            $base = $env:PR_BASE_SHA
+          } else {
+            $base = $env:EVENT_BEFORE
+          }
+
+          if ([string]::IsNullOrWhiteSpace($base) -or $base -match '^0+$') {
+            $parent = git rev-parse "$head^" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              $base = [string] $parent
+            } else {
+              throw "Cannot validate versioning for a commit without a parent."
+            }
+          }
+
+          "base=$base" >> $env:GITHUB_OUTPUT
+          "head=$head" >> $env:GITHUB_OUTPUT
+
+      - name: Validate version and changelog updates
+        shell: pwsh
+        run: >
+          ./.github/scripts/validate-versioning.ps1
+          -BaseSha "${{ steps.commits.outputs.base }}"
+          -HeadSha "${{ steps.commits.outputs.head }}"

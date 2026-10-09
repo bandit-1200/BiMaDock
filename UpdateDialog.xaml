@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Update verfügbar" Height="300" Width="440"
         Style="{StaticResource DialogWindowStyle}"
+        WindowStartupLocation="CenterScreen"
         Background="Transparent">
     <Border Style="{StaticResource DialogSurfaceBorderStyle}">
         <Grid>

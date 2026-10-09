@@ -1,3 +1,5 @@
+#define MyAppVersion "26.10.11"
+
 [Setup]
 AppName=BiMaDock
 AppVersion={#MyAppVersion}

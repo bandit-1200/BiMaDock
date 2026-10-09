@@ -45,7 +45,8 @@
                     <StackPanel Orientation="Horizontal" x:Name="DockPanel"
                                 AllowDrop="True" Style="{DynamicResource MainDockStyle}"
                                 HorizontalAlignment="Left" MinWidth="60" Visibility="Visible"
-                                Canvas.Top="0" Panel.ZIndex="4">
+                                Canvas.Top="0" Panel.ZIndex="4"
+                                DragOver="DockPanel_DragOver">
                         <StackPanel.RenderTransform>
                             <TranslateTransform/>
                         </StackPanel.RenderTransform>

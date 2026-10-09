@@ -6,49 +6,63 @@ Dieses Dokument beschreibt den aktuellen Ablauf für das Veröffentlichen und Ta
 
 Die Versionierung wird in diesem Projekt über die Dateien `version.json` und `GitVersion.yml` gesteuert. Ein manueller Tag ist nur dann nötig, wenn ein Release bewusst auf GitHub veröffentlicht werden soll oder ein Build mit einer neuen Versionsnummer ausgelöst werden muss.
 
-## Standard-Workflow für ein Release
+Bei jeder Änderung an Anwendung, Oberfläche, Tests oder Dokumentation ist die Version in `version.json` passend anzupassen. Sie folgt dem Schema `Jahr.Monat.Tag`; Nerdbank.GitVersioning ergänzt die Build-Nummer automatisch. Die `MyAppVersion`-Definitionen in `BiMaDock.iss` und `BiMaDock_local.iss` müssen mit der Basisversion synchron bleiben. Vor einem Release die Inno-Setup-Version mit dem passenden Skript aktualisieren.
+
+Die Neuerungen jeder Version werden in [CHANGELOG.md](CHANGELOG.md) festgehalten. Neue Einträge kommen oben hinzu und gruppieren Änderungen nach Neuigkeiten, Verbesserungen und Fehlerbehebungen. Unveröffentlichte Änderungen sind entsprechend zu kennzeichnen.
+
+Die Projektanweisung in [AGENTS.md](AGENTS.md) macht diese Regeln für Coding-Assistenten verbindlich. Der Workflow [versioning.yml](.github/workflows/versioning.yml) prüft bei Änderungen auf `dev` und `main` sowie in Pull Requests dorthin, dass die Version erhöht und Changelog sowie beide Installer-Versionen aktualisiert wurden. Der Release-Workflow [release.yml](.github/workflows/release.yml) prüft außerdem Tag, Version, datierten Changelog-Eintrag und dass der veröffentlichte Commit auf `main` liegt.
+
+## Branch- und Freigaberegel
+
+Die gesamte reguläre Entwicklung findet auf `dev` statt. `main` ist ausschließlich für freigegebene Releases vorgesehen. Ohne ausdrückliche Nutzeranweisung wird weder zu `main` gewechselt noch dorthin gemergt, ein Release-Tag erstellt oder veröffentlicht. Eine erfolgreiche CI-Prüfung ersetzt diese Freigabe nicht.
+
+Nach ausdrücklicher Freigabe wird der geprüfte Stand von `dev` nach `main` übertragen. Vor der Veröffentlichung wird der Changelog-Eintrag von „In Arbeit“ auf das tatsächliche Datum im Format `YYYY-MM-DD` umgestellt. Der Tag muss exakt `v<VERSION>` entsprechen (zum Beispiel `v26.10.11`), wobei `<VERSION>` der Basisversion in `version.json` entspricht. Der Release-Workflow akzeptiert nur Tags dieses Formats und Commits, die auf `main` liegen.
+
+## Standard-Workflow für die Entwicklung
 
 ```bash
-# 1) Auf den richtigen Branch wechseln
+# Reguläre Entwicklung ausschließlich auf dev
 git checkout dev
 
-# 2) Aktuellen Stand holen
+# Aktuellen Entwicklungsstand holen
 git pull origin dev
 
-# 3) Änderungen prüfen und ggf. committen
+# Änderungen prüfen und committen
 git status
 git add .
 git commit -m "feat: Beschreibung des Releases"
 
-# 4) Änderungen auf GitHub pushen
+# Entwicklungsstand veröffentlichen
 git push origin dev
 ```
 
-## Manuelles Taggen einer Version
+## Release nach ausdrücklicher Nutzerfreigabe
 
-```bash
-# Aktuellste Tags anzeigen
-git tag --sort=-creatordate
+Vor dem Wechsel zu `main` wird auf `dev` die Release-Version vorbereitet: Version in `version.json` erhöhen, beide Installer-Versionen synchronisieren und den Changelog-Eintrag unter dieser Version mit dem Veröffentlichungsdatum versehen („In Arbeit“ entfernen). Danach passende Tests ausführen und die Änderungen auf `dev` pushen. So bleiben Änderungen an `main` auf einen geprüften Merge beschränkt.
 
-# Neuen Tag anlegen
-git tag -a v1.2.3 -m "Release v1.2.3"
+```powershell
+# Release-Vorbereitung auf dev abschließen und pushen
+git checkout dev
+# Version aus version.json ablesen und den Changelog-Eintrag entsprechend datieren.
+# Danach die synchronisierten Dateien prüfen und testen.
+dotnet test BiMaDock.sln --configuration Release
+git status
+git add version.json BiMaDock.iss BiMaDock_local.iss CHANGELOG.md
+git commit -m "chore: prepare release"
+git push origin dev
 
-# Tag zu GitHub pushen
-git push origin v1.2.3
-```
-
-## Release auf main übertragen
-
-Wenn der Stand auf `dev` stabil ist und auf `main` veröffentlicht werden soll:
-
-```bash
+# Erst nach ausdrücklicher Freigabe den geprüften Stand von dev nach main übertragen
 git checkout main
 git pull origin main
-git merge dev
+git merge --no-ff dev
 git push origin main
-```
 
-Danach kann das Release mit einem Tag und dem GitHub-Release-Prozess abgeschlossen werden.
+$version = (Get-Content -Raw version.json | ConvertFrom-Json).version
+git tag -a "v$version" -m "Release v$version"
+
+# Release-Tag pushen; dadurch startet der Release-Workflow
+git push origin "v$version"
+```
 
 ## Build- und Release-Skripte
 
