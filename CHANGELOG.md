@@ -15,6 +15,7 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 
 ### Verbesserungen
 
+- `MainWindow` und `SettingsWindow` in thematische Teildateien aufgeteilt (`MainWindow.DragDrop.cs`, `.CategoryDock.cs`, `.ContextMenu.cs`, `.Visibility.cs`, `.Native.cs`; `SettingsWindow.Colors.cs`, `.Animations.cs`, `.AnimationEditors.cs`); reine Verschiebung ohne Verhaltensänderung.
 - Drag & Drop flüssiger: Der Einfügestrich wird nur noch bei einer echten Positionsänderung verschoben statt bei jeder Mausbewegung neu eingefügt; das Dock wackelt beim Ziehen nicht mehr.
 - Beim Ziehen öffnet sich eine Kategorie zuverlässig, sobald man über sie fährt, und wird nicht mehr mehrfach neu aufgebaut; kein Flackern mehr beim Wechsel zwischen Elementen.
 - Der Cursor zeigt nur noch dort „Ablegen möglich“, wo tatsächlich abgelegt werden kann; bei nicht ablegbaren Daten blendet sich das Dock gar nicht erst ein.
