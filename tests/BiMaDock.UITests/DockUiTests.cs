@@ -29,6 +29,17 @@ public sealed class DockUiTests
     }
 
     [UiFact]
+    public void ErsterStart_SpeichertStandardelemente()
+    {
+        using var session = new BiMaDockSession();
+
+        Assert.NotNull(session.GetDockButton("File Explorer"));
+        BiMaDockSession.WaitUntil(
+            () => File.Exists(session.DockSettingsPath) && session.ReadDockItems().Count == 2,
+            "Standardelemente wurden beim ersten Start nicht gespeichert.");
+    }
+
+    [UiFact]
     public void Dock_BlendetBeiMauskontaktEinUndWiederAus()
     {
         using var session = StartWithTwoItems();

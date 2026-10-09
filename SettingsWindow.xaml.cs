@@ -617,6 +617,60 @@ namespace BiMaDock
 
 
 
+        /// <summary>
+        /// Wendet gespeicherte Farben und die Einblendverzögerung an, ohne ein Einstellungsfenster zu erzeugen.
+        /// </summary>
+        public static void ApplyStyleSettings(MainWindow mainWindow)
+        {
+            string path = AppPaths.GetSettingsFilePath("StyleSettings.json");
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            var settings = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(path));
+            if (settings == null)
+            {
+                return;
+            }
+
+            var resources = Application.Current.Resources;
+            if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
+            {
+                var newPrimaryColor = new SolidColorBrush(primaryColor);
+                resources["PrimaryColor"] = newPrimaryColor;
+                mainWindow.DockPanel.Background = newPrimaryColor;
+                mainWindow.CategoryDockBorder.Background = newPrimaryColor;
+                mainWindow.OverlayCanvasHorizontalLine.Stroke = newPrimaryColor;
+            }
+
+            if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
+            {
+                resources["SecondaryColor"] = new SolidColorBrush(secondaryColor);
+            }
+
+            if (settings.AccentColor != null && ColorConverter.ConvertFromString((string)settings.AccentColor) is Color accentColor)
+            {
+                resources["AccentColor"] = new SolidColorBrush(accentColor);
+            }
+
+            if (settings.FeedbackColor != null && ColorConverter.ConvertFromString((string)settings.FeedbackColor) is Color feedbackColor)
+            {
+                resources["FeedbackColor"] = new SolidColorBrush(feedbackColor);
+            }
+
+            if (settings.DockShowDelayMilliseconds != null)
+            {
+                mainWindow.SetDockShowDelayMilliseconds(Math.Clamp((int)settings.DockShowDelayMilliseconds, MinDockShowDelayMs, MaxDockShowDelayMs));
+            }
+
+            if (settings.Swing != null)
+            {
+                ButtonAnimations.SwingSettings.Duration = settings.Swing.Duration ?? ButtonAnimations.SwingSettings.Duration;
+                ButtonAnimations.SwingSettings.Angle = settings.Swing.Angle ?? ButtonAnimations.SwingSettings.Angle;
+            }
+        }
+
         public void LoadSettings()
         {
             if (File.Exists(settingsFilePath))
@@ -820,16 +874,15 @@ namespace BiMaDock
 
                 await File.WriteAllTextAsync(Path.Combine(directoryPath, "StyleSettings.json"), json);
 
-                // Schließen des Fensters
+                // Gespeicherte Werte anwenden, dann das Fenster schließen
                 ButtonAnimations.LoadSettings();
+                ApplyStyleSettings(mainWindow);
                 Close();
             }
             else
             {
                 MessageBox.Show("AnimationEffectComboBox oder dessen SelectedItem ist null.");
             }
-
-            LoadSettings();
         }
 
 

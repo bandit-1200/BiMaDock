@@ -1,4 +1,4 @@
-#define MyAppVersion "26.10.17"
+#define MyAppVersion "26.10.18"
 #define ProjectDir AddBackslash(SourcePath)
 
 [Setup]

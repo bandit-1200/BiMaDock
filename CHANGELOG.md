@@ -2,6 +2,23 @@
 
 Hier werden neue Funktionen, Fehlerbehebungen und Optimierungen je Version zusammengefasst. Die historischen Einträge wurden aus Git-Tags und Commit-Historie rekonstruiert. Wiederholte Release- und Build-Tags ohne erkennbare zusätzliche Änderungen sind zusammengefasst; uneinheitliche historische Tag-Namen werden nicht nachträglich umbenannt.
 
+## 26.10.18 – In Arbeit
+
+### Fehlerbehebungen
+
+- Standardelemente (Explorer, Eingabeaufforderung) werden beim allerersten Start jetzt gespeichert; bisher brach das Speichern ab, weil ein doppeltes Feld für das Kategorie-Dock noch nicht gesetzt war.
+- Autostart-Menüpunkt schreibt den Registry-Eintrag nur noch einmal statt doppelt.
+- Tippfehler im Kontextmenü behoben („Dateipfad öffnen“).
+- Standard-Icons werden mit der Anwendung ausgeliefert und auch in installierten Versionen in den Icon-Ordner kopiert; bisher wurde nur ein Entwicklungspfad durchsucht.
+- Farben und Einblendverzögerung werden beim Start direkt angewendet, ohne dafür ein unsichtbares Einstellungsfenster zu erzeugen; nach dem Speichern werden sie vor dem Schließen statt auf dem geschlossenen Fenster angewendet.
+
+### Verbesserungen
+
+- Globaler Maus-Hook ist nur noch aktiv, solange das Dock sichtbar ist, und wertet Klicks asynchron aus, damit die Maus systemweit nicht ausgebremst wird.
+- Remotedesktop-Erkennung prüft das Vordergrundfenster statt alle 20 Sekunden die Prozessliste; ein minimiertes RDP-Fenster nimmt dem Dock nicht mehr den Vordergrund.
+- Debug-Ausgaben aus Maus-, Drag- und Animationspfaden entfernt.
+- UI-Test für den ersten Start ohne gespeicherte Daten ergänzt.
+
 ## 26.10.17 – In Arbeit
 
 - Dock wird nach dem Programmstart zuverlässig ausgeblendet; bisher blieb es bis zum ersten Mauskontakt sichtbar, weil das Ausblenden vor dem ersten Layout lief.

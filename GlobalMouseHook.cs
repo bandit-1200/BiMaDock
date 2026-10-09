@@ -12,11 +12,12 @@ public class GlobalMouseHook
     private readonly LowLevelMouseProc _proc;
     private bool _isHookInstalled;
 
+    // Der Hook wird nur installiert, solange das Dock sichtbar ist (siehe MainWindow.ShowDock/HideDock),
+    // damit nicht dauerhaft jeder systemweite Mausklick durch BiMaDock läuft.
     public GlobalMouseHook(MainWindow window)
     {
         mainWindow = window;
         _proc = HookCallback;
-        SetHook();
     }
 
     public void SetHook()
@@ -62,7 +63,8 @@ public class GlobalMouseHook
         MSLLHOOKSTRUCT msllHookStruct = (MSLLHOOKSTRUCT)hookStruct;
         Point mousePosition = new Point(msllHookStruct.pt.x, msllHookStruct.pt.y);
 
-        Application.Current.Dispatcher.Invoke(() =>
+        // Asynchron auswerten, damit der Hook sofort zurückkehrt und die Maus systemweit nicht bremst.
+        Application.Current.Dispatcher.BeginInvoke(() =>
         {
             var window = mainWindow;
             var editPropertiesWindow = GetOpenEditPropertiesWindow();

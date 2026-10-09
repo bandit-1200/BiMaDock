@@ -149,14 +149,15 @@ namespace BiMaDock
             // Sicherstellen, dass das Verzeichnis existiert
             Directory.CreateDirectory(iconDirectoryPath);
 
-            // Der relative Pfad zum Entwicklungsverzeichnis
-            string developmentIconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Resources\Icons");
+            // Quellverzeichnis suchen: zuerst neben der EXE (installiert/publiziert), danach Entwicklungspfad
+            string installedIconPath = Path.Combine(AppContext.BaseDirectory, "Resources", "Icons");
+            string developmentIconPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Resources", "Icons"));
 
-            // Pfad zu den Icons im Entwicklungsverzeichnis verwenden
-            string resourceDirectoryPath = developmentIconPath;
+            string? resourceDirectoryPath = new[] { installedIconPath, developmentIconPath }
+                .FirstOrDefault(Directory.Exists);
 
-            // Überprüfen, ob das Quellverzeichnis existiert
-            if (!Directory.Exists(resourceDirectoryPath))
+            // Wenn kein Quellverzeichnis existiert, nichts tun
+            if (resourceDirectoryPath == null)
             {
                 return;
             }

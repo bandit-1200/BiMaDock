@@ -27,6 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Resources\Icons\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="tests\**\*.cs" />
   </ItemGroup>
 

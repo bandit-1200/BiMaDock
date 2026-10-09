@@ -14,10 +14,9 @@ public class DockManager
     public double mousePositionSaveleft = 0;
 
     private StackPanel dockPanel;
-    private StackPanel? categoryDockContainer; // Referenz zu CategoryDockContainer
+    private readonly StackPanel categoryDockContainer; // Referenz zu CategoryDockContainer
     private MainWindow mainWindow;
     private bool isDropInProgress = false;
-    private StackPanel? CategoryDockContainer;
     private Dictionary<Button, bool> animationPlayed = new Dictionary<Button, bool>();
 
 
@@ -113,11 +112,6 @@ public class DockManager
         }
     }
 
-    public void InitializeCategoryDockContainer(StackPanel container)
-    {
-        CategoryDockContainer = container ?? throw new ArgumentNullException(nameof(container), "CategoryDockContainer ist null.");
-    }
-
 
     public void LoadDockItems()
     {
@@ -167,11 +161,6 @@ public class DockManager
 
     public void SaveDockItems(string currentCategory)
     {
-        if (CategoryDockContainer == null)
-        {
-            return;
-        }
-
         var items = new List<DockItem>();
         var categoryItems = new List<DockItem>();
         int mainDockIndex = 0;
@@ -191,7 +180,7 @@ public class DockManager
         }
 
         // Kategorie-Dock-Elemente speichern
-        foreach (UIElement element in CategoryDockContainer.Children)
+        foreach (UIElement element in categoryDockContainer.Children)
         {
             if (element is Button button && button.Tag is DockItem dockItem)
             {
@@ -269,7 +258,6 @@ public class DockManager
         var dockItemsToAdd = new List<DockItem>(files.Length);
         foreach (var file in files)
         {
-            Debug.WriteLine($"DockPanel_Drop: Datei gefunden: {file}");
 
             dockItemsToAdd.Add(new DockItem
             {
@@ -304,7 +292,6 @@ public class DockManager
     {
         if (droppedButton != null && droppedButton.Tag is DockItem droppedItem)
         {
-            Debug.WriteLine("DockPanel_Drop: Button gefunden und als DockItem erkannt");
 
             droppedItem.Category = "";
 
@@ -344,7 +331,6 @@ public class DockManager
         mainWindow.CheckAllConditions();
         mainWindow.SetDragging(false);
 
-        Debug.WriteLine("DockPanel_Drop: Drop-Vorgang abgeschlossen");
         mainWindow.HideCategoryDockPanel();
     }
 
@@ -362,7 +348,6 @@ public class DockManager
 
     public async void DockPanel_Drop(object sender, DragEventArgs e)
     {
-        Debug.WriteLine("DockPanel_Drop: Drop-Vorgang gestartet");
 
         if (isDropInProgress)
         {
@@ -386,7 +371,6 @@ public class DockManager
             }
             else if (DockDropPosition.GetDroppedFilePaths(e.Data) is string[] files)
             {
-                Debug.WriteLine("DockPanel_Drop: Dateipfade gefunden");
                 await HandleFileDrop(files, dropPosition);
             }
             else if (e.Data.GetDataPresent(DataFormats.UnicodeText) || e.Data.GetDataPresent(DataFormats.Text))
@@ -565,12 +549,10 @@ public class DockManager
 
                 if (!string.IsNullOrEmpty(dockItem.FilePath))
                 {
-                    Debug.WriteLine($"Open_Click aufgerufen, filePath: {dockItem.FilePath}"); // Debug-Ausgabe
                     mainWindow.OpenFile(dockItem.FilePath);
                 }
                 else
                 {
-                    Debug.WriteLine("Open_Click aufgerufen, Kategorie"); // Debug-Ausgabe
                     mainWindow.ShowCategoryDockPanel(new StackPanel { Tag = dockItem.Id });
                 }
             }

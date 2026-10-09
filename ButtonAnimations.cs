@@ -32,7 +32,6 @@ public class ButtonAnimations
     // Methode zum Laden von SelectedEffectIndex
     public static void LoadSettings()
     {
-        Debug.WriteLine("Einstellungen werden geladen...");
 
         // Hole den Pfad zum AppData\Local\BiMaDock Ordner
         string settingsFilePath = Path.Combine(BiMaDock.AppPaths.AppDataDirectory, "StyleSettings.json");
@@ -93,10 +92,6 @@ public class ButtonAnimations
                 Debug.WriteLine($"Fehler beim Laden der Einstellungen: {ex.Message}");
             }
         }
-        else
-        {
-            Debug.WriteLine("Einstellungsdatei nicht gefunden, Standardwerte werden verwendet.");
-        }
     }
 
     // Animationen
@@ -147,7 +142,6 @@ public class ButtonAnimations
     }
     public static void AnimatTranslateTransform(Button button)
     {
-        Debug.WriteLine("AnimatTranslateTransform geladen...");
         var translateTransform = new TranslateTransform();
         button.RenderTransformOrigin = new Point(0.5, 0.5);
         button.RenderTransform = translateTransform;
@@ -205,27 +199,22 @@ public class ButtonAnimations
         switch (animationChoice)
         {
             case 1:
-                Debug.WriteLine("Starte Scale");
                 AnimatScaleTransform(button);
                 break;
             case 2:
-                Debug.WriteLine("Starte Rotate");
                 AnimatRotateTransform(button);
                 break;
 
             case 3:
-                Debug.WriteLine("Starte Translate");
                 AnimatTranslateTransform(button);
                 break;
             case 4:
-                Debug.WriteLine("Starte Swing");
                 AnimatSwingTransform(button);
                 break;
 
 
 
             default:
-                Debug.WriteLine("Keine Animation");
                 break;
         }
     }
