@@ -8,6 +8,8 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 
 ### Neuigkeiten
 
+- Kontextmenü „Aufräumen …“: Prüft, ob Programme, Dateien, Ordner und Verknüpfungsziele noch vorhanden sind, und listet entfernbare Einträge mit Kontrollkästchen. Fehlende lokale Einträge sind vorausgewählt; nicht erreichbare Netzwerk- oder USB-Pfade sowie leere oder nach dem Aufräumen leere Kategorien werden ohne Haken angeboten. Weblinks werden nicht geprüft.
+- Vor dem Aufräumen wird `docksettings.backup.json` angelegt; „Aufräumen rückgängig machen“ im Kontextmenü stellt die entfernten Einträge wieder her.
 - Verschieben wie beim macOS-Dock: Beim Ziehen öffnet sich im Haupt- und im Kategorie-Dock eine animierte Lücke in Elementgröße; vorhandene Elemente gleiten zur Seite, sobald das gezogene Element über die Hälfte eines Nachbarn hinausgeht. Das gezogene Element verschwindet an seinem alten Platz. Gilt auch für Dateien und Links von außen.
 - Beim Verschieben folgt ein halbtransparentes Bild des Elements der Maus, auch außerhalb des Docks.
 
@@ -18,6 +20,7 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 
 ### Verbesserungen
 
+- UI-Tests laufen etwa doppelt so schnell (rund 45 statt 120 Sekunden): Der Mauszeiger springt direkt ans Ziel statt langsam zu fahren, Wartezeiten wurden verkürzt, und die Tests verwenden die kürzeste Einblendverzögerung.
 - Schärfere Icons auf Bildschirmen mit hoher Skalierung: Programm-, Datei- und Ordnersymbole werden über `IShellItemImageFactory` in 96 px statt 32 px geladen (mit Transparenz), PNG-Icons ebenfalls in 96 px dekodiert und hochwertig verkleinert.
 - `MainWindow` und `SettingsWindow` in thematische Teildateien aufgeteilt (`MainWindow.DragDrop.cs`, `.CategoryDock.cs`, `.ContextMenu.cs`, `.Visibility.cs`, `.Native.cs`; `SettingsWindow.Colors.cs`, `.Animations.cs`, `.AnimationEditors.cs`); reine Verschiebung ohne Verhaltensänderung.
 - Drag & Drop flüssiger: Der Einfügestrich wird nur noch bei einer echten Positionsänderung verschoben statt bei jeder Mausbewegung neu eingefügt; das Dock wackelt beim Ziehen nicht mehr.

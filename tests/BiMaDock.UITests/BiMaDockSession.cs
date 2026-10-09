@@ -23,7 +23,18 @@ public sealed class BiMaDockSession : IDisposable
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
+    // Kürzeste erlaubte Einblendverzögerung (Standard 300 ms), damit ShowDock schneller greift.
+    private const string FastStyleSettingsJson = "{\"DockShowDelayMilliseconds\":100}";
+
     private readonly Application app;
+
+    static BiMaDockSession()
+    {
+        // FlaUI animiert Mouse.MoveTo standardmäßig mit 0,5 px/ms (mehrere Sekunden über breite Bildschirme).
+        // Die Hilfsfunktionen setzen die Position direkt; dies gilt nur als Rückfall für übrige MoveTo-Aufrufe.
+        Mouse.MovePixelsPerMillisecond = 20;
+        Mouse.MovePixelsPerStep = 50;
+    }
 
     public UIA3Automation Automation { get; } = new();
     public Window MainWindow { get; }
@@ -39,6 +50,7 @@ public sealed class BiMaDockSession : IDisposable
         {
             File.WriteAllText(DockSettingsPath, JsonSerializer.Serialize(seedItems));
         }
+        File.WriteAllText(StyleSettingsPath, FastStyleSettingsJson);
 
         RemoveStartupValue();
 
@@ -77,9 +89,9 @@ public sealed class BiMaDockSession : IDisposable
             {
                 return JsonSerializer.Deserialize<List<TestDockItem>>(File.ReadAllText(DockSettingsPath), JsonOptions) ?? new();
             }
-            catch (IOException) when (attempt < 10)
+            catch (IOException) when (attempt < 20)
             {
-                Thread.Sleep(100); // Datei wird gerade atomar ersetzt.
+                Thread.Sleep(50); // Datei wird gerade atomar ersetzt.
             }
         }
     }
@@ -107,16 +119,26 @@ public sealed class BiMaDockSession : IDisposable
     public void ShowDock(string anyItemName)
     {
         var bounds = MainWindow.BoundingRectangle;
-        Mouse.MoveTo(new Point(bounds.Left + bounds.Width / 2, bounds.Top + 2));
+        MoveMouse(new Point(bounds.Left + bounds.Width / 2, bounds.Top + 2));
         WaitUntil(() => IsDockVisible(anyItemName), "Dock wurde nicht eingeblendet.");
         // Maus auf das Dock führen, damit es geöffnet bleibt.
-        Mouse.MoveTo(Center(GetDockButton(anyItemName)));
+        MoveMouse(Center(GetDockButton(anyItemName)));
     }
 
     public void MoveMouseAway()
     {
         var screen = Automation.GetDesktop().BoundingRectangle;
-        Mouse.MoveTo(new Point(screen.Left + screen.Width / 2, screen.Top + screen.Height * 2 / 3));
+        MoveMouse(new Point(screen.Left + screen.Width / 2, screen.Top + screen.Height * 2 / 3));
+    }
+
+    /// <summary>
+    /// Setzt den Mauszeiger ohne Animation. SetCursorPos erzeugt wie Mouse.MoveTo (das intern ebenfalls
+    /// nur die Position setzt) ein WM_MOUSEMOVE beim Fenster unter dem Zeiger.
+    /// </summary>
+    public static void MoveMouse(Point point)
+    {
+        Mouse.Position = point;
+        Thread.Sleep(10);
     }
 
     public Menu OpenContextMenu(string itemName)
@@ -128,8 +150,8 @@ public sealed class BiMaDockSession : IDisposable
         for (int attempt = 1; ; attempt++)
         {
             ShowDock(itemName);
-            Thread.Sleep(300);
-            Mouse.MoveTo(Center(GetDockButton(itemName)));
+            Thread.Sleep(100);
+            MoveMouse(Center(GetDockButton(itemName)));
             Mouse.Click(MouseButton.Right);
 
             AutomationElement? menu = null;
@@ -142,7 +164,7 @@ public sealed class BiMaDockSession : IDisposable
             {
                 Keyboard.Press(FlaUI.Core.WindowsAPI.VirtualKeyShort.ESCAPE);
                 MoveMouseAway();
-                Thread.Sleep(500);
+                Thread.Sleep(300);
             }
         }
     }
@@ -208,27 +230,39 @@ public sealed class BiMaDockSession : IDisposable
 
     public static void DragStart(Point from)
     {
-        Mouse.MoveTo(from);
-        Thread.Sleep(200);
-        Mouse.Down(MouseButton.Left);
-        Thread.Sleep(200);
+        MoveMouse(from);
+        Thread.Sleep(100);
+        Mouse.Down(MouseButton.Left); // wartet intern 100 ms auf die Verarbeitung
+        Thread.Sleep(100);
     }
 
+    /// <summary>
+    /// Bewegt den Zeiger in Einzelschritten: Jeder Schritt erzeugt ein eigenes WM_MOUSEMOVE, das WPF (Drag-Schwelle)
+    /// und die OLE-Drag-Schleife (DragEnter/DragOver) brauchen.
+    /// </summary>
     public static void DragMove(Point from, Point to)
     {
-        const int steps = 25;
+        const int steps = 12;
         for (int i = 1; i <= steps; i++)
         {
-            Mouse.MoveTo(new Point(from.X + (to.X - from.X) * i / steps, from.Y + (to.Y - from.Y) * i / steps));
-            Thread.Sleep(30);
+            Mouse.Position = new Point(from.X + (to.X - from.X) * i / steps, from.Y + (to.Y - from.Y) * i / steps);
+            // Nach dem ersten Schritt startet ggf. DoDragDrop (Drag-Ghost, modale Schleife); etwas länger warten.
+            Thread.Sleep(i == 1 ? 60 : 15);
         }
-        Thread.Sleep(400);
+        // Ziel-Rückmeldungen abwarten (Einblenden 100 ms, Lückenanimation 150 ms).
+        Thread.Sleep(150);
+        // Nach dem Layout-Wechsel (Quelle ausgeblendet, Lücke offen) erneut DragOver auslösen,
+        // damit die Einfügeposition auf dem fertigen Layout berechnet wird.
+        Mouse.Position = new Point(to.X + 1, to.Y);
+        Thread.Sleep(15);
+        Mouse.Position = to;
+        Thread.Sleep(200);
     }
 
     public static void DragEnd()
     {
-        Mouse.Up(MouseButton.Left);
-        Thread.Sleep(500);
+        Mouse.Up(MouseButton.Left); // wartet intern 100 ms auf die Verarbeitung
+        Thread.Sleep(150);
     }
 
     public static bool StartupValueExists()
@@ -259,7 +293,7 @@ public sealed class BiMaDockSession : IDisposable
             {
                 // UI-Elemente können während Animationen kurzzeitig ungültig sein.
             }
-            Thread.Sleep(100);
+            Thread.Sleep(40);
         }
         throw new TimeoutException(message);
     }
@@ -283,7 +317,7 @@ public sealed class BiMaDockSession : IDisposable
         Automation.Dispose();
         RemoveStartupValue();
 
-        for (int attempt = 0; attempt < 10; attempt++)
+        for (int attempt = 0; attempt < 20; attempt++)
         {
             try
             {
@@ -292,11 +326,11 @@ public sealed class BiMaDockSession : IDisposable
             }
             catch (IOException)
             {
-                Thread.Sleep(200);
+                Thread.Sleep(100);
             }
             catch (UnauthorizedAccessException)
             {
-                Thread.Sleep(200);
+                Thread.Sleep(100);
             }
         }
     }

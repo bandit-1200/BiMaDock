@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System;
 using System.Linq;
 
@@ -8,6 +9,90 @@ namespace BiMaDock
 {
     public partial class MainWindow
     {
+        private void DockContextMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            UndoCleanupMenuItem.Visibility = DockCleanup.HasBackup() ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // Prüft alle Einträge auf nicht mehr vorhandene Ziele und lässt den Benutzer auswählen, was entfernt wird.
+        private async void Cleanup_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var items = SettingsManager.LoadSettings();
+                IReadOnlyList<CleanupCandidate> candidates;
+                Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+                try
+                {
+                    candidates = await DockCleanup.FindCandidatesAsync(items);
+                }
+                finally
+                {
+                    Mouse.OverrideCursor = null;
+                }
+
+                if (candidates.Count == 0)
+                {
+                    MessageBox.Show(this, "Alles in Ordnung – es wurden keine verwaisten Einträge gefunden.", "Dock aufräumen", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var dialog = new CleanupWindow(candidates) { Owner = this };
+                if (dialog.ShowDialog() != true || dialog.SelectedItems.Count == 0)
+                {
+                    return;
+                }
+
+                DockCleanup.CreateBackup(items);
+                SettingsManager.SaveSettings(DockCleanup.RemoveItems(items, dialog.SelectedItems));
+                ReloadDockAfterCleanup();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Cleanup_Click Fehler: {ex}");
+                MessageBox.Show(this, "Beim Aufräumen ist ein Fehler aufgetreten:" + Environment.NewLine + ex.Message, "Dock aufräumen", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Stellt die beim letzten Aufräumen entfernten Einträge wieder her. Seitdem hinzugefügte oder
+        // geänderte Einträge bleiben erhalten; nur fehlende Einträge aus der Sicherung kommen zurück.
+        private void UndoCleanup_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var backup = DockCleanup.LoadBackup();
+                if (backup == null)
+                {
+                    MessageBox.Show(this, "Es ist keine Sicherung zum Wiederherstellen vorhanden.", "Aufräumen rückgängig machen", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var current = SettingsManager.LoadSettings();
+                var currentIds = new HashSet<string>(current.Select(item => item.Id));
+                var restored = backup.Where(item => !currentIds.Contains(item.Id)).ToList();
+
+                var merged = new List<DockItem>(current);
+                merged.AddRange(restored);
+                SettingsManager.SaveSettings(merged);
+                DockCleanup.DeleteBackup();
+                ReloadDockAfterCleanup();
+
+                MessageBox.Show(this, restored.Count == 1 ? "1 Eintrag wurde wiederhergestellt." : $"{restored.Count} Einträge wurden wiederhergestellt.", "Aufräumen rückgängig machen", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"UndoCleanup_Click Fehler: {ex}");
+                MessageBox.Show(this, "Beim Wiederherstellen ist ein Fehler aufgetreten:" + Environment.NewLine + ex.Message, "Aufräumen rückgängig machen", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ReloadDockAfterCleanup()
+        {
+            HideCategoryDockPanel();
+            dockManager.LoadDockItems();
+            RefreshDockNavigation();
+        }
+
         // Methode zum Öffnen des Einstellungsfensters
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {

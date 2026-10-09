@@ -17,6 +17,7 @@ BiMaDock ist eine personalisierbare Dock-Leiste für Windows (WPF, `net8.0-windo
 
 - `MainWindow.xaml.cs` (Konstruktor, gemeinsame Felder) plus Teildateien: `MainWindow.Visibility.cs` (Ein-/Ausblenden), `MainWindow.DragDrop.cs`, `MainWindow.CategoryDock.cs`, `MainWindow.ContextMenu.cs` (Menü, Autostart, Update-Prüfung), `MainWindow.Native.cs` (P/Invoke, RDP)
 - `DockManager.cs`: Laden/Speichern, Einträge und Kategorien, Drop-Verarbeitung
+- `DockCleanup.cs` / `CleanupWindow.xaml`: „Aufräumen“ – verwaiste Einträge finden, entfernen, Sicherung `docksettings.backup.json` für „Rückgängig“
 - `DockDropPosition.cs`: Drop-Formate und Einfügeposition
 - `DockItemSettingsStore.cs` / `SettingsManager.cs`: atomares Speichern von `docksettings.json`
 - `SettingsWindow.xaml.cs` plus `SettingsWindow.Colors.cs`, `.Animations.cs`, `.AnimationEditors.cs`; Einstellungen in `StyleSettings.json` (typisiert über `StyleSettingsFile.cs`)

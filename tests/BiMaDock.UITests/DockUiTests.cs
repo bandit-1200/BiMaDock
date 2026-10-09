@@ -295,7 +295,7 @@ public sealed class DockUiTests
         var edge = new Point(dock.Left + dock.Width / 2, dock.Top + 2);
         BiMaDockSession.DragStart(source.Center);
         BiMaDockSession.DragMove(source.Center, edge);
-        Thread.Sleep(1000);
+        Thread.Sleep(500); // Einblenden beim Ziehen erfolgt ohne Verzögerung (Animation 100 ms)
         bool shownDuringDrag = session.IsDockVisible("Konsole");
         BiMaDockSession.DragEnd();
 
@@ -325,7 +325,7 @@ public sealed class DockUiTests
         BiMaDockSession.DragStart(from);
         BiMaDockSession.DragMove(from, to);
         // Lücke hat sich geöffnet; Ziel neu bestimmen, falls Nachbarn zur Seite geglitten sind
-        Thread.Sleep(300);
+        Thread.Sleep(150);
         BiMaDockSession.DragEnd();
     }
 
@@ -369,7 +369,7 @@ public sealed class DockUiTests
         session.ShowDock("Werkzeuge");
         session.GetDockButton("Werkzeuge").AsButton().Invoke();
         BiMaDockSession.WaitUntil(() => session.FindDockButton("Drei") is { IsOffscreen: false }, "Kategorie wurde nicht geöffnet.");
-        Thread.Sleep(600); // Einblendanimation der Kategorie abwarten
+        Thread.Sleep(300); // Einblendanimation (Opacity, 500 ms) muss für Treffertests nicht ganz fertig sein
 
         var from = BiMaDockSession.Center(session.GetDockButton("Eins"));
         var target = session.GetDockButton("Zwei").BoundingRectangle;
@@ -394,10 +394,8 @@ public sealed class DockUiTests
             TestDockItem.File("Konsole", Cmd, 1),
             TestDockItem.File("Dritter", Notepad, 2));
 
-        session.ShowDock("Editor");
-        var from = BiMaDockSession.Center(session.GetDockButton("Editor"));
-        var dritter = session.GetDockButton("Dritter").BoundingRectangle;
-        BiMaDockSession.Drag(from, new Point(dritter.Right - 5, dritter.Top + dritter.Height / 2));
+        // Nicht an den äußersten Rand zielen: Beim Einklappen der Quelle rutscht "Dritter" nach links.
+        DragDockItem(session, "Editor", "Dritter", 0.75);
 
         BiMaDockSession.WaitUntil(() =>
         {
@@ -420,5 +418,49 @@ public sealed class DockUiTests
 
         BiMaDockSession.WaitUntil(() => session.HasExited, "BiMaDock wurde nicht beendet.");
         Assert.Contains(session.ReadDockItems(), i => i.DisplayName == "Editor");
+    }
+
+    [UiFact]
+    public void Kontextmenue_Aufraeumen_EntferntVerwaistesElementUndMachtEsRueckgaengig()
+    {
+        var missing = TestDockItem.File("Verwaist", @"C:\BiMaDock-UITest\fehlt.exe", 1);
+        using var session = new BiMaDockSession(
+            TestDockItem.File("Editor", Notepad, 0),
+            missing);
+        string backupPath = Path.Combine(session.DataDirectory, "docksettings.backup.json");
+
+        session.ClickContextMenuItem("Editor", "Aufräumen …");
+        var dialog = session.WaitForWindow("Dock aufräumen");
+        var checkBox = dialog.FindFirstDescendant(cf => cf.ByAutomationId("CleanupItem_" + missing.Id));
+        Assert.NotNull(checkBox);
+        Assert.Equal(ToggleState.On, checkBox.AsCheckBox().ToggleState);
+        Assert.Null(dialog.FindFirstDescendant(cf => cf.ByName("Editor").And(cf.ByControlType(ControlType.CheckBox))));
+        BiMaDockSession.InvokeButton(dialog, "Ausgewählte entfernen");
+
+        BiMaDockSession.WaitUntil(() => session.FindDockButton("Verwaist") == null, "Verwaistes Element ist noch im Dock.");
+        BiMaDockSession.WaitUntil(
+            () => session.ReadDockItems().All(i => i.DisplayName != "Verwaist") && File.Exists(backupPath),
+            "Element wurde nicht entfernt oder keine Sicherung angelegt.");
+        Assert.NotNull(session.FindDockButton("Editor"));
+
+        session.ClickContextMenuItem("Editor", "Aufräumen rückgängig machen");
+        BiMaDockSession.InvokeButton(session.WaitForWindow("Aufräumen rückgängig machen"), "OK");
+
+        BiMaDockSession.WaitUntil(() => session.FindDockButton("Verwaist") != null, "Element wurde nicht wiederhergestellt.");
+        BiMaDockSession.WaitUntil(
+            () => session.ReadDockItems().Any(i => i.DisplayName == "Verwaist") && !File.Exists(backupPath),
+            "Wiederherstellung wurde nicht gespeichert oder Sicherung nicht entfernt.");
+    }
+
+    [UiFact]
+    public void Kontextmenue_Aufraeumen_MeldetSaubereDock()
+    {
+        using var session = StartWithTwoItems();
+
+        session.ClickContextMenuItem("Editor", "Aufräumen …");
+        BiMaDockSession.InvokeButton(session.WaitForWindow("Dock aufräumen"), "OK");
+
+        BiMaDockSession.WaitUntil(() => !session.IsWindowOpen("Dock aufräumen"), "Meldung wurde nicht geschlossen.");
+        Assert.Equal(2, session.ReadDockItems().Count);
     }
 }

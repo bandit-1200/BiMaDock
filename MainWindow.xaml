@@ -51,11 +51,13 @@
                             <TranslateTransform/>
                         </StackPanel.RenderTransform>
                         <StackPanel.ContextMenu>
-                        <ContextMenu x:Name="DockContextMenu" Panel.ZIndex="6">
+                        <ContextMenu x:Name="DockContextMenu" Panel.ZIndex="6" Opened="DockContextMenu_Opened">
                             <MenuItem x:Name="OpenMenuItem" Header="Öffnen" Click="Open_Click"/>
                             <MenuItem x:Name="EditMenuItem" Header="Eigenschaften bearbeiten" Click="Edit_Click"/>
                             <MenuItem x:Name="FindFileItem" Header="Dateipfad öffnen" Click="OpenFilePath_Click"/>
                             <MenuItem Header="Kategorie erstellen" Click="AddCategory_Click"/>
+                            <MenuItem x:Name="CleanupMenuItem" Header="Aufräumen …" Click="Cleanup_Click"/>
+                            <MenuItem x:Name="UndoCleanupMenuItem" Header="Aufräumen rückgängig machen" Click="UndoCleanup_Click" Visibility="Collapsed"/>
                             <MenuItem x:Name="DeleteMenuItem" Header="Löschen" Click="Delete_Click"/>
                             <Separator/>
                             <MenuItem Header="Einstellungen" Click="OpenSettings_Click"/>
