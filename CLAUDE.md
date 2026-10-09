@@ -1,0 +1,32 @@
+@AGENTS.md
+
+# Projektüberblick
+
+BiMaDock ist eine personalisierbare Dock-Leiste für Windows (WPF, `net8.0-windows`): ein rahmenloses, oben liegendes Fenster am Bildschirmrand mit automatischem Ein-/Ausblenden zum Starten von Programmen, Dateien, Ordnern, Weblinks und Kategorien. Einträge werden per Drag & Drop hinzugefügt.
+
+## Befehle
+
+- Build: `dotnet build BiMaDock.sln -c Release`
+- Tests: `.\test.ps1` oder `dotnet test BiMaDock.sln -c Release`
+- Publish: `dotnet publish BiMaDock.csproj -c Release -r win-x64 -o publish`
+- Lokaler Installer: `BiMaDock_local_setup.bat` (Inno Setup 6, Ausgabe nach `setup\`)
+- Installer-Versionen synchronisieren: `.\update_version.ps1`
+
+## Wichtige Dateien
+
+- `MainWindow.xaml.cs`: Ein-/Ausblenden, Drag-&-Drop-Handler, Kontextmenüs, Update-Prüfung
+- `DockManager.cs`: Laden/Speichern, Einträge und Kategorien, Drop-Verarbeitung
+- `DockDropPosition.cs`: Drop-Formate und Einfügeposition
+- `DockItemSettingsStore.cs` / `SettingsManager.cs`: atomares Speichern von `docksettings.json`
+- `SettingsWindow.xaml.cs`: Farben, Animationen, Autostart (`StyleSettings.json`)
+- `UpdateChecker.cs` / `ReleaseVersion.cs`: GitHub-Release-Prüfung (Asset `BiMaDockSetup.exe`)
+- `StartupManager.cs`: Autostart über `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`
+- `GlobalMouseHook.cs`: Klick außerhalb blendet das Dock aus
+- `AppPaths.cs`: Benutzerdaten unter `%LOCALAPPDATA%\BiMaDock\`
+- Tests: `tests\BiMaDock.Tests` (xUnit, ohne UI-Tests)
+
+## Konventionen
+
+- UI-Texte und Kommentare auf Deutsch, Bezeichner überwiegend Englisch.
+- Dateien verwenden CRLF-Zeilenenden.
+- Die CI (`.github\scripts\validate-versioning.ps1`) verlangt bei jeder Änderung Anpassungen an `version.json`, `CHANGELOG.md`, `BiMaDock.iss` und `BiMaDock_local.iss`.

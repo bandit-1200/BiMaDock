@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;  // Für Point und Rect
 using System.Windows.Media;  // Für HitTestResult
-using System.Windows.Interop;
 using BiMaDock;  // Importiere den richtigen Namespace
 
 public class GlobalMouseHook
@@ -71,7 +70,6 @@ public class GlobalMouseHook
 
             if (!isEditPropertiesWindowOpen)
             {
-                Rect mainWindowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
                 Point relativePoint = window.PointFromScreen(mousePosition);
                 HitTestResult result = VisualTreeHelper.HitTest(window, relativePoint);
 
@@ -85,7 +83,6 @@ public class GlobalMouseHook
                             window.HideDock();
                             window.HideCategoryDockPanel();
                             window.currentDockStatus = MainWindow.DockStatus.None;
-                            Console.WriteLine("Klick außerhalb des ersten Grids und des CategoryDockPanels erkannt!");
                         }
                     }
                 }
@@ -93,7 +90,6 @@ public class GlobalMouseHook
                 {
                     window.HideDock();
                     window.HideCategoryDockPanel();
-                    Console.WriteLine("Klick außerhalb der Anwendung erkannt!");
                 }
             }
         });
@@ -135,29 +131,6 @@ public class GlobalMouseHook
 
 
 
-
-
-
-
-    // private bool IsElementChildOf(DependencyObject element, DependencyObject parent)
-    // {
-    //     while (element != null)
-    //     {
-    //         if (element == parent)
-    //             return true;
-
-    //         element = VisualTreeHelper.GetParent(element);
-    //     }
-    //     return false;
-    // }
-
-
-    // private void OnClickOutsideGrid()
-    // {
-    //     Debug.WriteLine("Klick außerhalb des ersten Grids erkannt!");
-    //     mainWindow.HideDock();
-    // }
-
     // Struktur für Mausinformationen
     [StructLayout(LayoutKind.Sequential)]
     public struct MSLLHOOKSTRUCT
@@ -190,9 +163,6 @@ public class GlobalMouseHook
 
     [DllImport("user32.dll")]
     private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    private static extern IntPtr GetModuleHandle(string lpModuleName);
 
     private enum MouseMessages
     {

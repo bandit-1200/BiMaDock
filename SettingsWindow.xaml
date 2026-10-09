@@ -35,8 +35,6 @@
                         <TextBlock Text="Einblendzeit (Reaktionszeit zum Einblenden):" Foreground="White" Margin="0,0,0,10"/>
                         <Slider x:Name="DockShowDelaySlider" Minimum="100" Maximum="1000" TickFrequency="50" IsSnapToTickEnabled="True" Margin="0,0,0,10"/>
                         <TextBlock x:Name="DockShowDelayValueText" Text="Aktuelle Einblendzeit: 300 ms" Foreground="White" Margin="0,0,0,20"/>
-                        <TextBox x:Name="VersionTextBox" Text="Version wird hier angezeigt" Background="#1A1A1A" Foreground="White" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" Margin="0,10,0,0"/>                        
-                        <TextBox x:Name="AuthorTextBox" Text="Autor: Marco Bilz" Background="#1A1A1A" Foreground="White" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" Margin="0,10,0,20"/>
                     </StackPanel>
                 </TabItem>
 

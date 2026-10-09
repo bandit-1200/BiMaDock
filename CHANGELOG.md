@@ -2,6 +2,14 @@
 
 Hier werden neue Funktionen, Fehlerbehebungen und Optimierungen je Version zusammengefasst. Die historischen Einträge wurden aus Git-Tags und Commit-Historie rekonstruiert. Wiederholte Release- und Build-Tags ohne erkennbare zusätzliche Änderungen sind zusammengefasst; uneinheitliche historische Tag-Namen werden nicht nachträglich umbenannt.
 
+## 26.10.15 – In Arbeit
+
+- `CLAUDE.md` mit Projektüberblick für Claude Code ergänzt; verweist auf die Regeln in `AGENTS.md`.
+- Ungenutzte NuGet-Pakete `Microsoft.AspNet.WebApi.Client` und `WindowsInput` entfernt.
+- Ungenutzte Dateien entfernt: `TestWindow`, `Resources/eintest.cs`, `dummy.txt`, `dockItems.json` sowie die nicht verwendete GitVersion-Konfiguration (`GitVersion.yml`, `.config/dotnet-tools.json`).
+- Toten Code entfernt: nie aufgerufene Methoden und Event-Handler, Test-/Debug-Reste, ungenutzte Felder, Usings, XAML-Elemente und Style-Ressourcen sowie auskommentierten Code.
+- Doppelte Event-Abonnements für den Einblendverzögerungs-Regler und die Kategorie-Mausbewegung bereinigt.
+
 ## 26.10.14 – In Arbeit
 
 - Installer auf Installation pro Windows-Benutzer ohne Administratorrechte umgestellt; Installationsziel, Startmenü, Desktop, Autostart und Icon-Daten liegen im Benutzerbereich.

@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 using Newtonsoft.Json;
@@ -66,7 +65,6 @@ namespace BiMaDock
         private Slider? angleSlider;
         private Slider? translateXSlider;
         private Slider? translateYSlider;
-        private CheckBox? autoReverseCheckBox;
         private Slider? scaleDurationSlider;
         private Slider? rotateDurationSlider;
         private Slider? translateDurationSlider;
@@ -74,7 +72,6 @@ namespace BiMaDock
         public SettingsWindow(MainWindow window)
         {
             InitializeComponent();
-            ShowVersion();
 
             mainWindow = window;
 
@@ -89,34 +86,10 @@ namespace BiMaDock
             rotateSettings = new RotateSettings();
             translateSettings = new TranslateSettings();
 
-            // Initialisieren der Steuerelemente
-            // PrimaryColorPicker = new ColorPicker();
-            // SecondaryColorPicker = new ColorPicker();
-            scaleDurationSlider = new Slider();
-            scaleFactorSlider = new Slider();
-            autoReverseCheckBox = new CheckBox();
-            rotateDurationSlider = new Slider();
-            angleSlider = new Slider();
-            translateDurationSlider = new Slider();
-            translateXSlider = new Slider();
-            translateYSlider = new Slider();
-            animationEffectComboBox = new ComboBox();
-
-
-            // animationEffectComboBox = new ComboBox();
             settingsFilePath = AppPaths.GetSettingsFilePath("StyleSettings.json");
             CreateAnimationEffectDropdown();
-            ShowVersionInConsole();
             InitializeColorPickers();
             AutoStartCheckBox.IsChecked = StartupManager.IsInStartup();
-            if (DockShowDelaySlider != null)
-            {
-                DockShowDelaySlider.Minimum = MinDockShowDelayMs;
-                DockShowDelaySlider.Maximum = MaxDockShowDelayMs;
-                DockShowDelaySlider.Value = dockShowDelayMilliseconds;
-                DockShowDelaySlider.ValueChanged += DockShowDelaySlider_ValueChanged;
-                UpdateDockShowDelayText();
-            }
             LoadSettings();
 
         }
@@ -173,9 +146,6 @@ namespace BiMaDock
             animationEffectComboBox.SelectedIndex = animationEffectComboBoxIndex;  // Setze den initialen Index auf "Kein Effekt"
             animationEffectComboBox.SelectionChanged += AnimationEffectComboBox_SelectionChanged;
             AnimationSettingsPanel.Children.Add(animationEffectComboBox);
-
-            // Initiale Einstellungen erstellen (z.B. Scale)
-            // CreateScaleAnimationSettings();
         }
 
 
@@ -647,32 +617,6 @@ namespace BiMaDock
 
 
 
-        private void ShowVersionInConsole()
-        {
-            var informationalVersionAttribute = Assembly.GetExecutingAssembly()
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-
-            string informationalVersion = informationalVersionAttribute?.InformationalVersion ?? "Unbekannte Version";
-            string clearVersion = informationalVersion.Split('+')[0];
-
-            Debug.WriteLine($"Detaillierte Version: {informationalVersion}");
-            Debug.WriteLine($"Klare Version: {clearVersion}");
-        }
-
-        private void ShowVersion()
-        {
-            var informationalVersionAttribute = Assembly.GetExecutingAssembly()
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-
-            string informationalVersion = informationalVersionAttribute?.InformationalVersion ?? "Unbekannte Version";
-            string clearVersion = informationalVersion.Split('+')[0];
-
-            VersionTextBox.Text = $"Detaillierte Version: {informationalVersion}\nKlare Version: {clearVersion}";
-        }
-
-
-
-
         public void LoadSettings()
         {
             if (File.Exists(settingsFilePath))
@@ -964,17 +908,6 @@ namespace BiMaDock
             }
         }
 
-
-        private void ShowVersionButton_Click(object sender, RoutedEventArgs e)
-        {
-            var informationalVersionAttribute = Assembly.GetExecutingAssembly()
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-
-            string informationalVersion = informationalVersionAttribute?.InformationalVersion ?? "Unbekannte Version";
-            string clearVersion = informationalVersion.Split('+')[0];
-
-            MessageBox.Show($"Detaillierte Version: {informationalVersion}\nKlare Version: {clearVersion}");
-        }
 
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {

@@ -4,7 +4,7 @@ Dieses Dokument beschreibt den aktuellen Ablauf für das Veröffentlichen und Ta
 
 ## Wichtig
 
-Die Versionierung wird in diesem Projekt über die Dateien `version.json` und `GitVersion.yml` gesteuert. Ein manueller Tag ist nur dann nötig, wenn ein Release bewusst auf GitHub veröffentlicht werden soll oder ein Build mit einer neuen Versionsnummer ausgelöst werden muss.
+Die Versionierung wird in diesem Projekt über die Datei `version.json` (Nerdbank.GitVersioning) gesteuert. Ein manueller Tag ist nur dann nötig, wenn ein Release bewusst auf GitHub veröffentlicht werden soll oder ein Build mit einer neuen Versionsnummer ausgelöst werden muss.
 
 Bei jeder Änderung an Anwendung, Oberfläche, Tests oder Dokumentation ist die Version in `version.json` passend anzupassen. Sie folgt dem Schema `Jahr.Monat.Tag`; Nerdbank.GitVersioning ergänzt die Build-Nummer automatisch. Die `MyAppVersion`-Definitionen in `BiMaDock.iss` und `BiMaDock_local.iss` müssen mit der Basisversion synchron bleiben. Vor einem Release die Inno-Setup-Version mit dem passenden Skript aktualisieren.
 

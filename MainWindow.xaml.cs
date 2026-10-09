@@ -3,18 +3,13 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Runtime.InteropServices;
-using System.Windows.Interop;
-using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using System.Collections;
 using System;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using Microsoft.Win32; // Für SystemEvents
 
 namespace BiMaDock
@@ -37,7 +32,6 @@ namespace BiMaDock
         }
 
         private DispatcherTimer timer;
-        private IntPtr lastForegroundWindow = IntPtr.Zero;
         private bool? rdpActiveCache;
         private DateTime lastRdpCheck = DateTime.MinValue;
 
@@ -62,7 +56,6 @@ namespace BiMaDock
         [DllImport("user32.dll")]
         static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
-        const int SW_MAXIMIZE = 3;
         const int SW_MINIMIZE = 6;
 
         private GlobalMouseHook? mouseHook;
@@ -71,7 +64,6 @@ namespace BiMaDock
         private readonly DockNavigationController categoryDockNavigation;
 
         public bool dockVisible = true;
-        public bool IsDragging => isDragging;
         public bool isDragging = false; // Flag für Dragging
         private DispatcherTimer dockHideTimer;
         private DispatcherTimer categoryHideTimer;
@@ -148,7 +140,6 @@ namespace BiMaDock
                 timer.Start();
 
                 SettingsWindow settingsWindow = new SettingsWindow(this);
-                double screenWidth = SystemParameters.PrimaryScreenWidth;
 
                 ButtonAnimations.LoadSettings();
                 settingsWindow.LoadSettings();
@@ -257,88 +248,44 @@ namespace BiMaDock
         // Weitere Initialisierung
         private void CheckForRdpFullScreen(object? sender, EventArgs e)
         {
-            // Debug.WriteLine("CheckForRdpFullScreen: Überprüfe RDP-Sitzung...");
-
             bool rdpSessionActive = IsRdpSessionActive();
-            // Debug.WriteLine($"CheckForRdpFullScreen: RDP-Sitzung aktiv: {rdpSessionActive}");
 
             IntPtr foregroundWindow = GetForegroundWindow();
             RECT rect;
 
             if (GetWindowRect(foregroundWindow, out rect))
             {
-                // Debug.WriteLine($"CheckForRdpFullScreen: Vordergrundfensterabmessungen: Links={rect.Left}, Oben={rect.Top}, Rechts={rect.Right}, Unten={rect.Bottom}");
-
-                int screenWidth = (int)SystemParameters.PrimaryScreenWidth;
-                int screenHeight = (int)SystemParameters.PrimaryScreenHeight;
-
-                // Überprüfen, ob das Fenster maximiert ist
-                if (IsWindowMaximized(foregroundWindow))
-                {
-                    // Debug.WriteLine("CheckForRdpFullScreen: Das Fenster ist maximiert.");
-                    // Keine Änderung an Topmost, wenn das Fenster maximiert ist
-                }
-
                 // Überprüfen, ob das Fenster minimiert ist
                 if (IsWindowMinimized(foregroundWindow))
                 {
-                    // Debug.WriteLine("CheckForRdpFullScreen: Das Fenster ist minimiert.");
                     if (!this.Topmost)
                     {
-                        // Debug.WriteLine("CheckForRdpFullScreen: Setze Topmost auf True.");
                         this.Topmost = true;
                     }
                 }
 
                 if (rdpSessionActive)
                 {
-                    if (rect.Left == 0 && rect.Top == 0 && rect.Right == screenWidth && rect.Bottom == screenHeight)
+                    if (this.Topmost)
                     {
-                        // Debug.WriteLine("CheckForRdpFullScreen: RDP-Fenster ist im Vollbildmodus.");
-                        if (this.Topmost)
-                        {
-                            // Debug.WriteLine("CheckForRdpFullScreen: Setze Topmost auf False.");
-                            this.Topmost = false;
-                        }
-                    }
-                    else
-                    {
-                        // Debug.WriteLine("CheckForRdpFullScreen: RDP-Fenster ist nicht im Vollbildmodus.");
-                        if (this.Topmost)
-                        {
-                            // Debug.WriteLine("CheckForRdpFullScreen: Setze Topmost auf False.");
-                            this.Topmost = false;
-                        }
+                        this.Topmost = false;
                     }
                 }
                 else
                 {
-                    // Debug.WriteLine("CheckForRdpFullScreen: RDP-Sitzung nicht aktiv.");
                     if (!this.Topmost)
                     {
-                        // Debug.WriteLine("CheckForRdpFullScreen: Setze Topmost auf True.");
                         this.Topmost = true;
                     }
                 }
-
-                // Debug.WriteLine($"CheckForRdpFullScreen: Aktueller Status der Dockbar (Topmost): {this.Topmost}");
             }
             else
             {
-                // Debug.WriteLine("CheckForRdpFullScreen: Konnte die Abmessungen des Vordergrundfensters nicht abrufen.");
                 if (!this.Topmost)
                 {
-                    // Debug.WriteLine("CheckForRdpFullScreen: Setze Topmost auf True.");
                     this.Topmost = true;
                 }
             }
-        }
-
-        private bool IsWindowMaximized(IntPtr hWnd)
-        {
-            WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
-            GetWindowPlacement(hWnd, ref placement);
-            return placement.showCmd == SW_MAXIMIZE;
         }
 
         private bool IsWindowMinimized(IntPtr hWnd)
@@ -355,35 +302,6 @@ namespace BiMaDock
         }
 
 
-        public async Task ShowUpdateDialog()
-        {
-            string latestVersion = "1.2.3"; // Beispielversion
-            string downloadUrl = await GetLatestReleaseDownloadUrlAsync(); // Hole den tatsächlichen Download-Link
-            UpdateDialog updateDialog = new UpdateDialog(latestVersion, downloadUrl);
-            updateDialog.ShowDialog();
-        }
-
-
-        public static async Task<string> GetLatestReleaseDownloadUrlAsync()
-        {
-            const string GitHubApiUrl = "https://api.github.com/repos/bandit-1200/BiMaDock/releases/latest";
-            using (HttpClient client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Add("User-Agent", "BiMaDock-Update-Checker");
-                string response = await client.GetStringAsync(GitHubApiUrl);
-                JObject releaseInfo = JObject.Parse(response);
-                string downloadUrl = releaseInfo["assets"]?[0]?["browser_download_url"]?.ToString() ?? "Unknown";
-                return downloadUrl;
-            }
-        }
-
-        private async void TestUpdateDialogButton_Click(object sender, RoutedEventArgs e)
-        {
-            await ShowUpdateDialog();
-        }
-
-
-
         // Methode zum Öffnen des Einstellungsfensters
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
@@ -396,33 +314,6 @@ namespace BiMaDock
         private void Open_Click(object sender, RoutedEventArgs e)
         {
             dockManager.Open_Click(sender, e);
-        }
-
-        private void CheckMouseHover()
-        {
-            if (DockPanel != null && CategoryDockContainer != null)
-            {
-                var mousePosDock = Mouse.GetPosition(DockPanel);
-                var dockBounds = new Rect(DockPanel.TranslatePoint(new Point(), this), DockPanel.RenderSize); // Grenzen des Haupt-Docks
-                var mousePosCategory = Mouse.GetPosition(CategoryDockContainer);
-                var categoryBounds = new Rect(CategoryDockContainer.TranslatePoint(new Point(), this), CategoryDockContainer.RenderSize); // Grenzen des Kategorie-Docks
-
-                if (dockBounds.Contains(mousePosDock) || categoryBounds.Contains(mousePosCategory) || isDragging)
-                {
-                    // Timer stoppen, wenn die Maus über einem der Docks ist oder ein Draggen erkannt wird
-                    dockHideTimer.Stop();
-                    categoryHideTimer.Stop();
-                    // Beide Docks sichtbar machen
-                    ShowDock();
-                    CategoryDockContainer.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    // Timer starten und Countdown für das Ausblenden der Docks starten
-                    // dockHideTimer.Start();
-                    // categoryHideTimer.Start();
-                }
-            }
         }
 
         private void MainDockArea_MouseEnter(object sender, MouseEventArgs e)
@@ -467,7 +358,6 @@ namespace BiMaDock
                 slideAnimation.Completed += (s, e) =>
                 {
                     MainDockBorder.Margin = new Thickness(0);
-                    // Debug.WriteLine("Dock vollständig eingeblendet"); // Debugging
                 };
 
 
@@ -502,14 +392,12 @@ namespace BiMaDock
                 slideAnimation.Completed += (s, e) =>
                 {
                     MainDockBorder.Margin = new Thickness(0, toValue, 0, 0);
-                    // Debug.WriteLine("Dock teilweise ausgeblendet, 5 Pixel sichtbar"); // Debugging
                 };
 
 
 
                 MainDockBorder.BeginAnimation(FrameworkElement.MarginProperty, slideAnimation);
             }
-            currentDockStatus = DockStatus.None;
             isCategoryDockOpen = false;
 
         }
@@ -569,7 +457,6 @@ namespace BiMaDock
         private void CategoryDockContainer_MouseEnter(object sender, MouseEventArgs e)
         {
             currentDockStatus |= DockStatus.CategoryDockHover; // Setzt das CategoryDockHover-Flag
-            // currentDockStatus &= ~DockStatus.CategoryElementClicked; // Löscht das CategoryElementClicked-Flag
             CheckAllConditions();
         }
 
@@ -630,36 +517,16 @@ namespace BiMaDock
                     : DragDropEffects.None;
         }
 
-        private void DockPanel_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            currentDockStatus |= DockStatus.ContextMenuOpen; // Setzt das ContextMenuOpen-Flag
-            OpenMenuItem.Visibility = Visibility.Collapsed;
-            DeleteMenuItem.Visibility = Visibility.Collapsed;
-            EditMenuItem.Visibility = Visibility.Collapsed;
-            DockContextMenu.IsOpen = true;
-            CheckAllConditions();
-        }
-
-        private void DockContextMenu_Closed(object sender, RoutedEventArgs e)
-        {
-            currentDockStatus &= ~DockStatus.ContextMenuOpen; // Löscht das ContextMenuOpen-Flag
-            CheckAllConditions();
-        }
-
         public void CheckAllConditions()
         {
-            // Debug.WriteLine($"Current Dock Status (numeric): {(int)currentDockStatus} - Flags: {currentDockStatus}"); // Debug-Ausgabe im Klartext
 
             if (currentDockStatus > 0) // Überprüft, ob irgendein Flag gesetzt ist
             {
-                // Debug.WriteLine("Conditions met, showing dock."); // Debug-Ausgabe
-                // ShowDock();
                 categoryHideTimer.Stop();
                 dockHideTimer.Stop();
             }
             else
             {
-                // Debug.WriteLine("Conditions not met, hiding dock."); // Debug-Ausgabe
                 categoryHideTimer.Start();
                 dockHideTimer.Start();
             }
@@ -827,11 +694,6 @@ namespace BiMaDock
 
 
 
-
-        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            MessageBox.Show("Grid wurde angeklickt!");
-        }
 
 
 
@@ -1066,7 +928,6 @@ namespace BiMaDock
             else
             {
                 Debug.WriteLine("OpenDockItem aufgerufen, Kategorie"); // Debug-Ausgabe
-                // if (isCategoryDockOpen && currentOpenCategory == dockItem.DisplayName)
                 if (isCategoryDockOpen && currentOpenCategory == dockItem.Id)
                 {
                     // Kategoriedock schließen
@@ -1081,14 +942,10 @@ namespace BiMaDock
                 }
                 else
                 {
-                    // Beispielaufruf der Methode
-                    // string validName = GetValidName(dockItem.Id);
-
                     // Kategoriedock öffnen
                     ShowCategoryDockPanel(new StackPanel
                     {
                         Tag = dockItem.Id
-                        // Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
                     });
 
 
@@ -1104,12 +961,6 @@ namespace BiMaDock
                 }
             }
             CheckAllConditions();
-        }
-
-        // Hilfsmethode zum Generieren eines gültigen Namens
-        private string GetValidName(string guid)
-        {
-            return "_" + guid.Replace("-", "");
         }
 
 
@@ -1143,7 +994,6 @@ namespace BiMaDock
             HideCategoryDockPanel();
             HideDock();
             currentDockStatus = DockStatus.None;
-            // CheckAllConditions();
 
 
         }
@@ -1219,7 +1069,6 @@ namespace BiMaDock
 
         public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
-            // Debug.WriteLine("ShowCategoryDockPanel: Methode aufgerufen");
             CategoryDockContainer.Children.Clear();
             CategoryDockContainer.Visibility = Visibility.Visible;
             CategoryDockBorder.Visibility = Visibility.Visible;
@@ -1230,7 +1079,6 @@ namespace BiMaDock
             currentDockStatus |= DockStatus.CategoryElementClicked;
             currentOpenCategory = categoryDock.Tag?.ToString() ?? string.Empty;
             CategoryDockContainer.Tag = currentOpenCategory;
-            // Debug.WriteLine($"ShowCategoryDockPanel: currentOpenCategory = {currentOpenCategory}");
 
             var items = SettingsManager.LoadSettings();
             foreach (var item in items)
@@ -1238,7 +1086,6 @@ namespace BiMaDock
                 if (!string.IsNullOrEmpty(item.Category) && item.Category == currentOpenCategory)
                 {
                     dockManager.AddDockItemAt(item, CategoryDockContainer.Children.Count, currentOpenCategory, saveChanges: false);
-                    // Debug.WriteLine($"ShowCategoryDockPanel: DockItem {item.DisplayName} zur Kategorie {currentOpenCategory} hinzugefügt");
                 }
             }
 
@@ -1247,8 +1094,6 @@ namespace BiMaDock
 
             Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                // Debug.WriteLine("ShowCategoryDockPanel: Dispatcher aufgerufen");
-
                 if (CategoryDockBorder.ActualWidth > 0)
                 {
                     double mainWindowCenterX = Application.Current.MainWindow.ActualWidth / 2;
@@ -1268,10 +1113,6 @@ namespace BiMaDock
                     Canvas.SetTop(OverlayCanvasHorizontalLine, overlayPositionY);
                     Panel.SetZIndex(OverlayCanvasHorizontalLine, 1000); // Höherer Wert bringt es in den Vordergrund
 
-                }
-                else
-                {
-                    // Debug.WriteLine("ShowCategoryDockPanel: CategoryDockBorder.ActualWidth ist 0 oder kleiner");
                 }
                 PositionCategoryDock(currentOpenCategory);
             }, System.Windows.Threading.DispatcherPriority.Loaded);
@@ -1296,7 +1137,6 @@ namespace BiMaDock
         public void HideCategoryDockPanel()
         {
             CategoryDockContainer.Background = (SolidColorBrush)Application.Current.Resources["PrimaryColor"];// Visuelles Feedback zurücksetzen Farbe
-            // Debug.WriteLine("HideCategoryDockPanel aufgerufen"); // Debugging
             CategoryDockContainer.Visibility = Visibility.Collapsed;
             CategoryDockBorder.Visibility = Visibility.Collapsed; // Sichtbarkeit der CategoryDockBorder ändern
             OverlayCanvas.Visibility = Visibility.Collapsed;
@@ -1306,8 +1146,6 @@ namespace BiMaDock
 
             // Timer stoppen
             categoryHideTimer.Stop();
-            // Debug.WriteLine("CategoryDockContainer ausgeblendet, MainStackPanel neu positioniert."); // Debugging
-            // CheckAllConditions();
             isCategoryDockOpen = false;
         }
 
@@ -1464,11 +1302,8 @@ namespace BiMaDock
                             settings.IconSource = newIconPath; // Hier den Bildpfad aktualisieren
                         }
 
-                        button.Tag = dockItem;
-
                         // Speichern der aktualisierten Einstellungen
                         SettingsManager.SaveSettings(dockItems);
-                        // dockManager.LoadDockItems(); dockItem.Category
 
                         if (!string.IsNullOrEmpty(dockItem.Category))
                         {
@@ -1577,16 +1412,8 @@ namespace BiMaDock
             }
         }
 
-
-
-        private void Test_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void OpenFilePath_Click(object sender, RoutedEventArgs e)
         {
-            // Debug.WriteLine($"Edit_Click: Übergebenes DockItem: ID = {settings.Id}, Name = {settings.DisplayName}, IconSource = {settings.IconSource}, Kategorie = {settings.Category}, Ist Kategorie = {settings.IsCategory}");
             Debug.WriteLine($"OpenFilePath_Click: ");
             if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
             {

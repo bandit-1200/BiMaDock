@@ -1,8 +1,0 @@
-mode: ContinuousDeployment
-branches:
-  main:
-    increment: Patch
-    track-merge-target: false
-  develop:
-    increment: Minor
-    track-merge-target: true

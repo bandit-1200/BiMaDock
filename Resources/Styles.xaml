@@ -7,13 +7,10 @@
     <SolidColorBrush x:Key="ForegroundColor" Color="#FFFFFF"/> <!-- Weiß für Text -->
     <SolidColorBrush x:Key="HighlightColor" Color="#3E3E3E"/> <!-- Dunklerer Grauton für Hover- und Auswahlzustände -->
     <SolidColorBrush x:Key="DebugColor4" Color="#2D2D2D"/>
-    <SolidColorBrush x:Key="DebugColor5" Color="#FFA500"/>
     <SolidColorBrush x:Key="FeedbackColor" Color="#14670a"/>
-    <SolidColorBrush x:Key="DialogBackgroundColor" Color="#101214"/>
     <SolidColorBrush x:Key="DialogSurfaceColor" Color="#1E1F23"/>
     <SolidColorBrush x:Key="DialogBorderColor" Color="#3A3D42"/>
     <SolidColorBrush x:Key="DialogMutedColor" Color="#D2D5DA"/>
-    <SolidColorBrush x:Key="DialogSubtleColor" Color="#8A8F98"/>
 
 
     <!-- Stile und Templates -->
@@ -50,29 +47,6 @@
         <Setter Property="Foreground" Value="{DynamicResource DialogMutedColor}"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
-    </Style>
-
-    <Style x:Key="DialogTextBoxStyle" TargetType="TextBox">
-        <Setter Property="Background" Value="#2A2C31"/>
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource DialogBorderColor}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="10,8"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="TextBox">
-                    <Border x:Name="BorderElement" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10">
-                        <ScrollViewer Margin="0" x:Name="PART_ContentHost"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="BorderElement" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <Style x:Key="DialogPrimaryButtonStyle" TargetType="Button">

@@ -1,13 +1,10 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Imaging;
 using System.Collections.Generic;
 using BiMaDock;
 using System.Windows.Input;
 using System.Windows.Media; // Für SolidColorBrush und Colors
-using System.Windows.Media.Animation;
-using System.Windows.Controls.Primitives;
 
 
 
@@ -20,8 +17,6 @@ public class DockManager
     private StackPanel? categoryDockContainer; // Referenz zu CategoryDockContainer
     private MainWindow mainWindow;
     private bool isDropInProgress = false;
-    private List<string> categories; // Liste zur Verwaltung der Kategorien
-    private List<DockItem> dockItems = new List<DockItem>();
     private StackPanel? CategoryDockContainer;
     private Dictionary<Button, bool> animationPlayed = new Dictionary<Button, bool>();
 
@@ -33,13 +28,8 @@ public class DockManager
         categoryDockContainer = categoryPanel; // Zuweisung des Kategorie-Docks
         mainWindow = window;
         dockPanel.MouseMove += DockPanel_MouseMove;  // Event-Handler für MouseMove hinzufügen
-        categories = new List<string>(); // Initialisierung der Kategorienliste
-        dockItems = new List<DockItem>(); // Initialisierung der Dock-Items-Liste
-                                          // categoryDockContainer.PreviewMouseLeftButtonDown += mainWindow.CategoryDockContainer_PreviewMouseLeftButtonDown;
-                                          // categoryDockContainer.MouseMove += mainWindow.CategoryDockContainer_MouseMove;
 
         // Registrierung der Event-Handler für Kategorie-Dock
-        categoryDockContainer.MouseMove += mainWindow.CategoryDockContainer_MouseMove;
         categoryDockContainer.Drop += mainWindow.CategoryDockContainer_Drop;
         categoryDockContainer.DragEnter += mainWindow.CategoryDockContainer_DragEnter;
         categoryDockContainer.DragOver += mainWindow.CategoryDockContainer_DragOver;
@@ -53,24 +43,6 @@ public class DockManager
 
 
 
-    private void DockPanel_MouseEnter(object sender, MouseEventArgs e)
-    {
-        // vorher: mainWindow.ShowDock();
-        mainWindow.StartShowDelay();
-    }
-
-    private void DockPanel_MouseLeave(object sender, MouseEventArgs e)
-    {
-        // Abbrechen des geplanten Einblendens, falls noch nicht ausgeführt
-        mainWindow.CancelShowDelay();
-
-        if (!mainWindow.isDragging && mainWindow.dockVisible) // Prüfen, ob das Dock sichtbar ist, bevor es ausgeblendet wird
-        {
-            mainWindow.HideDock();
-        }
-    }
-
-
     private Button? previousButton = null;
 
     private void DockPanel_MouseMove(object sender, MouseEventArgs e)
@@ -82,10 +54,8 @@ public class DockManager
     }
 
 
-    // Vorherige Methodenf
     public void LogMousePositionAndElements(Point mousePosition)
     {
-        // Debug.WriteLine($"LogMousePositionAndElements: Aktuelle Mausposition: {mousePosition}");
 
         foreach (var child in dockPanel.Children)
         {
@@ -93,8 +63,6 @@ public class DockManager
             {
                 var elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
                 Point elementPosition = button.TranslatePoint(new Point(0, 0), mainWindow);
-
-                // Debug.WriteLine($"LogMousePositionAndElements: Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}, Position = {elementRect.Location}, Size = {elementRect.Size}");
 
                 if (elementRect.Contains(mousePosition))
 
@@ -112,17 +80,10 @@ public class DockManager
 
                     if (dockItem.Id == mainWindow.isCategoryDockOpenID)
                     {
-                        // Debug.WriteLine("LogMousePositionAndElements: Maus über offener Kategorie");
-                        // Setze Margin basierend auf Position
-                        if (mainWindow.CategoryDockBorder != null)
-                        {
-                            // mainWindow.CategoryDockBorder.Margin = new Thickness(elementRect.Location.X, 0, 0, 0);
-                        }
-                        else
+                        if (mainWindow.CategoryDockBorder == null)
                         {
                             mainWindow.HideCategoryDockPanel();
                         }
-
                     }
 
 
@@ -132,39 +93,22 @@ public class DockManager
 
                     if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
                     {
-                        // Debug.WriteLine("LogMousePositionAndElements: Animation wird gestartet");
                         ButtonAnimations.AnimateButtonByChoice(button);  // Animation aufrufen
                         animationPlayed[button] = true;
                     }
                     else if (button != previousButton)
                     {
-                        // Debug.WriteLine("LogMousePositionAndElements: Animation wird erneut gestartet");
                         ButtonAnimations.AnimateButtonByChoice(button);  // Animation aufrufen
                     }
                     previousButton = button;
-
-                    // Überprüfe, ob das DockItem eine Kategorie ist und rufe ShowCategoryDockPanel auf
-                    if (dockItem.IsCategory)
-                    {
-                        // Debug.WriteLine("LogMousePositionAndElements :DockItem ist eine Kategorie, rufe ShowCategoryDockPanel auf");
-                    }
-                    else
-                    {
-                        // mainWindow.HideCategoryDockPanel();
-                    }
                 }
                 else
                 {
                     if (animationPlayed.ContainsKey(button))
                     {
-                        // Debug.WriteLine($"LogMousePositionAndElements: Maus verlässt Button: ID = {dockItem.Id}, DisplayName = {dockItem.DisplayName}");
                         animationPlayed[button] = false;
                     }
                 }
-            }
-            else
-            {
-                // Debug.WriteLine("Kein DockItem an diesem Button gefunden");
             }
         }
     }
@@ -177,7 +121,6 @@ public class DockManager
 
     public void LoadDockItems()
     {
-        // Debug.WriteLine("Lade Dock-Elemente..."); // Debugging zu Beginn des Aufrufs
         var items = SettingsManager.LoadSettings();
 
         // Zuerst alle vorhandenen Items aus den Panels entfernen
@@ -220,7 +163,6 @@ public class DockManager
             }
         }
 
-        // Debug.WriteLine("Dock-Elemente geladen."); // Debugging am Ende des Aufrufs
     }
 
     public void SaveDockItems(string currentCategory)
@@ -348,7 +290,7 @@ public class DockManager
 
     private void HandleTextDrop(string rawData, Point dropPosition)
     {
-        string url = rawData.ToString();
+        string url = rawData;
         var dockItem = new DockItem
         {
             FilePath = url,
@@ -474,35 +416,6 @@ public class DockManager
     }
 
 
-    private void ListAllDockPanelElements()
-    {
-        Debug.WriteLine("ListAllDockPanelElements: Aufgerufen"); // Debug-Ausgabe
-        for (int i = 0; i < dockPanel.Children.Count; i++)
-        {
-            UIElement element = dockPanel.Children[i];
-            Debug.WriteLine($"ListAllDockPanelElements: Element {i}: Typ = {element.GetType().Name}");
-
-            // Zusätzliche Informationen anzeigen, falls das Element ein Button ist
-            if (element is Button button && button.Tag is DockItem dockItem)
-            {
-                Debug.WriteLine($"ListAllDockPanelElements: Element {i} - DisplayName = {dockItem.DisplayName}, ID = {dockItem.Id}, Kategorie = {dockItem.Category}, IsCategory = {dockItem.IsCategory}");
-            }
-            // Zusätzliche Informationen anzeigen, falls das Element ein Border ist
-            else if (element is Border border)
-            {
-                Debug.WriteLine($"ListAllDockPanelElements: Element border {i} - Border, Tag = {border.Tag}");
-
-                // Überprüfen, ob der Border als Platzhalter markiert ist
-                if (border.Tag as string == "Placeholder")
-                {
-                    Debug.WriteLine($"ListAllDockPanelElements: Lösche Platzhalter Border bei Index {i}");
-                    dockPanel.Children.Remove(border);
-                    i--; // Index anpassen, da ein Element entfernt wurde
-                }
-            }
-        }
-    }
-
     public void RemoveDockItem(Button button, string currentCategory)
     {
         if (button.Tag is DockItem dockItem)
@@ -556,7 +469,6 @@ public class DockManager
         // Speichern der aktualisierten Dock-Items
         SettingsManager.SaveSettings(items);
 
-        // Debug.WriteLine($"Alle Kinder der Kategorie '{categoryName}' wurden entfernt und gespeichert."); // Debug-Ausgabe
     }
 
 
@@ -644,15 +556,12 @@ public class DockManager
 
     public void Open_Click(object sender, RoutedEventArgs e)
     {
-        // Debug.WriteLine("Open_Click aufgerufen"); // Debug-Ausgabe
 
         if (mainWindow.DockContextMenu.PlacementTarget is Button button)
         {
-            // Debug.WriteLine("Button erkannt"); // Debug-Ausgabe
 
             if (button.Tag is DockItem dockItem)
             {
-                // Debug.WriteLine($"DockItem erkannt: {dockItem.DisplayName}"); // Debug-Ausgabe
 
                 if (!string.IsNullOrEmpty(dockItem.FilePath))
                 {

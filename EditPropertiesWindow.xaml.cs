@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,7 +17,6 @@ namespace BiMaDock
         public EditPropertiesWindow()
         {
             InitializeComponent();
-            // InitializeIcons(); // Stelle sicher, dass die Symbole initialisiert werden
             Loaded += EditPropertiesWindow_Loaded; // Füge den Event-Handler hinzu
 
         }
@@ -47,46 +45,6 @@ namespace BiMaDock
             }
         }
 
-        private async Task LoadIconsAsync()
-        {
-            Debug.WriteLine("LoadIconsAsync: gestartet."); // Debugging Ausgabe
-
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
-
-            var icons = Directory.GetFiles(iconDirectoryPath, "*.png");
-            foreach (var iconPath in icons)
-            {
-                try
-                {
-                    await Dispatcher.InvokeAsync(() =>
-                    {
-                        var image = new Image
-                        {
-                            Source = new BitmapImage(new Uri(iconPath)),
-                            Width = 48,
-                            Height = 48,
-                            Margin = new Thickness(5),
-                            Cursor = Cursors.Hand // Zeiger ändern, um anklickbar zu zeigen
-                        };
-
-                        // Ereignis hinzufügen
-                        image.MouseDown += Icon_Click;
-
-                        SymbolPanel.Children.Add(image);
-                        Debug.WriteLine($"LoadIconsAsync: Icon erfolgreich hinzugefügt: {iconPath}"); // Debugging Ausgabe bei Erfolg
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"LoadIconsAsync: Fehler beim Hinzufügen des Icons: {iconPath}. Fehler: {ex.Message}"); // Debugging Ausgabe bei Fehler
-                }
-            }
-
-            Debug.WriteLine("LoadIconsAsync: abgeschlossen."); // Debugging Ausgabe
-            Debug.WriteLine($"LoadIconsAsync: SymbolPanel.Children.Count = {SymbolPanel.Children.Count}"); // Debug-Ausgabe zur Überprüfung der Kinder
-        }
-
         public async void InitializeIcons()
         {
             Debug.WriteLine("InitializeIcons: gestartet."); // Debugging Ausgabe
@@ -101,8 +59,6 @@ namespace BiMaDock
                 Debug.WriteLine($"Ist Kategorie: {DockItem.IsCategory}");
 
                 // Originalbild laden und in der Box anzeigen
-                // var originalImage = IconHelper.GetIcon(DockItem.FilePath);
-                // Originalbild laden und in der Box anzeigen
                 var originalImage = IconHelper.GetIcon(DockItem.IconSource, DockItem.FilePath);
 
                 if (DockItem.IsCategory)
@@ -115,9 +71,6 @@ namespace BiMaDock
                 OriginalImage.Height = 48;
                 OriginalImage.Cursor = Cursors.Hand; // Zeiger ändern, um anklickbar zu zeigen
 
-                // OriginalImage.Stretch = Stretch.None;
-                // OriginalImage.HorizontalAlignment = HorizontalAlignment.Center;
-                // OriginalImage.VerticalAlignment = VerticalAlignment.Center;
                 // Klick-Event für OriginalImage hinzufügen
                 OriginalImage.MouseLeftButtonUp += (s, e) =>
                 {
@@ -191,21 +144,6 @@ namespace BiMaDock
             return false; // Rückgabe false, wenn keine Icons gefunden wurden
         }
 
-        private void DeleteIcon_Click(object sender, RoutedEventArgs e)
-        {
-            // Bildpfad löschen
-            // var iconSourceTextBox = this.FindName("IconSourceTextBox") as TextBox;
-            // var selectedIconImage = this.FindName("SelectedIconImage") as Image;
-            IconSourceTextBox.Text = string.Empty;
-            Debug.WriteLine("Icon_Click: IconSourceTextBox aktualisiert - " + IconSourceTextBox.Text);
-
-            // Bild im Vorschaufenster löschen
-            SelectedIconImage.Source = null;
-            SelectedIconBorder.Visibility = Visibility.Collapsed;
-        }
-
-
-
         private async Task CopyDefaultIcons()
         {
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -220,14 +158,9 @@ namespace BiMaDock
             // Pfad zu den Icons im Entwicklungsverzeichnis verwenden
             string resourceDirectoryPath = developmentIconPath;
 
-            // Debugging-Ausgabe des Pfades
-            Console.WriteLine($"Resource Verzeichnis: {resourceDirectoryPath}");
-            Console.WriteLine($"Icon Zielverzeichnis: {iconDirectoryPath}");
-
             // Überprüfen, ob das Quellverzeichnis existiert
             if (!Directory.Exists(resourceDirectoryPath))
             {
-                Console.WriteLine("Fehler: Quellverzeichnis existiert nicht.");
                 return;
             }
 
@@ -237,9 +170,6 @@ namespace BiMaDock
             {
                 string fileName = Path.GetFileName(iconPath);
                 string destinationPath = Path.Combine(iconDirectoryPath, fileName);
-
-                // Debugging-Ausgabe der Pfade
-                Console.WriteLine($"Kopiere Icon: {iconPath} nach {destinationPath}");
 
                 // Wenn das Icon noch nicht existiert, kopiere es
                 if (!File.Exists(destinationPath))
@@ -349,8 +279,6 @@ namespace BiMaDock
             if (DockItem != null)
             {
                 DockItem.DisplayName = NameTextBox.Text;
-                //DockItem.Category = CategoryTextBox.Text;
-                // DockItem.IsCategory = bool.Parse(IsCategoryTextBox.Text); // Je nach Datentyp anpassen
                 DockItem.IconSource = IconSourceTextBox.Text;
 
                 // Weitere Änderungen speichern
@@ -364,26 +292,6 @@ namespace BiMaDock
         {
             // Abbrechen der Änderungen
             this.DialogResult = false; // Schließen des Fensters ohne Erfolg
-        }
-
-        private void Button_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (sender is Button btn)
-            {
-                string originalColor = btn.Background.ToString();
-                btn.Tag = originalColor;  // Speichern der ursprünglichen Farbe im Tag-Attribut
-                btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5A5A5A")); // Dezente Hover-Farbe
-                btn.Foreground = new SolidColorBrush(Colors.Black); // Schriftfarbe ändern
-            }
-        }
-
-        private void Button_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is string originalColor)
-            {
-                btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(originalColor)); // Ursprüngliche Farbe wiederherstellen
-                btn.Foreground = new SolidColorBrush(Colors.White); // Schriftfarbe zurücksetzen
-            }
         }
 
         private void Icon_Click(object sender, RoutedEventArgs e)

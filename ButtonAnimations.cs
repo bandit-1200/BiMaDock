@@ -51,7 +51,6 @@ public class ButtonAnimations
                 if (settings?.SelectedEffectIndex != null)
                 {
                     SelectedEffectIndex = (int)settings.SelectedEffectIndex;
-                    // Debug.WriteLine($"SelectedEffectIndex geladen: {SelectedEffectIndex}");
                 }
 
                 // Lade die Einstellungen für Scale
@@ -62,7 +61,6 @@ public class ButtonAnimations
                     if (settings.Scale?.AutoReverse != null) ScaleSettings.AutoReverse = (bool)settings.Scale.AutoReverse;
                     if (settings.Scale?.EffectIndex != null) ScaleSettings.EffectIndex = (int)settings.Scale.EffectIndex;
 
-                    // Debug.WriteLine($"Scale Einstellungen geladen: Duration={ScaleSettings.Duration}, ScaleFactor={ScaleSettings.ScaleFactor}, AutoReverse={ScaleSettings.AutoReverse}");
                 }
 
                 // Lade die Einstellungen für Rotate
@@ -73,7 +71,6 @@ public class ButtonAnimations
                     if (settings.Rotate?.AutoReverse != null) RotateSettings.AutoReverse = (bool)settings.Rotate.AutoReverse;
                     if (settings.Rotate?.EffectIndex != null) RotateSettings.EffectIndex = (int)settings.Rotate.EffectIndex;
 
-                    // Debug.WriteLine($"Rotate Einstellungen geladen: Duration={RotateSettings.Duration}, Angle={RotateSettings.Angle}, AutoReverse={RotateSettings.AutoReverse}");
                 }
 
                 // Lade die Einstellungen für Translate
@@ -85,7 +82,6 @@ public class ButtonAnimations
                     if (settings.Translate?.AutoReverse != null) TranslateSettings.AutoReverse = (bool)settings.Translate.AutoReverse;
                     if (settings.Translate?.EffectIndex != null) TranslateSettings.EffectIndex = (int)settings.Translate.EffectIndex;
 
-                    // Debug.WriteLine($"Translate Einstellungen geladen: Duration={TranslateSettings.Duration}, TranslateX={TranslateSettings.TranslateX}, TranslateY={TranslateSettings.TranslateY}, AutoReverse={TranslateSettings.AutoReverse}");
                 }
 
                 if (settings?.Swing != null)
@@ -106,11 +102,6 @@ public class ButtonAnimations
     }
 
     // Animationen
-    public static void NotAnimate(Button button)
-    {
-        // Keine Animation, leer lassen
-    }
-
     public static void AnimatScaleTransform(Button button)
     {
         var scaleTransform = new ScaleTransform(1.0, 1.0);
@@ -211,9 +202,7 @@ public class ButtonAnimations
     // Auswahl der Animation
     public static void AnimateButtonByChoice(Button button)
     {
-        // int? choice = SelectedEffectIndex;
         int animationChoice = SelectedEffectIndex;
-        // Debug.WriteLine($"AnimateButtonByChoice aufgerufen mit Button: {button.Name}, Choice: {animationChoice}");
 
         switch (animationChoice)
         {
@@ -238,8 +227,7 @@ public class ButtonAnimations
 
 
             default:
-                Debug.WriteLine("Keine Animation - NotAnimate wird aufgerufen");
-                NotAnimate(button);
+                Debug.WriteLine("Keine Animation");
                 break;
         }
     }
