@@ -4,9 +4,12 @@ BiMaDock ist eine Windows-Anwendung auf Basis von WPF, die eine personalisierbar
 
 ## Funktionen
 
-- Drag & Drop zum Hinzufügen von Dateien, Ordnern und Programmen
+- Drag & Drop zum Hinzufügen von Dateien, Ordnern, Programmen und Weblinks
+- Verschieben im Dock wie beim macOS-Dock: Nachbarn gleiten zur Seite, ein Abbild folgt der Maus
 - Automatisches Ein- und Ausblenden der Dock-Leiste
-- Unterstützung für Kategorien und organisierte Gruppen
+- Kategorien, die fließend aus ihrem Symbol unter dem Hauptdock aufklappen (abschaltbar, Dauer einstellbar)
+- „Aufräumen“: findet Einträge deinstallierter Programme und gelöschter Dateien und entfernt sie nach Auswahl – mit Rückgängig-Funktion
+- Scharfe Icons, auch bei hoher Bildschirmskalierung
 - Konfigurierbare Darstellung mit Design- und Layout-Einstellungen
 - Kontextmenüs für schnelle Aktionen wie Bearbeiten, Löschen und Öffnen
 - Flexible Anpassung der Reaktionszeit und Dock-Verhalten
@@ -21,6 +24,7 @@ BiMaDock verbindet die Flexibilität eines schnellen Startbereichs mit der Über
 - Windows 10 oder höher
 - .NET 8 Desktop Runtime
 - WPF-Unterstützung durch das Betriebssystem
+- Keine Administratorrechte nötig: Die Installation erfolgt pro Windows-Benutzer
 
 ## Download
 
@@ -39,16 +43,25 @@ BiMaDock prüft beim Start auf neue veröffentlichte Releases. Über **Über BiM
 ## Verwendung
 
 ### Programme oder Dateien hinzufügen
+
 - Dateien, Ordner oder Verknüpfungen per Drag & Drop in das Dock ziehen.
 - Ein Klick auf ein Element startet es direkt.
 
 ### Kategorien nutzen
-- Objekte nach Typen oder Aufgaben gruppieren.
-- So lassen sich häufig genutzte Einträge schnell finden und sauber strukturieren.
+
+- Über das Kontextmenü (Rechtsklick) → **Kategorie erstellen** eine Kategorie anlegen.
+- Elemente per Drag & Drop auf die Kategorie ziehen; ein Klick auf die Kategorie klappt ihre Elemente unter dem Hauptdock auf.
+
+### Dock aufräumen
+
+- Kontextmenü → **Aufräumen …** prüft, ob Programme, Dateien, Ordner und Verknüpfungsziele noch vorhanden sind.
+- Fehlende Einträge sind vorausgewählt; nicht erreichbare Netzwerk- oder USB-Pfade und leere Kategorien werden ohne Haken angeboten.
+- Vor dem Entfernen wird eine Sicherung angelegt; **Aufräumen rückgängig machen** stellt die Einträge wieder her.
 
 ### Dock-Verhalten anpassen
+
 - Ein- und Ausblendung konfigurieren
-- Reaktionszeit und Erscheinungsbild individuell definieren
+- Reaktionszeit, Farben, Hover-Animationen und das Aufklappen der Kategorien einstellen
 - Layout- und Designoptionen über die Einstellungen anpassen
 
 ## Entwicklung
@@ -64,7 +77,7 @@ BiMaDock wird in C# mit WPF entwickelt und nutzt eine modulare Struktur für:
 ### Projekt lokal bauen
 
 ```bash
-dotnet build
+dotnet build BiMaDock.sln -c Release
 ```
 
 Oder direkt ausführen:
@@ -72,6 +85,19 @@ Oder direkt ausführen:
 ```bash
 dotnet run --project .\BiMaDock.csproj
 ```
+
+### Tests
+
+```powershell
+.\test.ps1               # Unit-Tests (xUnit)
+.\ui-test.ps1 -c Release # UI-Tests (FlaUI) – steuern Maus und Tastatur
+```
+
+Die UI-Tests starten BiMaDock mit einem eigenen, temporären Datenordner; echte Einstellungen bleiben unberührt.
+
+### Versionen und Änderungen
+
+Versionen folgen dem Schema `JJ.MM.N` (z. B. `26.11.3`) und werden nur für ein Release gesetzt. Alle Änderungen stehen in [CHANGELOG.md](CHANGELOG.md), Details zum Release-Ablauf in [Beschreibung.md](Beschreibung.md).
 
 ## Projektstatus
 

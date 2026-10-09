@@ -21,6 +21,7 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 
 ### Verbesserungen
 
+- README auf den aktuellen Funktionsumfang gebracht (Aufräumen, Kategorien, Verschieben, Tests, Versionierung); neue Projektregel: Die README wird bei für Nutzer sichtbaren Änderungen mitgepflegt.
 - Einheitliches, dunkles Dialog-Design für alle Fenster und Meldungen (Bestätigungen, Hinweise, Fehler, „Über“, „Kategorie erstellen“, „Eigenschaften bearbeiten“, „Einstellungen“): abgerundete Oberfläche ohne Windows-Rahmen; jedes Fenster lässt sich an einer freien Stelle mit der Maus verschieben und mit Esc oder „✕“/„Abbrechen“ schließen. Die Windows-Standardmeldungen wurden durch ein eigenes Meldungsfenster ersetzt.
 - UI-Tests laufen etwa doppelt so schnell (rund 45 statt 120 Sekunden): Der Mauszeiger springt direkt ans Ziel statt langsam zu fahren, Wartezeiten wurden verkürzt, und die Tests verwenden die kürzeste Einblendverzögerung.
 - Schärfere Icons auf Bildschirmen mit hoher Skalierung: Programm-, Datei- und Ordnersymbole werden über `IShellItemImageFactory` in 96 px statt 32 px geladen (mit Transparenz), PNG-Icons ebenfalls in 96 px dekodiert und hochwertig verkleinert.
