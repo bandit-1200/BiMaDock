@@ -1,11 +1,9 @@
 using System;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using Newtonsoft.Json;
-using System.Diagnostics;
+using BiMaDock;
 
 public class ButtonAnimations
 {
@@ -26,157 +24,132 @@ public class ButtonAnimations
     public static EffectSettings TranslateSettings = new EffectSettings();
     public static EffectSettings SwingSettings = new EffectSettings { Duration = 3.5, Angle = 30 };
 
-
-
-
-    // Methode zum Laden von SelectedEffectIndex
+    // Methode zum Laden von SelectedEffectIndex und den Effekt-Einstellungen
     public static void LoadSettings()
     {
-
-        // Hole den Pfad zum AppData\Local\BiMaDock Ordner
-        string settingsFilePath = Path.Combine(BiMaDock.AppPaths.AppDataDirectory, "StyleSettings.json");
-
-        // Überprüfe, ob die Datei existiert
-        if (File.Exists(settingsFilePath))
+        var settings = StyleSettingsFile.Load();
+        if (settings == null)
         {
-            try
-            {
-                string json = File.ReadAllText(settingsFilePath);
-                var settings = JsonConvert.DeserializeObject<dynamic>(json);
-
-                // Lade den SelectedEffectIndex
-                if (settings?.SelectedEffectIndex != null)
-                {
-                    SelectedEffectIndex = (int)settings.SelectedEffectIndex;
-                }
-
-                // Lade die Einstellungen für Scale
-                if (settings?.Scale != null)
-                {
-                    if (settings.Scale?.Duration != null) ScaleSettings.Duration = (double)settings.Scale.Duration;
-                    if (settings.Scale?.ScaleFactor != null) ScaleSettings.ScaleFactor = (double)settings.Scale.ScaleFactor;
-                    if (settings.Scale?.AutoReverse != null) ScaleSettings.AutoReverse = (bool)settings.Scale.AutoReverse;
-                    if (settings.Scale?.EffectIndex != null) ScaleSettings.EffectIndex = (int)settings.Scale.EffectIndex;
-
-                }
-
-                // Lade die Einstellungen für Rotate
-                if (settings?.Rotate != null)
-                {
-                    if (settings.Rotate?.Duration != null) RotateSettings.Duration = (double)settings.Rotate.Duration;
-                    if (settings.Rotate?.Angle != null) RotateSettings.Angle = (double)settings.Rotate.Angle;
-                    if (settings.Rotate?.AutoReverse != null) RotateSettings.AutoReverse = (bool)settings.Rotate.AutoReverse;
-                    if (settings.Rotate?.EffectIndex != null) RotateSettings.EffectIndex = (int)settings.Rotate.EffectIndex;
-
-                }
-
-                // Lade die Einstellungen für Translate
-                if (settings?.Translate != null)
-                {
-                    if (settings.Translate?.Duration != null) TranslateSettings.Duration = (double)settings.Translate.Duration;
-                    if (settings.Translate?.TranslateX != null) TranslateSettings.TranslateX = (double)settings.Translate.TranslateX;
-                    if (settings.Translate?.TranslateY != null) TranslateSettings.TranslateY = (double)settings.Translate.TranslateY;
-                    if (settings.Translate?.AutoReverse != null) TranslateSettings.AutoReverse = (bool)settings.Translate.AutoReverse;
-                    if (settings.Translate?.EffectIndex != null) TranslateSettings.EffectIndex = (int)settings.Translate.EffectIndex;
-
-                }
-
-                if (settings?.Swing != null)
-                {
-                    if (settings.Swing?.Duration != null) SwingSettings.Duration = (double)settings.Swing.Duration;
-                    if (settings.Swing?.Angle != null) SwingSettings.Angle = (double)settings.Swing.Angle;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Fehler beim Laden der Einstellungen: {ex.Message}");
-            }
+            return;
         }
+
+        if (settings.SelectedEffectIndex is int selectedEffectIndex)
+        {
+            SelectedEffectIndex = selectedEffectIndex;
+        }
+
+        // Lade die Einstellungen für Scale
+        if (settings.Scale is { } scale)
+        {
+            if (scale.Duration is double duration) ScaleSettings.Duration = duration;
+            if (scale.ScaleFactor is double scaleFactor) ScaleSettings.ScaleFactor = scaleFactor;
+            if (scale.AutoReverse is bool autoReverse) ScaleSettings.AutoReverse = autoReverse;
+            if (scale.EffectIndex is int effectIndex) ScaleSettings.EffectIndex = effectIndex;
+        }
+
+        // Lade die Einstellungen für Rotate
+        if (settings.Rotate is { } rotate)
+        {
+            if (rotate.Duration is double duration) RotateSettings.Duration = duration;
+            if (rotate.Angle is double angle) RotateSettings.Angle = angle;
+            if (rotate.AutoReverse is bool autoReverse) RotateSettings.AutoReverse = autoReverse;
+            if (rotate.EffectIndex is int effectIndex) RotateSettings.EffectIndex = effectIndex;
+        }
+
+        // Lade die Einstellungen für Translate
+        if (settings.Translate is { } translate)
+        {
+            if (translate.Duration is double duration) TranslateSettings.Duration = duration;
+            if (translate.TranslateX is double translateX) TranslateSettings.TranslateX = translateX;
+            if (translate.TranslateY is double translateY) TranslateSettings.TranslateY = translateY;
+            if (translate.AutoReverse is bool autoReverse) TranslateSettings.AutoReverse = autoReverse;
+            if (translate.EffectIndex is int effectIndex) TranslateSettings.EffectIndex = effectIndex;
+        }
+
+        if (settings.Swing is { } swing)
+        {
+            if (swing.Duration is double duration) SwingSettings.Duration = duration;
+            if (swing.Angle is double angle) SwingSettings.Angle = angle;
+        }
+    }
+
+    /// <summary>
+    /// Liefert die wiederverwendete Transform-Gruppe (Scale, Rotate, Translate) des Buttons.
+    /// Sie wird nur einmal pro Button angelegt, damit laufende Animationen nicht durch einen
+    /// neuen RenderTransform abgeschnitten werden.
+    /// </summary>
+    private static TransformGroup GetHoverTransform(Button button, Point origin)
+    {
+        button.RenderTransformOrigin = origin;
+
+        if (button.RenderTransform is TransformGroup existing
+            && existing.Children.Count == 3
+            && existing.Children[0] is ScaleTransform
+            && existing.Children[1] is RotateTransform
+            && existing.Children[2] is TranslateTransform)
+        {
+            return existing;
+        }
+
+        var group = new TransformGroup();
+        group.Children.Add(new ScaleTransform(1.0, 1.0));
+        group.Children.Add(new RotateTransform(0));
+        group.Children.Add(new TranslateTransform(0, 0));
+        button.RenderTransform = group;
+        return group;
+    }
+
+    private static DoubleAnimation CreateAnimation(double from, double to, double durationSeconds, bool autoReverse, double repeatCount)
+    {
+        // FillBehavior.Stop: Nach Ende der Animation kehrt der Wert immer zum Ruhewert zurück.
+        var animation = new DoubleAnimation
+        {
+            From = from,
+            To = to,
+            Duration = new Duration(TimeSpan.FromSeconds(durationSeconds)),
+            AutoReverse = autoReverse,
+            RepeatBehavior = new RepeatBehavior(repeatCount),
+            FillBehavior = FillBehavior.Stop
+        };
+        animation.Freeze();
+        return animation;
     }
 
     // Animationen
     public static void AnimatScaleTransform(Button button)
     {
-        var scaleTransform = new ScaleTransform(1.0, 1.0);
-        button.RenderTransformOrigin = new Point(0.5, 0.5);
-        button.RenderTransform = scaleTransform;
+        var scaleTransform = (ScaleTransform)GetHoverTransform(button, new Point(0.5, 0.5)).Children[0];
+        var scaleAnimation = CreateAnimation(1.0, ScaleSettings.ScaleFactor, ScaleSettings.Duration, ScaleSettings.AutoReverse, 2);
 
-        var scaleXAnimation = new DoubleAnimation
-        {
-            From = 1.0,
-            To = ScaleSettings.ScaleFactor, // Verwendet die ScaleFactor-Variable
-            Duration = new Duration(TimeSpan.FromSeconds(ScaleSettings.Duration)), // Verwendet die Duration-Variable
-            AutoReverse = ScaleSettings.AutoReverse, // Verwendet AutoReverse-Variable
-            RepeatBehavior = new RepeatBehavior(2)
-        };
-
-        var scaleYAnimation = new DoubleAnimation
-        {
-            From = 1.0,
-            To = ScaleSettings.ScaleFactor, // Verwendet die ScaleFactor-Variable
-            Duration = new Duration(TimeSpan.FromSeconds(ScaleSettings.Duration)), // Verwendet die Duration-Variable
-            AutoReverse = ScaleSettings.AutoReverse, // Verwendet AutoReverse-Variable
-            RepeatBehavior = new RepeatBehavior(2)
-        };
-
-        scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
-        scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
+        scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimation, HandoffBehavior.SnapshotAndReplace);
+        scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimation, HandoffBehavior.SnapshotAndReplace);
     }
 
     public static void AnimatRotateTransform(Button button)
     {
-        var rotateTransform = new RotateTransform();
-        button.RenderTransformOrigin = new Point(0.5, 0.5);
-        button.RenderTransform = rotateTransform;
+        var rotateTransform = (RotateTransform)GetHoverTransform(button, new Point(0.5, 0.5)).Children[1];
+        var rotateAnimation = CreateAnimation(0, RotateSettings.Angle, RotateSettings.Duration, RotateSettings.AutoReverse, 1);
 
-        var rotateAnimation = new DoubleAnimation
-        {
-            From = 0,
-            To = RotateSettings.Angle, // Verwendet die Angle-Variable
-            Duration = new Duration(TimeSpan.FromSeconds(RotateSettings.Duration)), // Verwendet die Duration-Variable
-            AutoReverse = RotateSettings.AutoReverse, // Verwendet AutoReverse-Variable
-            RepeatBehavior = new RepeatBehavior(1)
-        };
-
-        rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation);
+        rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation, HandoffBehavior.SnapshotAndReplace);
     }
+
     public static void AnimatTranslateTransform(Button button)
     {
-        var translateTransform = new TranslateTransform();
-        button.RenderTransformOrigin = new Point(0.5, 0.5);
-        button.RenderTransform = translateTransform;
-
-        var translateXAnimation = new DoubleAnimation
-        {
-            From = 0,
-            To = TranslateSettings.TranslateX, // Verwendet TranslateX aus den Einstellungen
-            Duration = new Duration(TimeSpan.FromSeconds(TranslateSettings.Duration)), // Verwendet die Duration
-            AutoReverse = TranslateSettings.AutoReverse, // Verwendet AutoReverse aus den Einstellungen
-            RepeatBehavior = new RepeatBehavior(1)
-        };
-
-        var translateYAnimation = new DoubleAnimation
-        {
-            From = 0,
-            To = TranslateSettings.TranslateY, // Verwendet TranslateY aus den Einstellungen
-            Duration = new Duration(TimeSpan.FromSeconds(TranslateSettings.Duration)), // Verwendet die Duration
-            AutoReverse = TranslateSettings.AutoReverse, // Verwendet AutoReverse aus den Einstellungen
-            RepeatBehavior = new RepeatBehavior(1)
-        };
+        var translateTransform = (TranslateTransform)GetHoverTransform(button, new Point(0.5, 0.5)).Children[2];
+        var translateXAnimation = CreateAnimation(0, TranslateSettings.TranslateX, TranslateSettings.Duration, TranslateSettings.AutoReverse, 1);
+        var translateYAnimation = CreateAnimation(0, TranslateSettings.TranslateY, TranslateSettings.Duration, TranslateSettings.AutoReverse, 1);
 
         // Beginnt die Animation für X und Y Achsen
-        translateTransform.BeginAnimation(TranslateTransform.XProperty, translateXAnimation);
-        translateTransform.BeginAnimation(TranslateTransform.YProperty, translateYAnimation);
+        translateTransform.BeginAnimation(TranslateTransform.XProperty, translateXAnimation, HandoffBehavior.SnapshotAndReplace);
+        translateTransform.BeginAnimation(TranslateTransform.YProperty, translateYAnimation, HandoffBehavior.SnapshotAndReplace);
     }
-
 
     public static void AnimatSwingTransform(Button button)
     {
-        var rotateTransform = new RotateTransform();
-        button.RenderTransformOrigin = new Point(0.5, 0.0); // Ursprung oben mitte
-        button.RenderTransform = rotateTransform;
+        // Ursprung oben mitte
+        var rotateTransform = (RotateTransform)GetHoverTransform(button, new Point(0.5, 0.0)).Children[1];
 
-        var swingAnimation = new DoubleAnimationUsingKeyFrames();
+        var swingAnimation = new DoubleAnimationUsingKeyFrames { FillBehavior = FillBehavior.Stop };
         double[] angleFactors = { 0, 1, -1, 2d / 3, -2d / 3, 1d / 3, -1d / 3, 0 };
         for (int index = 0; index < angleFactors.Length; index++)
         {
@@ -185,18 +158,15 @@ public class ButtonAnimations
             var keyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(SwingSettings.Duration * progress));
             swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(angle, keyTime));
         }
+        swingAnimation.Freeze();
 
-        // Füge die Animation hinzu
-        rotateTransform.BeginAnimation(RotateTransform.AngleProperty, swingAnimation);
+        rotateTransform.BeginAnimation(RotateTransform.AngleProperty, swingAnimation, HandoffBehavior.SnapshotAndReplace);
     }
-
 
     // Auswahl der Animation
     public static void AnimateButtonByChoice(Button button)
     {
-        int animationChoice = SelectedEffectIndex;
-
-        switch (animationChoice)
+        switch (SelectedEffectIndex)
         {
             case 1:
                 AnimatScaleTransform(button);
@@ -204,16 +174,12 @@ public class ButtonAnimations
             case 2:
                 AnimatRotateTransform(button);
                 break;
-
             case 3:
                 AnimatTranslateTransform(button);
                 break;
             case 4:
                 AnimatSwingTransform(button);
                 break;
-
-
-
             default:
                 break;
         }

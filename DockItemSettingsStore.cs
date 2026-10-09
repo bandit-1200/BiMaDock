@@ -19,8 +19,20 @@ internal static class DockItemSettingsStore
         catch (JsonException exception)
         {
             var backupPath = $"{filePath}.corrupt-{DateTime.UtcNow.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture)}";
-            File.Move(filePath, backupPath);
-            Trace.TraceError($"Dock settings at '{filePath}' were invalid JSON and were preserved at '{backupPath}': {exception}");
+            try
+            {
+                File.Move(filePath, backupPath);
+                Trace.TraceError($"Dock settings at '{filePath}' were invalid JSON and were preserved at '{backupPath}': {exception}");
+            }
+            catch (Exception moveException) when (moveException is IOException or UnauthorizedAccessException)
+            {
+                Trace.TraceError($"Dock settings at '{filePath}' were invalid JSON and could not be backed up to '{backupPath}': {moveException}; original error: {exception}");
+            }
+            return new List<DockItem>();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            Trace.TraceError($"Dock settings at '{filePath}' could not be read: {exception}");
             return new List<DockItem>();
         }
     }

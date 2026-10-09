@@ -622,20 +622,14 @@ namespace BiMaDock
         /// </summary>
         public static void ApplyStyleSettings(MainWindow mainWindow)
         {
-            string path = AppPaths.GetSettingsFilePath("StyleSettings.json");
-            if (!File.Exists(path))
-            {
-                return;
-            }
-
-            var settings = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(path));
+            var settings = StyleSettingsFile.Load();
             if (settings == null)
             {
                 return;
             }
 
             var resources = Application.Current.Resources;
-            if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
+            if (settings.PrimaryColor != null && ColorConverter.ConvertFromString(settings.PrimaryColor) is Color primaryColor)
             {
                 var newPrimaryColor = new SolidColorBrush(primaryColor);
                 resources["PrimaryColor"] = newPrimaryColor;
@@ -644,24 +638,24 @@ namespace BiMaDock
                 mainWindow.OverlayCanvasHorizontalLine.Stroke = newPrimaryColor;
             }
 
-            if (settings.SecondaryColor != null && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
+            if (settings.SecondaryColor != null && ColorConverter.ConvertFromString(settings.SecondaryColor) is Color secondaryColor)
             {
                 resources["SecondaryColor"] = new SolidColorBrush(secondaryColor);
             }
 
-            if (settings.AccentColor != null && ColorConverter.ConvertFromString((string)settings.AccentColor) is Color accentColor)
+            if (settings.AccentColor != null && ColorConverter.ConvertFromString(settings.AccentColor) is Color accentColor)
             {
                 resources["AccentColor"] = new SolidColorBrush(accentColor);
             }
 
-            if (settings.FeedbackColor != null && ColorConverter.ConvertFromString((string)settings.FeedbackColor) is Color feedbackColor)
+            if (settings.FeedbackColor != null && ColorConverter.ConvertFromString(settings.FeedbackColor) is Color feedbackColor)
             {
                 resources["FeedbackColor"] = new SolidColorBrush(feedbackColor);
             }
 
-            if (settings.DockShowDelayMilliseconds != null)
+            if (settings.DockShowDelayMilliseconds is int dockShowDelay)
             {
-                mainWindow.SetDockShowDelayMilliseconds(Math.Clamp((int)settings.DockShowDelayMilliseconds, MinDockShowDelayMs, MaxDockShowDelayMs));
+                mainWindow.SetDockShowDelayMilliseconds(Math.Clamp(dockShowDelay, MinDockShowDelayMs, MaxDockShowDelayMs));
             }
 
             if (settings.Swing != null)
@@ -673,16 +667,13 @@ namespace BiMaDock
 
         public void LoadSettings()
         {
-            if (File.Exists(settingsFilePath))
             {
-                string json = File.ReadAllText(settingsFilePath);
-                var settings = JsonConvert.DeserializeObject<dynamic>(json);
-                var resources = Application.Current.Resources;
+                var settings = StyleSettingsFile.Load(settingsFilePath);
 
                 if (settings != null)
                 {
                     // Farben laden
-                    if (settings.PrimaryColor != null && ColorConverter.ConvertFromString((string)settings.PrimaryColor) is Color primaryColor)
+                    if (settings.PrimaryColor != null && ColorConverter.ConvertFromString(settings.PrimaryColor) is Color primaryColor)
                     {
                         // Farbwähler und Vorschau aktualisieren
                         PrimaryColorPicker.SelectedColor = primaryColor;
@@ -701,7 +692,7 @@ namespace BiMaDock
                     }
 
                     if (settings.SecondaryColor != null
-                        && ColorConverter.ConvertFromString((string)settings.SecondaryColor) is Color secondaryColor)
+                        && ColorConverter.ConvertFromString(settings.SecondaryColor) is Color secondaryColor)
                     {
                         // Farbwähler und Vorschau aktualisieren
                         SecondaryColorPicker.SelectedColor = secondaryColor;
@@ -718,7 +709,7 @@ namespace BiMaDock
 
 
                     if (settings.AccentColor != null
-                        && ColorConverter.ConvertFromString((string)settings.AccentColor) is Color accentColor)
+                        && ColorConverter.ConvertFromString(settings.AccentColor) is Color accentColor)
                     {
                         // Farbwähler und Vorschau aktualisieren
                         AccentColorPicker.SelectedColor = accentColor;
@@ -735,7 +726,7 @@ namespace BiMaDock
 
 
                     if (settings.FeedbackColor != null
-                        && ColorConverter.ConvertFromString((string)settings.FeedbackColor) is Color feedbackColor)
+                        && ColorConverter.ConvertFromString(settings.FeedbackColor) is Color feedbackColor)
                     {
                         // Farbwähler und Vorschau aktualisieren
                         FeedbackColorPicker.SelectedColor = feedbackColor;
@@ -751,9 +742,9 @@ namespace BiMaDock
 
 
 
-                    if (settings.DockShowDelayMilliseconds != null)
+                    if (settings.DockShowDelayMilliseconds is int savedDockShowDelay)
                     {
-                        dockShowDelayMilliseconds = Math.Clamp((int)settings.DockShowDelayMilliseconds, MinDockShowDelayMs, MaxDockShowDelayMs);
+                        dockShowDelayMilliseconds = Math.Clamp(savedDockShowDelay, MinDockShowDelayMs, MaxDockShowDelayMs);
                         if (DockShowDelaySlider != null)
                         {
                             DockShowDelaySlider.Value = dockShowDelayMilliseconds;
@@ -797,9 +788,8 @@ namespace BiMaDock
                     }
 
                     // Effekt-Index laden
-                    if (settings.SelectedEffectIndex != null)
+                    if (settings.SelectedEffectIndex is int selectedEffectIndex)
                     {
-                        var selectedEffectIndex = (int)settings.SelectedEffectIndex;
                         if (animationEffectComboBox != null)
                         {
                             animationEffectComboBoxIndex = selectedEffectIndex;

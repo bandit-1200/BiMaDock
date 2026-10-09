@@ -1,11 +1,12 @@
 using System;
-using System.Drawing;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
-using System.Windows.Media.Imaging;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 
 public class IconHelper
@@ -15,9 +16,6 @@ public class IconHelper
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool DestroyIcon(IntPtr hIcon);
-
-    [DllImport("gdi32.dll", SetLastError = true)]
-    private static extern bool DeleteObject(IntPtr hObject);
 
     [StructLayout(LayoutKind.Sequential)]
     public struct SHFILEINFO
@@ -34,7 +32,65 @@ public class IconHelper
     public const uint SHGFI_ICON = 0x100;
     public const uint SHGFI_LARGEICON = 0x0;    // 'Large icon
 
+    private const int DecodePixelWidth = 64;
+
+    // Cache für geladene Icons (nur UI-Thread). Schlüssel: Pfade + Änderungszeitpunkte der beteiligten Dateien.
+    private static readonly Dictionary<(string FilePath, string IconSource, DateTime FileStamp, DateTime IconStamp), BitmapSource> Cache = new();
+
+    private static BitmapSource? placeholderIcon;
+    private static BitmapSource? defaultBrowserIcon;
+
+    /// <summary>
+    /// Leert den Icon-Cache (z. B. nachdem ein Dock-Element bearbeitet wurde).
+    /// </summary>
+    public static void ClearCache()
+    {
+        Cache.Clear();
+        defaultBrowserIcon = null;
+    }
+
     public static BitmapSource GetIcon(string filePath, string iconSource)
+    {
+        try
+        {
+            filePath ??= string.Empty;
+            iconSource ??= string.Empty;
+
+            var key = (filePath, iconSource, GetFileStamp(filePath), GetFileStamp(iconSource));
+            if (Cache.TryGetValue(key, out var cached))
+            {
+                return cached;
+            }
+
+            var icon = LoadIcon(filePath, iconSource);
+            Cache[key] = icon;
+            return icon;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"IconHelper.GetIcon: Fehler beim Laden ({filePath}, {iconSource}): {ex.Message}");
+            return CreatePlaceholderIcon();
+        }
+    }
+
+    private static DateTime GetFileStamp(string path)
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
+            {
+                return File.GetLastWriteTimeUtc(path);
+            }
+        }
+        catch
+        {
+            // Zeitstempel nicht ermittelbar – ohne Zeitstempel cachen
+        }
+
+        return DateTime.MinValue;
+    }
+
+    private static BitmapSource LoadIcon(string filePath, string iconSource)
     {
         try
         {
@@ -44,40 +100,67 @@ public class IconHelper
                 return GetDefaultBrowserIcon();
             }
 
-            if (Path.GetExtension(iconSource).ToLower() == ".png")
+            var icon = TryLoadFromPath(iconSource);
+            if (icon != null)
             {
-                return new BitmapImage(new Uri(iconSource));
+                return icon;
             }
-
-            SHFILEINFO shinfo = new SHFILEINFO();
-            int result = SHGetFileInfo(iconSource, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_LARGEICON);
-
-            if (result == 0 || shinfo.hIcon == IntPtr.Zero)
-            {
-                if (shinfo.hIcon != IntPtr.Zero)
-                {
-                    DestroyIcon(shinfo.hIcon);
-                }
-                return FallbackIcon(filePath);
-            }
-
-            return CreateBitmapSourceFromIcon(shinfo.hIcon);
         }
-        catch
+        catch (Exception ex)
         {
-            return FallbackIcon(filePath);
+            Debug.WriteLine($"IconHelper: Fehler beim Laden von IconSource '{iconSource}': {ex.Message}");
         }
+
+        return FallbackIcon(filePath);
     }
 
     private static BitmapSource FallbackIcon(string filePath)
     {
-        if (Path.GetExtension(filePath).ToLower() == ".png")
+        try
         {
-            return new BitmapImage(new Uri(filePath));
+            return TryLoadFromPath(filePath) ?? CreatePlaceholderIcon();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"IconHelper: Fehler beim Laden von '{filePath}': {ex.Message}");
+            return CreatePlaceholderIcon();
+        }
+    }
+
+    /// <summary>
+    /// Lädt ein Bild (.png) oder das Shell-Icon eines Pfads. Gibt null zurück, wenn nichts geladen werden kann.
+    /// </summary>
+    private static BitmapSource? TryLoadFromPath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
         }
 
+        if (string.Equals(Path.GetExtension(path), ".png", StringComparison.OrdinalIgnoreCase))
+        {
+            return File.Exists(path) ? LoadImageFile(path) : null;
+        }
+
+        return LoadShellIcon(path);
+    }
+
+    private static BitmapSource LoadImageFile(string path)
+    {
+        var image = new BitmapImage();
+        image.BeginInit();
+        image.CacheOption = BitmapCacheOption.OnLoad; // keine Dateisperre
+        image.DecodePixelWidth = DecodePixelWidth;
+        image.UriSource = new Uri(path, UriKind.Absolute);
+        image.EndInit();
+        image.Freeze();
+        return image;
+    }
+
+    private static BitmapSource? LoadShellIcon(string path)
+    {
         SHFILEINFO shinfo = new SHFILEINFO();
-        int result = SHGetFileInfo(filePath, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_LARGEICON);
+        int result = SHGetFileInfo(path, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_LARGEICON);
 
         if (result == 0 || shinfo.hIcon == IntPtr.Zero)
         {
@@ -85,7 +168,7 @@ public class IconHelper
             {
                 DestroyIcon(shinfo.hIcon);
             }
-            return CreatePlaceholderIcon();
+            return null;
         }
 
         return CreateBitmapSourceFromIcon(shinfo.hIcon);
@@ -93,51 +176,42 @@ public class IconHelper
 
     private static BitmapSource GetDefaultBrowserIcon()
     {
+        if (defaultBrowserIcon != null)
+        {
+            return defaultBrowserIcon;
+        }
+
         // Methode zur Ermittlung des Standard-Webbrowsers und Laden des Icons
         string browserPath = GetDefaultBrowserPath();
-        if (string.IsNullOrEmpty(browserPath))
+        BitmapSource? icon = null;
+        if (!string.IsNullOrEmpty(browserPath))
         {
-            // Fallback-Icon, falls Standard-Browser nicht ermittelt werden kann
-            return CreatePlaceholderIcon();
-        }
-
-        SHFILEINFO shinfo = new SHFILEINFO();
-        int result = SHGetFileInfo(browserPath, 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_LARGEICON);
-
-        if (result == 0 || shinfo.hIcon == IntPtr.Zero)
-        {
-            if (shinfo.hIcon != IntPtr.Zero)
+            try
             {
-                DestroyIcon(shinfo.hIcon);
+                icon = LoadShellIcon(browserPath);
             }
-            return CreatePlaceholderIcon();
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"IconHelper: Browser-Icon konnte nicht geladen werden: {ex.Message}");
+            }
         }
 
-        return CreateBitmapSourceFromIcon(shinfo.hIcon);
+        // Fallback-Icon, falls Standard-Browser nicht ermittelt werden kann
+        defaultBrowserIcon = icon ?? CreatePlaceholderIcon();
+        return defaultBrowserIcon;
     }
 
     private static BitmapSource CreateBitmapSourceFromIcon(IntPtr hIcon)
     {
         try
         {
-            using var icon = System.Drawing.Icon.FromHandle(hIcon);
-            using var bitmap = icon.ToBitmap();
-            var hBitmap = bitmap.GetHbitmap();
-            try
-            {
-                var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(
-                    hBitmap,
-                    IntPtr.Zero,
-                    Int32Rect.Empty,
-                    BitmapSizeOptions.FromEmptyOptions());
-                RenderOptions.SetBitmapScalingMode(bitmapSource, BitmapScalingMode.HighQuality);
-                bitmapSource.Freeze();
-                return bitmapSource;
-            }
-            finally
-            {
-                DeleteObject(hBitmap);
-            }
+            var bitmapSource = Imaging.CreateBitmapSourceFromHIcon(
+                hIcon,
+                Int32Rect.Empty,
+                BitmapSizeOptions.FromEmptyOptions());
+            RenderOptions.SetBitmapScalingMode(bitmapSource, BitmapScalingMode.HighQuality);
+            bitmapSource.Freeze();
+            return bitmapSource;
         }
         finally
         {
@@ -147,22 +221,15 @@ public class IconHelper
 
     private static BitmapSource CreatePlaceholderIcon()
     {
-        using var bitmap = new Bitmap(1, 1);
-        var hBitmap = bitmap.GetHbitmap();
-        try
+        if (placeholderIcon == null)
         {
-            var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(
-                hBitmap,
-                IntPtr.Zero,
-                Int32Rect.Empty,
-                BitmapSizeOptions.FromEmptyOptions());
-            bitmapSource.Freeze();
-            return bitmapSource;
+            // 1x1 transparentes Bild
+            var bitmap = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgra32, null, new byte[4], 4);
+            bitmap.Freeze();
+            placeholderIcon = bitmap;
         }
-        finally
-        {
-            DeleteObject(hBitmap);
-        }
+
+        return placeholderIcon;
     }
 
     private static string GetDefaultBrowserPath()

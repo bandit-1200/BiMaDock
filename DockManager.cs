@@ -17,7 +17,6 @@ public class DockManager
     private readonly StackPanel categoryDockContainer; // Referenz zu CategoryDockContainer
     private MainWindow mainWindow;
     private bool isDropInProgress = false;
-    private Dictionary<Button, bool> animationPlayed = new Dictionary<Button, bool>();
 
 
 
@@ -42,7 +41,8 @@ public class DockManager
 
 
 
-    private Button? previousButton = null;
+    // Button, über dem sich die Maus aktuell befindet (Animation wurde für diesen Hover bereits abgespielt)
+    private Button? hoveredButton = null;
 
     private void DockPanel_MouseMove(object sender, MouseEventArgs e)
     {
@@ -56,16 +56,20 @@ public class DockManager
     public void LogMousePositionAndElements(Point mousePosition)
     {
 
+        Button? matchedButton = null;
+
         foreach (var child in dockPanel.Children)
         {
             if (child is Button button && button.Tag is DockItem dockItem)
             {
                 var elementRect = new Rect(button.TranslatePoint(new Point(0, 0), dockPanel), button.RenderSize);
-                Point elementPosition = button.TranslatePoint(new Point(0, 0), mainWindow);
 
                 if (elementRect.Contains(mousePosition))
-
                 {
+                    matchedButton = button;
+
+                    // Transformation ins Hauptfenster nur für den getroffenen Button berechnen
+                    Point elementPosition = button.TranslatePoint(new Point(0, 0), mainWindow);
                     double elementCenterX = elementPosition.X + (elementRect.Width / 2);
                     double mainWindowCenterX = mainWindow.ActualWidth / 2;
                     double positionRelativeToCenter = elementCenterX - mainWindowCenterX;
@@ -90,32 +94,27 @@ public class DockManager
 
 
 
-                    if (!animationPlayed.ContainsKey(button) || !animationPlayed[button])
-                    {
-                        ButtonAnimations.AnimateButtonByChoice(button);  // Animation aufrufen
-                        animationPlayed[button] = true;
-                    }
-                    else if (button != previousButton)
+                    // Animation nur einmal pro Hover (beim Betreten des Buttons) abspielen
+                    if (!ReferenceEquals(hoveredButton, button))
                     {
                         ButtonAnimations.AnimateButtonByChoice(button);  // Animation aufrufen
                     }
-                    previousButton = button;
-                }
-                else
-                {
-                    if (animationPlayed.ContainsKey(button))
-                    {
-                        animationPlayed[button] = false;
-                    }
+                    break; // Buttons überlappen nicht – weitere Prüfungen sind unnötig
                 }
             }
         }
+
+        // Kein Button unter der Maus: Hover-Zustand zurücksetzen
+        hoveredButton = matchedButton;
     }
 
 
     public void LoadDockItems()
     {
         var items = SettingsManager.LoadSettings();
+
+        // Referenzen auf alte Buttons freigeben, damit sie nicht im Speicher gehalten werden
+        hoveredButton = null;
 
         // Zuerst alle vorhandenen Items aus den Panels entfernen
         dockPanel.Children.Clear();
@@ -153,7 +152,15 @@ public class DockManager
         {
             foreach (var item in items)
             {
-                AddDockItemAt(item, item.Position, item.Category, saveChanges: false);
+                try
+                {
+                    AddDockItemAt(item, item.Position, item.Category, saveChanges: false);
+                }
+                catch (Exception ex)
+                {
+                    // Ein fehlerhaftes Element soll das Laden der übrigen nicht abbrechen
+                    Debug.WriteLine($"Fehler beim Laden des Dock-Elements '{item.DisplayName}': {ex.Message}");
+                }
             }
         }
 

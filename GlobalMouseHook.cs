@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;  // Für Point und Rect
 using System.Windows.Media;  // Für HitTestResult
@@ -53,14 +52,7 @@ public class GlobalMouseHook
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
         }
 
-        var hookStruct = Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
-        if (hookStruct == null)
-        {
-            Debug.WriteLine("Fehler: Die Struktur konnte nicht erstellt werden (lParam ungültig).");
-            return CallNextHookEx(_hookID, nCode, wParam, lParam);
-        }
-
-        MSLLHOOKSTRUCT msllHookStruct = (MSLLHOOKSTRUCT)hookStruct;
+        MSLLHOOKSTRUCT msllHookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
         Point mousePosition = new Point(msllHookStruct.pt.x, msllHookStruct.pt.y);
 
         // Asynchron auswerten, damit der Hook sofort zurückkehrt und die Maus systemweit nicht bremst.

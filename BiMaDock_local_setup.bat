@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 if errorlevel 1 exit /b 1
 
-dotnet publish "BiMaDock.csproj" --configuration Release --runtime win-x64 --output "publish"
+dotnet publish "BiMaDock.csproj" --configuration Release --runtime win-x64 -p:PublishReadyToRun=true --output "publish"
 if errorlevel 1 exit /b %errorlevel%
 
 set "APPVERSION="

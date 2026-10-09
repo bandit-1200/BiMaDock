@@ -110,7 +110,6 @@ namespace BiMaDock
         }
 
         public DockStatus currentDockStatus = DockStatus.None;
-        private Dictionary<Button, bool> animationPlayed = new Dictionary<Button, bool>();
 
         private DispatcherTimer? showDockTimer; // neu: Verzögerung beim Einblenden (nullable)
 
@@ -369,6 +368,8 @@ namespace BiMaDock
 
         public void HideDock()
         {
+            // Der Timer hat seine Aufgabe erfüllt; sonst würde er alle 0,3 s weiter feuern.
+            dockHideTimer?.Stop();
             mouseHook?.Unhook();
             HideCategoryDockPanel();
             currentDockStatus = DockStatus.None;
@@ -548,11 +549,11 @@ namespace BiMaDock
                     if (elementRect.Contains(mousePosition))
                     {
                         isOverElement = true;
-                        if (!animationPlayed.ContainsKey(button) || !animationPlayed[button] || button != previousButton)
+                        // Nur beim Betreten eines neuen Elements animieren; keine Button-Referenzen sammeln.
+                        if (button != previousButton)
                         {
                             ButtonAnimations.AnimateButtonByChoice(button);
                         }
-                        animationPlayed[button] = true;
                         previousButton = button;
                         break;
                     }
@@ -958,7 +959,7 @@ namespace BiMaDock
             {
                 try
                 {
-                    Process.Start(new ProcessStartInfo
+                    using var process = Process.Start(new ProcessStartInfo
                     {
                         FileName = filePath,
                         UseShellExecute = true
@@ -1051,6 +1052,7 @@ namespace BiMaDock
 
         public void ShowCategoryDockPanel(StackPanel categoryDock)
         {
+            previousButton = null;
             CategoryDockContainer.Children.Clear();
             CategoryDockContainer.Visibility = Visibility.Visible;
             CategoryDockBorder.Visibility = Visibility.Visible;
@@ -1284,6 +1286,7 @@ namespace BiMaDock
 
                         // Speichern der aktualisierten Einstellungen
                         SettingsManager.SaveSettings(dockItems);
+                        IconHelper.ClearCache(); // Symbol kann sich geändert haben
 
                         if (!string.IsNullOrEmpty(dockItem.Category))
                         {
@@ -1381,7 +1384,7 @@ namespace BiMaDock
             string url = "https://bandit-1200.github.io/BiMaDock";
             try
             {
-                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                using var process = Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             }
             catch (Exception ex)
             {
@@ -1399,7 +1402,7 @@ namespace BiMaDock
                     // Startet den Explorer und zeigt die Datei an 
                     var startInfo = new ProcessStartInfo("explorer.exe");
                     startInfo.ArgumentList.Add($"/select,{filePath}");
-                    Process.Start(startInfo);
+                    using var process = Process.Start(startInfo);
                 }
             }
         }

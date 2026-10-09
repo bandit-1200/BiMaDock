@@ -15,6 +15,12 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 
 ### Verbesserungen
 
+- Schnellerer Start (Hauptfenster-Aufbau etwa 0,7 statt 2 Sekunden bei rund 50 Einträgen): Icons werden zwischengespeichert, PNG-Icons nur in benötigter Größe dekodiert und ohne Dateisperre geladen; Shell-Icons ohne GDI+-Umweg erzeugt. `System.Drawing.Common` wird nicht mehr benötigt.
+- Release-Builds werden mit ReadyToRun veröffentlicht (schnellerer Kaltstart).
+- `StyleSettings.json` wird typisiert statt über `dynamic` gelesen; ein ungültiger Inhalt führt nicht mehr zu einem Fehler.
+- Hover-Animationen verwenden pro Element eine wiederverwendete Transformation und kehren immer in die Ruhelage zurück.
+- Weniger Rechenarbeit bei jeder Mausbewegung über dem Dock; Prozessobjekte beim Öffnen von Einträgen werden freigegeben.
+
 - Versionierung vereinfacht: Schema `JJ.MM.N` (Jahr, Monat, fortlaufende Release-Nummer), Version wird nur noch für ein Release erhöht, Änderungen sammeln sich bis dahin unter „Unveröffentlicht“. `version.json` ist die einzige Quelle; die Installer erhalten die Version beim Kompilieren (`ISCC /DMyAppVersion`), `update_version.ps1` wurde durch `get_version.ps1` ersetzt. Die Release-Prüfung verlangt eine Version größer als alle bisherigen Tags.
 - Globaler Maus-Hook ist nur noch aktiv, solange das Dock sichtbar ist, und wertet Klicks asynchron aus.
 - Remotedesktop-Erkennung prüft das Vordergrundfenster statt regelmäßig die Prozessliste; ein minimiertes RDP-Fenster nimmt dem Dock nicht mehr den Vordergrund.
@@ -26,6 +32,10 @@ Sammelt alle Änderungen seit 26.10.7. Die Zwischenstände 26.10.11 bis 26.10.18
 - Tests für Einfügepositionen, Windows-Datei-Dropformate, Einstellungsspeicherung, Versionen und Autostart ergänzt.
 
 ### Fehlerbehebungen
+
+- Eine fehlende oder beschädigte Icon-Datei bricht das Laden des Docks nicht mehr ab; einzelne fehlerhafte Einträge werden übersprungen, Lesefehler der Dock-Einstellungen abgefangen.
+- Speicherleck behoben: Hover-Zustände hielten alle jemals erzeugten Dock-Buttons im Speicher.
+- Ausblende-Timer läuft nach dem Ausblenden nicht mehr endlos alle 0,3 Sekunden weiter.
 
 - Dock wird nach dem Programmstart zuverlässig ausgeblendet; bisher blieb es bis zum ersten Mauskontakt sichtbar.
 - Standardelemente (Explorer, Eingabeaufforderung) werden beim allerersten Start gespeichert.

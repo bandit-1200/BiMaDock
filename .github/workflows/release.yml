@@ -91,7 +91,7 @@ jobs:
       run: dotnet build --configuration Release "-p:ReleaseTag=${{ steps.validate-release.outputs.release_tag }}"
 
     - name: Publish project
-      run: dotnet publish ./BiMaDock.csproj --configuration Release --output ./publish --runtime win-x64 "-p:ReleaseTag=${{ steps.validate-release.outputs.release_tag }}"
+      run: dotnet publish ./BiMaDock.csproj --configuration Release --output ./publish --runtime win-x64 -p:PublishReadyToRun=true "-p:ReleaseTag=${{ steps.validate-release.outputs.release_tag }}"
 
     - name: Read app version
       shell: pwsh

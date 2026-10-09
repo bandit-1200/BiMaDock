@@ -57,8 +57,8 @@ namespace BiMaDock
                 Debug.WriteLine($"Kategorie: {DockItem.Category}");
                 Debug.WriteLine($"Ist Kategorie: {DockItem.IsCategory}");
 
-                // Originalbild laden und in der Box anzeigen
-                var originalImage = IconHelper.GetIcon(DockItem.IconSource, DockItem.FilePath);
+                // Originalbild (eigenes Icon der Datei, ohne benutzerdefinierte IconSource) laden und in der Box anzeigen
+                var originalImage = IconHelper.GetIcon(DockItem.FilePath, DockItem.FilePath);
 
                 if (DockItem.IsCategory)
                 {
@@ -114,7 +114,7 @@ namespace BiMaDock
                             {
                                 var image = new Image
                                 {
-                                    Source = new BitmapImage(new Uri(iconPath)),
+                                    Source = LoadPreviewImage(iconPath),
                                     Width = 48,
                                     Height = 48,
                                     Margin = new Thickness(5),
@@ -250,9 +250,20 @@ namespace BiMaDock
                 .Concat(Directory.GetFiles(iconDirectoryPath, "*.ico"));
             foreach (var iconPath in icons)
             {
+                BitmapImage preview;
+                try
+                {
+                    preview = LoadPreviewImage(iconPath);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DisplayIcons: Fehler beim Laden des Icons: {iconPath}. Fehler: {ex.Message}");
+                    continue;
+                }
+
                 var image = new Image
                 {
-                    Source = new BitmapImage(new Uri(iconPath)),
+                    Source = preview,
                     Width = 48,
                     Height = 48,
                     Margin = new Thickness(5),
@@ -288,6 +299,19 @@ namespace BiMaDock
         {
             // Abbrechen der Änderungen
             this.DialogResult = false; // Schließen des Fensters ohne Erfolg
+        }
+
+        // Lädt ein Vorschaubild ohne Dateisperre und in reduzierter Größe
+        private static BitmapImage LoadPreviewImage(string iconPath)
+        {
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.DecodePixelWidth = 64;
+            bitmap.UriSource = new Uri(iconPath, UriKind.Absolute);
+            bitmap.EndInit();
+            bitmap.Freeze();
+            return bitmap;
         }
 
         private void Icon_Click(object sender, RoutedEventArgs e)

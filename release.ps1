@@ -22,7 +22,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Tests failed with exit code $LASTEXITCODE."
 }
 
-dotnet publish (Join-Path $projectRoot "BiMaDock.csproj") --configuration $Configuration --runtime win-x64 --output (Join-Path $projectRoot "publish")
+dotnet publish (Join-Path $projectRoot "BiMaDock.csproj") --configuration $Configuration --runtime win-x64 -p:PublishReadyToRun=true --output (Join-Path $projectRoot "publish")
 if ($LASTEXITCODE -ne 0) {
     throw "Publish build failed with exit code $LASTEXITCODE."
 }

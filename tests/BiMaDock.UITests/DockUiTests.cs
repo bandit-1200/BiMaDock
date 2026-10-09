@@ -29,6 +29,19 @@ public sealed class DockUiTests
     }
 
     [UiFact]
+    public void Start_FehlendeIcondateiVerhindertNichtDasLadenWeitererElemente()
+    {
+        var broken = TestDockItem.File("Kaputtes Icon", @"C:\BiMaDock-UITest\fehlt.png", 0);
+        broken.IconSource = @"C:\BiMaDock-UITest\fehlt.png";
+        using var session = new BiMaDockSession(
+            broken,
+            TestDockItem.File("Editor", Notepad, 1));
+
+        Assert.NotNull(session.GetDockButton("Kaputtes Icon"));
+        Assert.NotNull(session.GetDockButton("Editor"));
+    }
+
+    [UiFact]
     public void ErsterStart_SpeichertStandardelemente()
     {
         using var session = new BiMaDockSession();
