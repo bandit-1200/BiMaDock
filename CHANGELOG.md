@@ -2,6 +2,12 @@
 
 Hier werden neue Funktionen, Fehlerbehebungen und Optimierungen je Version zusammengefasst. Die historischen Einträge wurden aus Git-Tags und Commit-Historie rekonstruiert. Wiederholte Release- und Build-Tags ohne erkennbare zusätzliche Änderungen sind zusammengefasst; uneinheitliche historische Tag-Namen werden nicht nachträglich umbenannt.
 
+## 26.10.14 – In Arbeit
+
+- Installer auf Installation pro Windows-Benutzer ohne Administratorrechte umgestellt; Installationsziel, Startmenü, Desktop, Autostart und Icon-Daten liegen im Benutzerbereich.
+- Die vorherige systemweite Installationsroute wird beim Upgrade nicht als Standardpfad übernommen.
+- Inno-Setup-Warnung zu Admin-Installationen mit benutzerbezogenen Bereichen behoben.
+
 ## 26.10.13 – In Arbeit
 
 - Release- und Autostart-Risiken behoben; Release-Hilfsskripte veröffentlichen/committen nicht mehr automatisch.

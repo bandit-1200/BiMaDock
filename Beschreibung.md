@@ -10,6 +10,8 @@ Bei jeder Änderung an Anwendung, Oberfläche, Tests oder Dokumentation ist die 
 
 Die Neuerungen jeder Version werden in [CHANGELOG.md](CHANGELOG.md) festgehalten. Neue Einträge kommen oben hinzu und gruppieren Änderungen nach Neuigkeiten, Verbesserungen und Fehlerbehebungen. Unveröffentlichte Änderungen sind entsprechend zu kennzeichnen.
 
+Beide Inno-Installer richten BiMaDock ausschließlich für den aktuellen Windows-Benutzer ein: Die Anwendung liegt standardmäßig unter `%LOCALAPPDATA%\Programs\BiMaDock`, benötigt keine Administratorrechte und verwendet benutzerbezogene Startmenü-, Desktop-, Autostart- und Icon-Pfade.
+
 Die Projektanweisung in [AGENTS.md](AGENTS.md) macht diese Regeln für Coding-Assistenten verbindlich. Der Workflow [versioning.yml](.github/workflows/versioning.yml) prüft bei Änderungen auf `dev` und `main` sowie in Pull Requests dorthin, dass die Version erhöht und Changelog sowie beide Installer-Versionen aktualisiert wurden. Der Release-Workflow [release.yml](.github/workflows/release.yml) prüft außerdem Tag, Version, datierten Changelog-Eintrag und dass der veröffentlichte Commit auf `main` liegt.
 
 ## Branch- und Freigaberegel

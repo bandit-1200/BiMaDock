@@ -30,3 +30,9 @@ Die folgenden Punkte aus dem statischen Audit wurden auf `dev` umgesetzt. Ziel w
 ## Status und Versionsregel
 
 Alle im Audit aufgeführten Befunde sind adressiert. Der Umfang wurde versioniert als `26.10.13`; die Version in `version.json`, beiden Installerdateien und `CHANGELOG.md` muss synchron bleiben.
+
+## Nachträgliche Installer-Prüfung
+
+Die Windows-Installerprüfung zeigte, dass die Installer eine Admin-Installation im gemeinsamen Programmordner mit benutzerbezogenen HKCU-, LocalAppData- und Desktop-Einträgen kombinierten. Beide Installer wurden in Version `26.10.14` auf eine Installation nur für den aktuellen Benutzer umgestellt: Ziel ist `%LOCALAPPDATA%\Programs\BiMaDock`, `PrivilegesRequired=lowest` verhindert eine Elevationsanforderung, und `UsePreviousAppDir=no` verhindert, dass ein bisheriger systemweiter Installationspfad als Standard wiederverwendet wird. Startmenü, Desktop, Autostart und Icon-Ressourcen bleiben im Benutzerkontext.
+
+Die lokale Kompilierung beider Inno-Skripte ist erforderlich, um zu bestätigen, dass die Warnung zu gemischten Installationsbereichen nicht mehr erscheint. Eine tatsächliche Installation, ein Upgrade aus einer früheren systemweiten Installation und ein Autostart nach erneuter Anmeldung sind davon getrennte Laufzeittests.

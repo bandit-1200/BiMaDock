@@ -1,11 +1,13 @@
-#define MyAppVersion "26.10.13"
+#define MyAppVersion "26.10.14"
 #define ProjectDir AddBackslash(SourcePath)
 
 [Setup]
 AppName=BiMaDock
 AppVersion={#MyAppVersion}
-DefaultDirName={commonpf}\BiMaDock
+DefaultDirName={localappdata}\Programs\BiMaDock
 DefaultGroupName=BiMaDock
+PrivilegesRequired=lowest
+UsePreviousAppDir=no
 OutputDir={#ProjectDir}publish
 OutputBaseFilename=BiMaDockSetup
 Compression=lzma
