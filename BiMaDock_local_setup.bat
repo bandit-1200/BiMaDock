@@ -6,8 +6,12 @@ if errorlevel 1 exit /b 1
 dotnet publish "BiMaDock.csproj" --configuration Release --runtime win-x64 --output "publish"
 if errorlevel 1 exit /b %errorlevel%
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "update_version.ps1"
-if errorlevel 1 exit /b %errorlevel%
+set "APPVERSION="
+for /f "usebackq delims=" %%v in (`powershell -NoProfile -ExecutionPolicy Bypass -File "get_version.ps1"`) do set "APPVERSION=%%v"
+if not defined APPVERSION (
+    echo Version could not be read from version.json.
+    exit /b 1
+)
 
 set "ISCC="
 where ISCC.exe >nul 2>nul
@@ -19,7 +23,7 @@ if not defined ISCC (
     exit /b 1
 )
 
-"%ISCC%" "BiMaDock_local.iss"
+"%ISCC%" "/DMyAppVersion=%APPVERSION%" "BiMaDock_local.iss"
 if errorlevel 1 exit /b %errorlevel%
 
 echo Installer created in the setup folder.

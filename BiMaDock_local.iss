@@ -1,4 +1,8 @@
-#define MyAppVersion "26.10.18"
+; Die Version wird beim Kompilieren aus version.json uebergeben: ISCC /DMyAppVersion=<Version>
+; (siehe get_version.ps1). Ohne Angabe entsteht ein erkennbarer Entwicklungs-Build.
+#ifndef MyAppVersion
+  #define MyAppVersion "0.0.0-dev"
+#endif
 #define ProjectDir AddBackslash(SourcePath)
 
 [Setup]

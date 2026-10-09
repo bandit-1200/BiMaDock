@@ -93,8 +93,12 @@ jobs:
     - name: Publish project
       run: dotnet publish ./BiMaDock.csproj --configuration Release --output ./publish --runtime win-x64 "-p:ReleaseTag=${{ steps.validate-release.outputs.release_tag }}"
 
-    - name: Update Inno Setup version
-      run: pwsh -File update_version.ps1
+    - name: Read app version
+      shell: pwsh
+      run: |
+        $version = pwsh -File get_version.ps1
+        if ($LASTEXITCODE -ne 0) { throw "Version could not be read from version.json." }
+        "APP_VERSION=$version" >> $env:GITHUB_ENV
 
     - name: Install Windows SDK
       run: choco install windows-sdk-10.1 -y
@@ -129,8 +133,9 @@ jobs:
         "signtool_path=$signtoolPath" >> $env:GITHUB_OUTPUT
 
     - name: Create Windows installer
+      shell: pwsh
       run: |
-        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "./BiMaDock.iss"
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$env:APP_VERSION" "./BiMaDock.iss"
 
     - name: Sign executable
       id: sign-executable

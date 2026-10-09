@@ -11,7 +11,7 @@ BiMaDock ist eine personalisierbare Dock-Leiste für Windows (WPF, `net8.0-windo
 - UI-Tests (FlaUI, steuern Maus und Tastatur): `.\ui-test.ps1 -c Release` – ohne `BIMADOCK_UI_TESTS=1` werden sie übersprungen
 - Publish: `dotnet publish BiMaDock.csproj -c Release -r win-x64 -o publish`
 - Lokaler Installer: `BiMaDock_local_setup.bat` (Inno Setup 6, Ausgabe nach `setup\`)
-- Installer-Versionen synchronisieren: `.\update_version.ps1`
+- Version lesen/prüfen: `.\get_version.ps1` (Installer erhalten sie per `ISCC /DMyAppVersion`)
 
 ## Wichtige Dateien
 
@@ -30,4 +30,4 @@ BiMaDock ist eine personalisierbare Dock-Leiste für Windows (WPF, `net8.0-windo
 
 - UI-Texte und Kommentare auf Deutsch, Bezeichner überwiegend Englisch.
 - Dateien verwenden CRLF-Zeilenenden.
-- Die CI (`.github\scripts\validate-versioning.ps1`) verlangt bei jeder Änderung Anpassungen an `version.json`, `CHANGELOG.md`, `BiMaDock.iss` und `BiMaDock_local.iss`.
+- Die CI (`.github\scripts\validate-versioning.ps1`) verlangt bei jeder Änderung einen Eintrag in `CHANGELOG.md` unter `## Unveröffentlicht`; die Version wird nur für Releases gesetzt.

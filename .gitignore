@@ -109,3 +109,5 @@ ehthumbs.db
 *.lnk
 
 .fake
+# Ausgabe von dotnet publish / Release-Builds
+publish/

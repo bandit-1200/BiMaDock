@@ -13,14 +13,9 @@ if ($branch -ne "dev") {
     throw "This local validation script is restricted to the dev branch; current branch is '$branch'."
 }
 
-$version = (Get-Content -Raw (Join-Path $projectRoot "version.json") | ConvertFrom-Json).version
-$installerFiles = @("BiMaDock.iss", "BiMaDock_local.iss")
-foreach ($installer in $installerFiles) {
-    $installerPath = Join-Path $projectRoot $installer
-    if (-not (Select-String -Path $installerPath -Pattern ('^#define MyAppVersion "' + [regex]::Escape($version) + '"$'))) {
-        throw "$installer is not synchronized with version.json ($version)."
-    }
-}
+# Prüft zugleich das Versionsformat; die Installer erhalten die Version erst beim Kompilieren.
+$version = & (Join-Path $projectRoot "get_version.ps1")
+Write-Output "Version: $version"
 
 dotnet test (Join-Path $projectRoot "BiMaDock.sln") --configuration $Configuration
 if ($LASTEXITCODE -ne 0) {
