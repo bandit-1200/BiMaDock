@@ -920,22 +920,14 @@ namespace BiMaDock
             }
         }
 
-        private async Task AddFilesToCategoryAsync(string[] files, double dropX)
+        private Task AddFilesToCategoryAsync(string[] files, double dropX)
         {
             var dockItemsToAdd = new List<DockItem>(files.Length);
             foreach (string file in files)
             {
-                string targetPath = file;
-                string extension = System.IO.Path.GetExtension(file);
-                if (extension.Equals(".lnk", StringComparison.OrdinalIgnoreCase) ||
-                    extension.Equals(".url", StringComparison.OrdinalIgnoreCase))
-                {
-                    targetPath = await GetShortcutTarget.GetShortcutTargetAsync(file);
-                }
-
                 dockItemsToAdd.Add(new DockItem
                 {
-                    FilePath = targetPath,
+                    FilePath = file,
                     DisplayName = System.IO.Path.GetFileNameWithoutExtension(file),
                     Category = currentOpenCategory
                 });
@@ -948,6 +940,7 @@ namespace BiMaDock
             }
 
             dockManager.SaveDockItems(currentOpenCategory);
+            return Task.CompletedTask;
         }
 
         private static bool TryGetDroppedText(IDataObject data, out string text)
@@ -1602,7 +1595,9 @@ namespace BiMaDock
                 if (!string.IsNullOrEmpty(filePath))
                 {
                     // Startet den Explorer und zeigt die Datei an 
-                    Process.Start("explorer.exe", $"/select,{filePath}");
+                    var startInfo = new ProcessStartInfo("explorer.exe");
+                    startInfo.ArgumentList.Add($"/select,{filePath}");
+                    Process.Start(startInfo);
                 }
             }
         }

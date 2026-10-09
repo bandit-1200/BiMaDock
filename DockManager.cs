@@ -322,25 +322,16 @@ public class DockManager
     }
 
 
-    private async Task HandleFileDrop(string[] files, Point dropPosition)
+    private Task HandleFileDrop(string[] files, Point dropPosition)
     {
         var dockItemsToAdd = new List<DockItem>(files.Length);
         foreach (var file in files)
         {
             Debug.WriteLine($"DockPanel_Drop: Datei gefunden: {file}");
 
-            string targetPath = file;
-            string extension = System.IO.Path.GetExtension(file);
-            if (extension.Equals(".lnk", StringComparison.OrdinalIgnoreCase) ||
-                extension.Equals(".url", StringComparison.OrdinalIgnoreCase))
-            {
-                targetPath = await GetShortcutTarget.GetShortcutTargetAsync(file);
-                Debug.WriteLine($"DockPanel_Drop: Zielpfad der Verknüpfung: {targetPath}");
-            }
-
             dockItemsToAdd.Add(new DockItem
             {
-                FilePath = targetPath ?? file,
+                FilePath = file,
                 DisplayName = System.IO.Path.GetFileNameWithoutExtension(file) ?? string.Empty,
             });
         }
@@ -352,6 +343,7 @@ public class DockManager
         }
 
         SaveDockItems(string.Empty);
+        return Task.CompletedTask;
     }
 
     private void HandleTextDrop(string rawData, Point dropPosition)
@@ -670,10 +662,7 @@ public class DockManager
                 else
                 {
                     Debug.WriteLine("Open_Click aufgerufen, Kategorie"); // Debug-Ausgabe
-                    mainWindow.ShowCategoryDockPanel(new StackPanel
-                    {
-                        Children = { new Button { Content = $"Kategorie: {dockItem.DisplayName}", Width = 100, Height = 50 } }
-                    });
+                    mainWindow.ShowCategoryDockPanel(new StackPanel { Tag = dockItem.Id });
                 }
             }
             else

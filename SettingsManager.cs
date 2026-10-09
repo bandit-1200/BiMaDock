@@ -33,9 +33,9 @@ public class SettingsManager
     public static void SaveSettings(List<DockItem> items)
     {
         AppPaths.EnsureAppDataDirectory();
+        var json = JsonConvert.SerializeObject(items, Formatting.Indented);
+        DockItemSettingsStore.Save(settingsFilePath, json);
         cachedItems = items;
-        var json = JsonConvert.SerializeObject(cachedItems, Formatting.Indented);
-        File.WriteAllText(settingsFilePath, json);
     }
 
 
@@ -48,8 +48,7 @@ public class SettingsManager
 
         if (File.Exists(settingsFilePath))
         {
-            var json = File.ReadAllText(settingsFilePath);
-            cachedItems = JsonConvert.DeserializeObject<List<DockItem>>(json) ?? new List<DockItem>();
+            cachedItems = DockItemSettingsStore.Load(settingsFilePath);
             return cachedItems;
         }
         cachedItems = new List<DockItem>();

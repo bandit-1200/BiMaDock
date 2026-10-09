@@ -2,6 +2,14 @@
 
 Hier werden neue Funktionen, Fehlerbehebungen und Optimierungen je Version zusammengefasst. Die historischen Einträge wurden aus Git-Tags und Commit-Historie rekonstruiert. Wiederholte Release- und Build-Tags ohne erkennbare zusätzliche Änderungen sind zusammengefasst; uneinheitliche historische Tag-Namen werden nicht nachträglich umbenannt.
 
+## 26.10.13 – In Arbeit
+
+- Release- und Autostart-Risiken behoben; Release-Hilfsskripte veröffentlichen/committen nicht mehr automatisch.
+- Dock-Kategorien, Verknüpfungs-Drops, Dateipfade mit Leerzeichen und Farbvoreinstellungen robuster gemacht.
+- Symbol- und Einstellungsdateiressourcen zuverlässig freigegeben bzw. atomar gespeichert; beschädigte Dock-Einstellungen werden gesichert und gemeldet.
+- PNG-/ICO-Symbolauswahl, lokale Installerpfade und Swing-Konfiguration vervollständigt.
+- Regressionstests ergänzt und die Audit-Befunde in [CODE_REVIEW_2026-10-09.md](CODE_REVIEW_2026-10-09.md) als umgesetzt markiert.
+
 ## 26.10.11 – In Arbeit
 
 - Drag-and-Drop für Dateien und Dock-Elemente vereinheitlicht und robuster gemacht.

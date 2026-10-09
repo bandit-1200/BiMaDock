@@ -6,12 +6,11 @@ AppName=BiMaDock
 AppVersion={#MyAppVersion}
 DefaultDirName={commonpf}\BiMaDock
 DefaultGroupName=BiMaDock
-OutputDir={#ProjectDir}publish
+OutputDir={#ProjectDir}setup
 OutputBaseFilename=BiMaDockSetup
 Compression=lzma
 SolidCompression=yes
 AppPublisher=Marco Bilz
-
 
 [Files]
 Source: "{#ProjectDir}publish\*"; DestDir: "{app}"; Excludes: "BiMaDockSetup.exe"; Flags: ignoreversion recursesubdirs createallsubdirs

@@ -64,15 +64,14 @@ $RECYCLE.BIN/
 *.sln.docstates
 Beschreibung.md
 *.bat
+!BiMaDock_local_setup.bat
 setup.bat
-BiMaDock_local.iss
 setup/
 Output/
 Beschreibung.md
 BiMaDock_local_update_version.ps1
 todo.*
 release_body.json
-test.ps1
 autotag.ps1
 
 

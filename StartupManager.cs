@@ -5,9 +5,10 @@ namespace BiMaDock
 {
     public static class StartupManager
     {
-        private static string appName = "BiMaDock";
-        private static string appDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
-        private static string appPath = Path.Combine(appDirectory, "BiMaDock.exe");
+        private const string AppName = "BiMaDock";
+        private static readonly string AppPath = Path.Combine(
+            Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!,
+            "BiMaDock.exe");
 
         public static void AddToStartup(bool isChecked)
         {
@@ -24,11 +25,11 @@ namespace BiMaDock
 
                 if (isChecked)
                 {
-                    key.SetValue(appName, appPath);
+                    key.SetValue(AppName, BuildStartupCommand(AppPath));
                 }
                 else
                 {
-                    key.DeleteValue(appName, false);
+                    key.DeleteValue(AppName, false);
                 }
             }
         }
@@ -39,7 +40,7 @@ namespace BiMaDock
             {
                 if (key != null)
                 {
-                    return key.GetValue(appName) != null;
+                    return key.GetValue(AppName) != null;
                 }
                 return false;
             }
@@ -55,8 +56,10 @@ namespace BiMaDock
                     return;
                 }
 
-                key.DeleteValue(appName, false);
+                key.DeleteValue(AppName, false);
             }
         }
+
+        internal static string BuildStartupCommand(string executablePath) => $"\"{executablePath}\"";
     }
 }

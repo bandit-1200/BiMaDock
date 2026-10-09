@@ -273,7 +273,7 @@ namespace BiMaDock
             // FileDialog zum Hochladen von Bildern öffnen
             var openFileDialog = new Microsoft.Win32.OpenFileDialog
             {
-                Filter = "Image Files|*.png;*.ico",
+                Filter = "PNG image files|*.png",
                 Title = "Wähle ein Icon zum Hochladen"
             };
 
@@ -283,7 +283,7 @@ namespace BiMaDock
                 string sourceFilePath = openFileDialog.FileName;
                 string fileExtension = Path.GetExtension(sourceFilePath).ToLower();
 
-                if (fileExtension == ".png" || fileExtension == ".ico")
+                if (fileExtension == ".png")
                 {
                     string fileName = Path.GetFileName(sourceFilePath);
                     string destinationPath = Path.Combine(iconDirectoryPath, fileName);
@@ -320,7 +320,8 @@ namespace BiMaDock
             // Leeren der Symbolbox
             SymbolPanel.Children.Clear();
 
-            var icons = Directory.GetFiles(iconDirectoryPath, "*.png");
+            var icons = Directory.GetFiles(iconDirectoryPath, "*.png")
+                .Concat(Directory.GetFiles(iconDirectoryPath, "*.ico"));
             foreach (var iconPath in icons)
             {
                 var image = new Image

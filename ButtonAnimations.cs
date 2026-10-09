@@ -24,6 +24,7 @@ public class ButtonAnimations
     public static EffectSettings ScaleSettings = new EffectSettings();
     public static EffectSettings RotateSettings = new EffectSettings();
     public static EffectSettings TranslateSettings = new EffectSettings();
+    public static EffectSettings SwingSettings = new EffectSettings { Duration = 3.5, Angle = 30 };
 
 
 
@@ -85,6 +86,12 @@ public class ButtonAnimations
                     if (settings.Translate?.EffectIndex != null) TranslateSettings.EffectIndex = (int)settings.Translate.EffectIndex;
 
                     // Debug.WriteLine($"Translate Einstellungen geladen: Duration={TranslateSettings.Duration}, TranslateX={TranslateSettings.TranslateX}, TranslateY={TranslateSettings.TranslateY}, AutoReverse={TranslateSettings.AutoReverse}");
+                }
+
+                if (settings?.Swing != null)
+                {
+                    if (settings.Swing?.Duration != null) SwingSettings.Duration = (double)settings.Swing.Duration;
+                    if (settings.Swing?.Angle != null) SwingSettings.Angle = (double)settings.Swing.Angle;
                 }
             }
             catch (Exception ex)
@@ -187,14 +194,14 @@ public class ButtonAnimations
         button.RenderTransform = rotateTransform;
 
         var swingAnimation = new DoubleAnimationUsingKeyFrames();
-        swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0))));
-        swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(30, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.5))));
-        swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(-30, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(1))));
-        swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(20, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(1.5))));
-        swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(-20, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(2))));
-        swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(10, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(2.5))));
-        swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(-10, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(3))));
-        swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(3.5))));
+        double[] angleFactors = { 0, 1, -1, 2d / 3, -2d / 3, 1d / 3, -1d / 3, 0 };
+        for (int index = 0; index < angleFactors.Length; index++)
+        {
+            double progress = index / (double)(angleFactors.Length - 1);
+            double angle = SwingSettings.Angle * angleFactors[index];
+            var keyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(SwingSettings.Duration * progress));
+            swingAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(angle, keyTime));
+        }
 
         // Füge die Animation hinzu
         rotateTransform.BeginAnimation(RotateTransform.AngleProperty, swingAnimation);

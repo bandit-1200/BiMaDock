@@ -13,6 +13,12 @@ public class IconHelper
     [DllImport("shell32.dll", CharSet = CharSet.Auto)]
     public static extern int SHGetFileInfo(string pszPath, uint dwFileAttributes, out SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool DestroyIcon(IntPtr hIcon);
+
+    [DllImport("gdi32.dll", SetLastError = true)]
+    private static extern bool DeleteObject(IntPtr hObject);
+
     [StructLayout(LayoutKind.Sequential)]
     public struct SHFILEINFO
     {
@@ -48,19 +54,14 @@ public class IconHelper
 
             if (result == 0 || shinfo.hIcon == IntPtr.Zero)
             {
+                if (shinfo.hIcon != IntPtr.Zero)
+                {
+                    DestroyIcon(shinfo.hIcon);
+                }
                 return FallbackIcon(filePath);
             }
 
-            using (var icon = System.Drawing.Icon.FromHandle(shinfo.hIcon))
-            {
-                var bitmap = icon.ToBitmap();
-                var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-
-                // Setze BitmapScalingMode auf HighQuality
-                RenderOptions.SetBitmapScalingMode(bitmapSource, BitmapScalingMode.HighQuality);
-
-                return bitmapSource;
-            }
+            return CreateBitmapSourceFromIcon(shinfo.hIcon);
         }
         catch
         {
@@ -80,19 +81,14 @@ public class IconHelper
 
         if (result == 0 || shinfo.hIcon == IntPtr.Zero)
         {
-            return Imaging.CreateBitmapSourceFromHBitmap(new Bitmap(1, 1).GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            if (shinfo.hIcon != IntPtr.Zero)
+            {
+                DestroyIcon(shinfo.hIcon);
+            }
+            return CreatePlaceholderIcon();
         }
 
-        using (var icon = System.Drawing.Icon.FromHandle(shinfo.hIcon))
-        {
-            var bitmap = icon.ToBitmap();
-            var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-
-            // Setze BitmapScalingMode auf HighQuality
-            RenderOptions.SetBitmapScalingMode(bitmapSource, BitmapScalingMode.HighQuality);
-
-            return bitmapSource;
-        }
+        return CreateBitmapSourceFromIcon(shinfo.hIcon);
     }
 
     private static BitmapSource GetDefaultBrowserIcon()
@@ -102,7 +98,7 @@ public class IconHelper
         if (string.IsNullOrEmpty(browserPath))
         {
             // Fallback-Icon, falls Standard-Browser nicht ermittelt werden kann
-            return Imaging.CreateBitmapSourceFromHBitmap(new Bitmap(1, 1).GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            return CreatePlaceholderIcon();
         }
 
         SHFILEINFO shinfo = new SHFILEINFO();
@@ -110,18 +106,62 @@ public class IconHelper
 
         if (result == 0 || shinfo.hIcon == IntPtr.Zero)
         {
-            return Imaging.CreateBitmapSourceFromHBitmap(new Bitmap(1, 1).GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            if (shinfo.hIcon != IntPtr.Zero)
+            {
+                DestroyIcon(shinfo.hIcon);
+            }
+            return CreatePlaceholderIcon();
         }
 
-        using (var icon = System.Drawing.Icon.FromHandle(shinfo.hIcon))
+        return CreateBitmapSourceFromIcon(shinfo.hIcon);
+    }
+
+    private static BitmapSource CreateBitmapSourceFromIcon(IntPtr hIcon)
+    {
+        try
         {
-            var bitmap = icon.ToBitmap();
-            var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            using var icon = System.Drawing.Icon.FromHandle(hIcon);
+            using var bitmap = icon.ToBitmap();
+            var hBitmap = bitmap.GetHbitmap();
+            try
+            {
+                var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(
+                    hBitmap,
+                    IntPtr.Zero,
+                    Int32Rect.Empty,
+                    BitmapSizeOptions.FromEmptyOptions());
+                RenderOptions.SetBitmapScalingMode(bitmapSource, BitmapScalingMode.HighQuality);
+                bitmapSource.Freeze();
+                return bitmapSource;
+            }
+            finally
+            {
+                DeleteObject(hBitmap);
+            }
+        }
+        finally
+        {
+            DestroyIcon(hIcon);
+        }
+    }
 
-            // Setze BitmapScalingMode auf HighQuality
-            RenderOptions.SetBitmapScalingMode(bitmapSource, BitmapScalingMode.HighQuality);
-
+    private static BitmapSource CreatePlaceholderIcon()
+    {
+        using var bitmap = new Bitmap(1, 1);
+        var hBitmap = bitmap.GetHbitmap();
+        try
+        {
+            var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(
+                hBitmap,
+                IntPtr.Zero,
+                Int32Rect.Empty,
+                BitmapSizeOptions.FromEmptyOptions());
+            bitmapSource.Freeze();
             return bitmapSource;
+        }
+        finally
+        {
+            DeleteObject(hBitmap);
         }
     }
 

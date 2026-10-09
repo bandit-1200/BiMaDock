@@ -23,6 +23,7 @@ namespace BiMaDock
         private ScaleSettings scaleSettings;
         private RotateSettings rotateSettings;
         private TranslateSettings translateSettings;
+        private SwingSettings swingSettings = new();
         private int dockShowDelayMilliseconds = DefaultDockShowDelayMs;
 
         public class ScaleSettings
@@ -51,6 +52,12 @@ namespace BiMaDock
             public double TranslateY { get; set; } = -5.0;
             public bool AutoReverse { get; set; } = true;
             public int EffectIndex { get; set; } = 2;
+        }
+
+        public class SwingSettings
+        {
+            public double Duration { get; set; } = 3.5;
+            public double Angle { get; set; } = 30;
         }
 
         private ComboBox? animationEffectComboBox;
@@ -100,6 +107,7 @@ namespace BiMaDock
             settingsFilePath = AppPaths.GetSettingsFilePath("StyleSettings.json");
             CreateAnimationEffectDropdown();
             ShowVersionInConsole();
+            InitializeColorPickers();
             AutoStartCheckBox.IsChecked = StartupManager.IsInStartup();
             if (DockShowDelaySlider != null)
             {
@@ -211,7 +219,7 @@ namespace BiMaDock
                     CreateTranslateAnimationSettings();
                     break;
                 case 4: // Index für Swing
-                        // CreateSwingAnimationSettings();
+                    CreateSwingAnimationSettings();
                     break;
                 default:
                     Debug.WriteLine($"Kein gültiger Effekt ausgewählt: {selectedIndex}");
@@ -570,6 +578,73 @@ namespace BiMaDock
             AnimationSettingsPanel.Children.Add(translateAutoReverseCheckBox);
         }
 
+        private void CreateSwingAnimationSettings()
+        {
+            var durationLabel = new TextBlock
+            {
+                Text = "Swing-Dauer (Sekunden):",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            AnimationSettingsPanel.Children.Add(durationLabel);
+
+            var durationSlider = new Slider
+            {
+                Minimum = 0.5,
+                Maximum = 7,
+                Value = swingSettings.Duration,
+                TickFrequency = 0.1,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(durationSlider);
+            var durationValue = new TextBlock
+            {
+                Text = $"Aktuelle Dauer: {durationSlider.Value:0.0} s",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(durationValue);
+            durationSlider.ValueChanged += (_, _) =>
+            {
+                swingSettings.Duration = durationSlider.Value;
+                ButtonAnimations.SwingSettings.Duration = durationSlider.Value;
+                durationValue.Text = $"Aktuelle Dauer: {durationSlider.Value:0.0} s";
+            };
+
+            var angleLabel = new TextBlock
+            {
+                Text = "Swing-Winkel:",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            AnimationSettingsPanel.Children.Add(angleLabel);
+
+            var angleSlider = new Slider
+            {
+                Minimum = 5,
+                Maximum = 60,
+                Value = swingSettings.Angle,
+                TickFrequency = 1,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(angleSlider);
+            var angleValue = new TextBlock
+            {
+                Text = $"Aktueller Winkel: {angleSlider.Value:0}°",
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            AnimationSettingsPanel.Children.Add(angleValue);
+            angleSlider.ValueChanged += (_, _) =>
+            {
+                swingSettings.Angle = angleSlider.Value;
+                ButtonAnimations.SwingSettings.Angle = angleSlider.Value;
+                angleValue.Text = $"Aktueller Winkel: {angleSlider.Value:0}°";
+            };
+        }
+
 
 
         private void ShowVersionInConsole()
@@ -715,6 +790,14 @@ namespace BiMaDock
                         translateSettings.EffectIndex = 3; // Fester Wert für Translate
                     }
 
+                    if (settings.Swing != null)
+                    {
+                        swingSettings.Duration = settings.Swing.Duration ?? swingSettings.Duration;
+                        swingSettings.Angle = settings.Swing.Angle ?? swingSettings.Angle;
+                        ButtonAnimations.SwingSettings.Duration = swingSettings.Duration;
+                        ButtonAnimations.SwingSettings.Angle = swingSettings.Angle;
+                    }
+
                     // Effekt-Index laden
                     if (settings.SelectedEffectIndex != null)
                     {
@@ -730,36 +813,35 @@ namespace BiMaDock
             }
         }
 
+        private void InitializeColorPickers()
+        {
+            PrimaryColorPicker.SelectedColor = GetResourceColor("PrimaryColor");
+            SecondaryColorPicker.SelectedColor = GetResourceColor("SecondaryColor");
+            AccentColorPicker.SelectedColor = GetResourceColor("AccentColor");
+            FeedbackColorPicker.SelectedColor = GetResourceColor("FeedbackColor");
+        }
+
+        private static Color GetResourceColor(string resourceKey)
+        {
+            if (Application.Current.Resources[resourceKey] is not SolidColorBrush brush)
+            {
+                throw new InvalidOperationException($"Color resource '{resourceKey}' is missing or is not a SolidColorBrush.");
+            }
+
+            return brush.Color;
+        }
+
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            var primaryColor = PrimaryColorPicker.SelectedColor ?? Colors.Transparent;
-            var secondaryColor = SecondaryColorPicker.SelectedColor ?? Colors.Transparent;
-            var accentColor = AccentColorPicker.SelectedColor ?? Colors.Transparent;
-            var feedbackColor = FeedbackColorPicker.SelectedColor ?? Colors.Transparent;
-
-
-            // Überprüfen und Alpha-Wert auf mindestens 1 setzen
-            if (primaryColor.A < 1)
-            {
-                primaryColor.A = 1;
-            }
-
-            if (secondaryColor.A < 1)
-            {
-                secondaryColor.A = 1;
-            }
-
-
-            if (accentColor.A < 1)
-            {
-                accentColor.A = 1;
-            }
-
-            if (feedbackColor.A < 1)
-            {
-                feedbackColor.A = 1;
-            }
+            var primaryColor = PrimaryColorPicker.SelectedColor ?? GetResourceColor("PrimaryColor");
+            var secondaryColor = SecondaryColorPicker.SelectedColor ?? GetResourceColor("SecondaryColor");
+            var accentColor = AccentColorPicker.SelectedColor ?? GetResourceColor("AccentColor");
+            var feedbackColor = FeedbackColorPicker.SelectedColor ?? GetResourceColor("FeedbackColor");
+            primaryColor.A = Math.Max(primaryColor.A, (byte)1);
+            secondaryColor.A = Math.Max(secondaryColor.A, (byte)1);
+            accentColor.A = Math.Max(accentColor.A, (byte)1);
+            feedbackColor.A = Math.Max(feedbackColor.A, (byte)1);
 
             if (animationEffectComboBox != null && animationEffectComboBox.SelectedItem != null)
             {
@@ -785,7 +867,8 @@ namespace BiMaDock
                     SelectedEffectIndex = selectedEffectIndex,
                     Scale = scaleSettings,
                     Rotate = rotateSettings,
-                    Translate = translateSettings
+                    Translate = translateSettings,
+                    Swing = swingSettings
                 };
 
                 string json = JsonConvert.SerializeObject(settings, Formatting.Indented);

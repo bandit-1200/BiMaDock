@@ -64,18 +64,11 @@ git tag -a "v$version" -m "Release v$version"
 git push origin "v$version"
 ```
 
-## Build- und Release-Skripte
+## Build-Skripte
 
-Im Projekt gibt es passende Skripte für die Versionierung und Veröffentlichung. Diese sollten bevorzugt verwendet werden, statt manuell unübersichtliche Tag- und Release-Schritte zu kombinieren.
+`release.ps1` führt auf `dev` Tests und einen lokalen Publish-Build aus. Es wechselt keine Branches, erzeugt keine Tags, committet und pusht keine Änderungen. `test.ps1` startet die Testsuite; zusätzliche Argumente werden an `dotnet test` weitergereicht. Veröffentlichungen erfolgen ausschließlich über den freigegebenen `main`-Releaseprozess.
 
-Beispiele:
-
-```bash
-# PowerShell
-.\release.ps1
-.\autotag.ps1
-.\update_version.ps1
-```
+Der Versionsabgleich für beide Installer verwendet `version.json` und Pfade relativ zum Skript bzw. Projekt. Dadurch ist er unabhängig vom Checkout-Verzeichnis.
 
 ## Hinweise
 
@@ -96,12 +89,5 @@ git tag -l | ForEach-Object { git push origin --delete $_ }
 ```
 
 > Diese Befehle sind nur für Notfälle oder bei Problemen mit veralteten Tags gedacht und sollten nicht im normalen Release-Prozess verwendet werden.
-
-## Alternativer Build-Workflow
-
-```bash
-# Beispiel für einen Release-ähnlichen Ablauf in diesem Projekt
-.\release.ps1
-```
 
 > Das Dokument wurde auf den aktuellen Projekt-Workflow bereinigt. Veraltete manuelle Tag- und Merge-Anweisungen wurden entfernt, da sie nicht mehr zum realen Release-Prozess passen.
