@@ -2,6 +2,13 @@
 
 Hier werden neue Funktionen, Fehlerbehebungen und Optimierungen je Version zusammengefasst. Die historischen Einträge wurden aus Git-Tags und Commit-Historie rekonstruiert. Wiederholte Release- und Build-Tags ohne erkennbare zusätzliche Änderungen sind zusammengefasst; uneinheitliche historische Tag-Namen werden nicht nachträglich umbenannt.
 
+## 26.10.16 – In Arbeit
+
+- Automatisierte UI-Tests mit FlaUI (`tests\BiMaDock.UITests`, Start über `.\ui-test.ps1`): Start, Ein-/Ausblenden, Kontextmenü, Kategorien, Bearbeiten, Löschen, Einstellungen, Über-Fenster, Autostart, Drag & Drop von Dateien und Elementen sowie Beenden. Ohne `BIMADOCK_UI_TESTS=1` werden sie übersprungen, damit `dotnet test` und die CI unverändert laufen.
+- Datenordner über `BIMADOCK_DATA_DIR` umstellbar; alle Pfade (Log, Einstellungen, Icons) laufen jetzt über `AppPaths`. Mit eigenem Datenordner gilt eine eigene Einzelinstanz-Sperre.
+- Update-Prüfung per `BIMADOCK_DISABLE_UPDATE_CHECK=1` abschaltbar, Autostart-Registry-Wertname per `BIMADOCK_STARTUP_VALUE_NAME` umstellbar (für Tests).
+- Dock-Elemente tragen einen Automatisierungsnamen und eine -ID (Screenreader und UI-Tests).
+
 ## 26.10.15 – In Arbeit
 
 - `CLAUDE.md` mit Projektüberblick für Claude Code ergänzt; verweist auf die Regeln in `AGENTS.md`.

@@ -35,9 +35,7 @@ public class ButtonAnimations
         Debug.WriteLine("Einstellungen werden geladen...");
 
         // Hole den Pfad zum AppData\Local\BiMaDock Ordner
-        string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        string directoryPath = Path.Combine(appDataPath, "BiMaDock");
-        string settingsFilePath = Path.Combine(directoryPath, "StyleSettings.json");
+        string settingsFilePath = Path.Combine(BiMaDock.AppPaths.AppDataDirectory, "StyleSettings.json");
 
         // Überprüfe, ob die Datei existiert
         if (File.Exists(settingsFilePath))

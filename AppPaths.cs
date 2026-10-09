@@ -5,8 +5,24 @@ namespace BiMaDock
 {
     internal static class AppPaths
     {
-        public static string AppDataDirectory =>
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock");
+        /// <summary>
+        /// Optionaler Datenordner, z. B. für UI-Tests. Ohne Angabe wird %LOCALAPPDATA%\BiMaDock verwendet.
+        /// </summary>
+        public const string DataDirectoryVariable = "BIMADOCK_DATA_DIR";
+
+        public static string AppDataDirectory
+        {
+            get
+            {
+                string? overrideDirectory = Environment.GetEnvironmentVariable(DataDirectoryVariable);
+                return string.IsNullOrWhiteSpace(overrideDirectory)
+                    ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock")
+                    : Path.GetFullPath(overrideDirectory);
+            }
+        }
+
+        public static bool IsDataDirectoryOverridden =>
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(DataDirectoryVariable));
 
         public static string EnsureAppDataDirectory()
         {
@@ -15,6 +31,8 @@ namespace BiMaDock
         }
 
         public static string GetLogFilePath() => Path.Combine(AppDataDirectory, "startup.log");
+
+        public static string GetIconsDirectory() => Path.Combine(AppDataDirectory, "Icons");
 
         public static string GetSettingsFilePath(string fileName = "StyleSettings.json") =>
             Path.Combine(EnsureAppDataDirectory(), fileName);

@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
@@ -36,7 +37,7 @@ internal static class DockItemButtonFactory
         content.Children.Add(image);
         content.Children.Add(textBlock);
 
-        return new Button
+        var button = new Button
         {
             Content = content,
             Tag = item,
@@ -56,5 +57,10 @@ internal static class DockItemButtonFactory
                 VerticalOffset = 55
             }
         };
+
+        // Für Screenreader und UI-Automatisierung (FlaUI-Tests) eindeutig benennen.
+        AutomationProperties.SetName(button, item.DisplayName);
+        AutomationProperties.SetAutomationId(button, "DockItem_" + item.Id);
+        return button;
     }
 }

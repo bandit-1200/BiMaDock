@@ -31,8 +31,7 @@ namespace BiMaDock
 
         private void CreateAppDataIconDirectory()
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+            string iconDirectoryPath = AppPaths.GetIconsDirectory();
 
             if (!Directory.Exists(iconDirectoryPath))
             {
@@ -99,8 +98,7 @@ namespace BiMaDock
         {
             Debug.WriteLine("LoadIconsFromAppData: gestartet."); // Debugging Ausgabe
 
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+            string iconDirectoryPath = AppPaths.GetIconsDirectory();
 
             // Überprüfe, ob es Icons im AppData-Verzeichnis gibt
             if (Directory.Exists(iconDirectoryPath))
@@ -146,8 +144,7 @@ namespace BiMaDock
 
         private async Task CopyDefaultIcons()
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+            string iconDirectoryPath = AppPaths.GetIconsDirectory();
 
             // Sicherstellen, dass das Verzeichnis existiert
             Directory.CreateDirectory(iconDirectoryPath);
@@ -194,8 +191,7 @@ namespace BiMaDock
         {
             Debug.WriteLine("UploadIcon: gestartet."); // Debugging Ausgabe
 
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+            string iconDirectoryPath = AppPaths.GetIconsDirectory();
 
             // Sicherstellen, dass das Verzeichnis existiert
             Directory.CreateDirectory(iconDirectoryPath);
@@ -241,8 +237,7 @@ namespace BiMaDock
         {
             Debug.WriteLine("DisplayIcons: gestartet."); // Debugging Ausgabe
 
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string iconDirectoryPath = Path.Combine(appDataPath, "BiMaDock", "Icons");
+            string iconDirectoryPath = AppPaths.GetIconsDirectory();
 
             // Sicherstellen, dass das Verzeichnis existiert
             Directory.CreateDirectory(iconDirectoryPath);

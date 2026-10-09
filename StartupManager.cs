@@ -5,7 +5,9 @@ namespace BiMaDock
 {
     public static class StartupManager
     {
-        private const string AppName = "BiMaDock";
+        // UI-Tests setzen einen eigenen Registry-Wertnamen, damit der echte Autostart-Eintrag unberührt bleibt.
+        private static readonly string AppName =
+            Environment.GetEnvironmentVariable("BIMADOCK_STARTUP_VALUE_NAME") is { Length: > 0 } name ? name : "BiMaDock";
         private static readonly string AppPath = Path.Combine(
             Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!,
             "BiMaDock.exe");

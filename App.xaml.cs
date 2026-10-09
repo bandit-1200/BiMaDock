@@ -43,13 +43,27 @@ namespace BiMaDock
             }
         }
 
+        // Mit eigenem Datenordner (z. B. UI-Tests) darf parallel zur normalen Instanz gestartet werden.
+        private static string GetSingleInstanceMutexName()
+        {
+            const string baseName = "BiMaDock_SingleInstance";
+            if (!AppPaths.IsDataDirectoryOverridden)
+            {
+                return baseName;
+            }
+
+            byte[] hash = System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes(AppPaths.AppDataDirectory.ToUpperInvariant()));
+            return $"{baseName}_{Convert.ToHexString(hash, 0, 8)}";
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             try
             {
                 Log("OnStartup begin");
                 bool createdNew;
-                singleInstanceMutex = new Mutex(true, "BiMaDock_SingleInstance", out createdNew);
+                singleInstanceMutex = new Mutex(true, GetSingleInstanceMutexName(), out createdNew);
                 Log($"Single instance mutex created: {createdNew}");
 
                 if (!createdNew)

@@ -117,7 +117,7 @@ namespace BiMaDock
             try
             {
                 InitializeComponent();
-                File.AppendAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "startup.log"), $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] MainWindow constructor after InitializeComponent{Environment.NewLine}");
+                File.AppendAllText(AppPaths.GetLogFilePath(), $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] MainWindow constructor after InitializeComponent{Environment.NewLine}");
 
                 mainDockNavigation = new DockNavigationController(
                     MainDockScrollViewer, MainDockPreviousButton, MainDockNextButton);
@@ -221,11 +221,11 @@ namespace BiMaDock
                 Debug.WriteLine("MainWindow: HideDock");
                 UpdateCheck();
                 Debug.WriteLine("MainWindow: UpdateCheck");
-                File.AppendAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "startup.log"), $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] MainWindow constructor complete{Environment.NewLine}");
+                File.AppendAllText(AppPaths.GetLogFilePath(), $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] MainWindow constructor complete{Environment.NewLine}");
             }
             catch (Exception ex)
             {
-                var logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BiMaDock", "startup.log");
+                var logPath = AppPaths.GetLogFilePath();
                 File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] MainWindow constructor exception: {ex}{Environment.NewLine}");
                 throw;
             }
@@ -1394,6 +1394,11 @@ namespace BiMaDock
 
         private async void UpdateCheck()
         {
+            if (Environment.GetEnvironmentVariable("BIMADOCK_DISABLE_UPDATE_CHECK") == "1")
+            {
+                return;
+            }
+
             await UpdateChecker.CheckForUpdatesAsync();
 
         }
