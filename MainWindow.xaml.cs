@@ -182,6 +182,15 @@ namespace BiMaDock
                     }
 
                     CenterWindow();
+
+                    // Erst nach dem ersten Layout ist die Dock-Höhe bekannt; das Ausblenden im Konstruktor
+                    // hätte das Dock sonst sichtbar gelassen.
+                    if (!IsMouseOver)
+                    {
+                        dockVisible = true;
+                        HideDock();
+                    }
+
                     DockPanel.DragEnter += (s, e) =>
                     {
                         e.Effects = DragDropEffects.All;

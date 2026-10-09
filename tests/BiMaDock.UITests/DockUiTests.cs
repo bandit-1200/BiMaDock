@@ -32,8 +32,9 @@ public sealed class DockUiTests
     public void Dock_BlendetBeiMauskontaktEinUndWiederAus()
     {
         using var session = StartWithTwoItems();
+        session.MoveMouseAway();
+        BiMaDockSession.WaitUntil(() => !session.IsDockVisible("Editor"), "Dock ist nach dem Start nicht ausgeblendet.");
 
-        // Hinweis: Direkt nach dem Start ist das Dock derzeit sichtbar (HideDock läuft vor dem ersten Layout).
         for (int round = 0; round < 2; round++)
         {
             session.ShowDock("Editor");

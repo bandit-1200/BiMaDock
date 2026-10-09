@@ -2,6 +2,10 @@
 
 Hier werden neue Funktionen, Fehlerbehebungen und Optimierungen je Version zusammengefasst. Die historischen Einträge wurden aus Git-Tags und Commit-Historie rekonstruiert. Wiederholte Release- und Build-Tags ohne erkennbare zusätzliche Änderungen sind zusammengefasst; uneinheitliche historische Tag-Namen werden nicht nachträglich umbenannt.
 
+## 26.10.17 – In Arbeit
+
+- Dock wird nach dem Programmstart zuverlässig ausgeblendet; bisher blieb es bis zum ersten Mauskontakt sichtbar, weil das Ausblenden vor dem ersten Layout lief.
+
 ## 26.10.16 – In Arbeit
 
 - Automatisierte UI-Tests mit FlaUI (`tests\BiMaDock.UITests`, Start über `.\ui-test.ps1`): Start, Ein-/Ausblenden, Kontextmenü, Kategorien, Bearbeiten, Löschen, Einstellungen, Über-Fenster, Autostart, Drag & Drop von Dateien und Elementen sowie Beenden. Ohne `BIMADOCK_UI_TESTS=1` werden sie übersprungen, damit `dotnet test` und die CI unverändert laufen.
