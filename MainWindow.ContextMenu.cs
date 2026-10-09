@@ -33,7 +33,7 @@ namespace BiMaDock
 
                 if (candidates.Count == 0)
                 {
-                    MessageBox.Show(this, "Alles in Ordnung – es wurden keine verwaisten Einträge gefunden.", "Dock aufräumen", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogMessageBox.Show(this, "Alles in Ordnung – es wurden keine verwaisten Einträge gefunden.", "Dock aufräumen", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
@@ -50,7 +50,7 @@ namespace BiMaDock
             catch (Exception ex)
             {
                 Debug.WriteLine($"Cleanup_Click Fehler: {ex}");
-                MessageBox.Show(this, "Beim Aufräumen ist ein Fehler aufgetreten:" + Environment.NewLine + ex.Message, "Dock aufräumen", MessageBoxButton.OK, MessageBoxImage.Error);
+                DialogMessageBox.Show(this, "Beim Aufräumen ist ein Fehler aufgetreten:" + Environment.NewLine + ex.Message, "Dock aufräumen", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -63,7 +63,7 @@ namespace BiMaDock
                 var backup = DockCleanup.LoadBackup();
                 if (backup == null)
                 {
-                    MessageBox.Show(this, "Es ist keine Sicherung zum Wiederherstellen vorhanden.", "Aufräumen rückgängig machen", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogMessageBox.Show(this, "Es ist keine Sicherung zum Wiederherstellen vorhanden.", "Aufräumen rückgängig machen", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
@@ -77,12 +77,12 @@ namespace BiMaDock
                 DockCleanup.DeleteBackup();
                 ReloadDockAfterCleanup();
 
-                MessageBox.Show(this, restored.Count == 1 ? "1 Eintrag wurde wiederhergestellt." : $"{restored.Count} Einträge wurden wiederhergestellt.", "Aufräumen rückgängig machen", MessageBoxButton.OK, MessageBoxImage.Information);
+                DialogMessageBox.Show(this, restored.Count == 1 ? "1 Eintrag wurde wiederhergestellt." : $"{restored.Count} Einträge wurden wiederhergestellt.", "Aufräumen rückgängig machen", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"UndoCleanup_Click Fehler: {ex}");
-                MessageBox.Show(this, "Beim Wiederherstellen ist ein Fehler aufgetreten:" + Environment.NewLine + ex.Message, "Aufräumen rückgängig machen", MessageBoxButton.OK, MessageBoxImage.Error);
+                DialogMessageBox.Show(this, "Beim Wiederherstellen ist ein Fehler aufgetreten:" + Environment.NewLine + ex.Message, "Aufräumen rückgängig machen", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -126,7 +126,7 @@ namespace BiMaDock
             catch (Exception ex)
             {
                 Debug.WriteLine($"Exit_Click Fehler: {ex}");
-                MessageBox.Show(this, "Beim Beenden von BiMaDock ist ein Fehler aufgetreten.", "Beenden", MessageBoxButton.OK, MessageBoxImage.Warning);
+                DialogMessageBox.Show(this, "Beim Beenden von BiMaDock ist ein Fehler aufgetreten.", "Beenden", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -134,7 +134,10 @@ namespace BiMaDock
         {
             if (DockContextMenu.PlacementTarget is Button button && button.Tag is DockItem dockItem)
             {
-                var customMessageBox = new CustomMessageBox($"Möchtest du das Element '{dockItem.DisplayName}' wirklich löschen?");
+                var customMessageBox = new CustomMessageBox($"Möchtest du das Element '{dockItem.DisplayName}' wirklich löschen?")
+                {
+                    Owner = this
+                };
                 customMessageBox.ShowDialog();
 
                 if (customMessageBox.Result)
@@ -166,7 +169,7 @@ namespace BiMaDock
 
                     if (string.IsNullOrWhiteSpace(categoryName))
                     {
-                        MessageBox.Show(this, "Bitte geben Sie einen gültigen Kategorienamen ein.", "Kategorie erstellen", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        DialogMessageBox.Show(this, "Bitte geben Sie einen gültigen Kategorienamen ein.", "Kategorie erstellen", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
@@ -177,7 +180,7 @@ namespace BiMaDock
 
                     if (alreadyExists)
                     {
-                        MessageBox.Show(this, $"Die Kategorie \"{categoryName}\" existiert bereits.", "Kategorie erstellen", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        DialogMessageBox.Show(this, $"Die Kategorie \"{categoryName}\" existiert bereits.", "Kategorie erstellen", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
@@ -187,7 +190,7 @@ namespace BiMaDock
             catch (Exception ex)
             {
                 Debug.WriteLine($"AddCategory_Click Fehler: {ex}");
-                MessageBox.Show(this, $"Beim Erstellen der Kategorie ist ein Fehler aufgetreten:\n{ex.Message}", "Kategorie erstellen", MessageBoxButton.OK, MessageBoxImage.Error);
+                DialogMessageBox.Show(this, $"Beim Erstellen der Kategorie ist ein Fehler aufgetreten:\n{ex.Message}", "Kategorie erstellen", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -212,7 +215,7 @@ namespace BiMaDock
 
                     if (settings == null)
                     {
-                        MessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                        DialogMessageBox.Show("Fehler beim Laden der Dock-Einstellungen.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
 
@@ -240,7 +243,7 @@ namespace BiMaDock
                         // Neuen Namen validieren
                         if (string.IsNullOrEmpty(newName))
                         {
-                            MessageBox.Show("Name darf nicht leer sein.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            DialogMessageBox.Show("Name darf nicht leer sein.", "Ungültiger Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                             return;
                         }
 
@@ -298,12 +301,12 @@ namespace BiMaDock
                 }
                 else
                 {
-                    MessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    DialogMessageBox.Show("Fehler: DockContextMenu.PlacementTarget ist kein Button oder button.Tag ist kein DockItem", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ein unerwarteter Fehler ist aufgetreten: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                DialogMessageBox.Show($"Ein unerwarteter Fehler ist aufgetreten: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -343,7 +346,7 @@ namespace BiMaDock
             catch (Exception ex)
             {
                 Debug.WriteLine($"AboutMenuItem_Click Fehler: {ex}");
-                MessageBox.Show(this, $"Beim Öffnen des Info-Fensters ist ein Fehler aufgetreten:\n{ex.Message}", "Über BiMaDock", MessageBoxButton.OK, MessageBoxImage.Error);
+                DialogMessageBox.Show(this, $"Beim Öffnen des Info-Fensters ist ein Fehler aufgetreten:\n{ex.Message}", "Über BiMaDock", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -368,7 +371,7 @@ namespace BiMaDock
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Fehler beim Öffnen der URL: {ex.Message}");
+                DialogMessageBox.Show($"Fehler beim Öffnen der URL: {ex.Message}");
             }
         }
 

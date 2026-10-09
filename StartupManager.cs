@@ -18,7 +18,7 @@ namespace BiMaDock
             {
                 if (key == null)
                 {
-                    MessageBox.Show("Fehler beim Zugriff auf die Registry.");
+                    DialogMessageBox.Show("Fehler beim Zugriff auf die Registry.");
                     return;
                 }
 

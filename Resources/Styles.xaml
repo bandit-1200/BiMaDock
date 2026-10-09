@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:BiMaDock">
     <!-- Farben -->
     <SolidColorBrush x:Key="PrimaryColor" Color="#1C1C1E"/> <!-- Dunkles Grau für Hintergrund -->
     <SolidColorBrush x:Key="SecondaryColor" Color="#2C2C2E"/> <!-- Helleres Grau für Sekundärflächen -->
@@ -21,6 +22,7 @@
         <Setter Property="ResizeMode" Value="NoResize"/>
         <Setter Property="ShowInTaskbar" Value="False"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="local:DialogWindowBehavior.IsDraggable" Value="True"/>
     </Style>
 
     <Style x:Key="DialogSurfaceBorderStyle" TargetType="Border">

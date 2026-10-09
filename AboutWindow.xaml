@@ -1,30 +1,29 @@
 <Window x:Class="BiMaDock.AboutWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Über BiMaDock" Height="420" Width="520" MinHeight="420" MinWidth="520"
-        Background="#101214"
+        Title="Über BiMaDock" Width="520"
+        SizeToContent="Height"
+        Style="{DynamicResource DialogWindowStyle}"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
         ShowInTaskbar="False"
-        WindowStyle="SingleBorderWindow"
-        AllowsTransparency="False">
-    <Border Background="#1E1F23" BorderBrush="#3A3D42" BorderThickness="1" CornerRadius="18" Padding="22">
+        Background="Transparent">
+    <Border Style="{DynamicResource DialogSurfaceBorderStyle}" Margin="12">
         <StackPanel>
-            <TextBlock Text="BiMaDock" Foreground="White" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-            <TextBlock x:Name="VersionTextBox" Foreground="#D2D5DA" FontSize="15" HorizontalAlignment="Center" Margin="0,0,0,8"/>
-            <TextBlock Text="Autor: Marco Bilz" Foreground="#D2D5DA" FontSize="15" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+            <TextBlock Text="BiMaDock" Style="{DynamicResource DialogTitleTextStyle}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+            <TextBlock x:Name="VersionTextBox" Style="{DynamicResource DialogBodyTextStyle}" FontSize="15" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+            <TextBlock Text="Autor: Marco Bilz" Style="{DynamicResource DialogBodyTextStyle}" FontSize="15" HorizontalAlignment="Center" Margin="0,0,0,14"/>
             <TextBlock Text="BiMaDock ist eine WPF-basierte Anwendung für Windows, die eine personalisierbare Dock-Leiste zur Organisation von Programmen und Dateien bietet."
-                       Foreground="#D2D5DA"
-                       HorizontalAlignment="Center" TextAlignment="Center" Margin="0,0,0,12" TextWrapping="Wrap"/>
-            <TextBlock HorizontalAlignment="Center" Margin="0,0,0,20">
-                <Run Foreground="#D2D5DA" Text="Lizenz: " />
-                <Hyperlink NavigateUri="https://opensource.org/licenses/MIT" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#0078D4">
+                       Style="{DynamicResource DialogBodyTextStyle}"
+                       HorizontalAlignment="Center" TextAlignment="Center" Margin="0,0,0,12"/>
+            <TextBlock HorizontalAlignment="Center" Style="{DynamicResource DialogBodyTextStyle}" Margin="0,0,0,8">
+                <Run Text="Lizenz: " />
+                <Hyperlink NavigateUri="https://opensource.org/licenses/MIT" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#4CA3F0">
                     MIT
                 </Hyperlink>
             </TextBlock>
-            <StackPanel HorizontalAlignment="Center" Margin="0,10,0,0">
-                <Button Content="Auf Update prüfen" Width="180" Click="CheckUpdateButton_Click" Margin="0,0,0,10" Background="#0078D4" Foreground="White" BorderBrush="#0078D4" BorderThickness="1" Height="42"/>
-                <Button Content="Schließen" Width="180" Click="CloseButton_Click" Background="#2A2C31" Foreground="White" BorderBrush="#3A3D42" BorderThickness="1" Height="42"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+                <Button Content="Auf Update prüfen" Style="{DynamicResource DialogPrimaryButtonStyle}" Click="CheckUpdateButton_Click"/>
+                <Button Content="Schließen" Style="{DynamicResource DialogSecondaryButtonStyle}" IsCancel="True" Click="CloseButton_Click"/>
             </StackPanel>
         </StackPanel>
     </Border>

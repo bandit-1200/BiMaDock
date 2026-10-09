@@ -301,6 +301,12 @@ namespace BiMaDock
             this.DialogResult = false; // Schließen des Fensters ohne Erfolg
         }
 
+        // Verhindert, dass ein Klick auf Symbole das rahmenlose Fenster verschiebt (DragMove würde das Loslassen verschlucken)
+        private void SuppressWindowDrag_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+        }
+
         // Lädt ein Vorschaubild ohne Dateisperre und in reduzierter Größe
         private static BitmapImage LoadPreviewImage(string iconPath)
         {

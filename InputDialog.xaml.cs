@@ -36,7 +36,7 @@ namespace BiMaDock
             {
                 if (item.DisplayName == inputCategoryName && item.IsCategory)
                 {
-                    MessageBox.Show($"Kategorie {inputCategoryName} existiert bereits. Bitte wählen Sie einen anderen Namen.", "Kategorie existiert", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    DialogMessageBox.Show($"Kategorie {inputCategoryName} existiert bereits. Bitte wählen Sie einen anderen Namen.", "Kategorie existiert", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return; // Abbruch der Erstellung
                 }
             }

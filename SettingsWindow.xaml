@@ -2,95 +2,204 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        Title="Einstellungen" Width="470" Height="650"
-        Background="#111214"
-        WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize">
+        Title="Einstellungen" Width="494" Height="674"
+        Style="{DynamicResource DialogWindowStyle}"
+        ShowInTaskbar="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen">
 
 <Window.Resources>
-    <Style x:Key="HoverButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="#0078D4"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="Height" Value="40"/>
-        <Setter Property="Width" Value="120"/>
-        <Setter Property="Margin" Value="10"/>
+    <!-- Schließen-Schaltfläche in der Kopfzeile -->
+    <Style x:Key="DialogCloseButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="32"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Foreground" Value="{DynamicResource DialogMutedColor}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#005A9E"/>
-                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Background" Value="#3A3D42"/>
+                <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="#2F3136"/>
             </Trigger>
         </Style.Triggers>
     </Style>
+
+    <!-- Registerkarten im Dialogstil -->
+    <Style TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TabPanel Grid.Row="0" IsItemsHost="True" Margin="0,0,0,10" KeyboardNavigation.TabIndex="1"/>
+                        <Border Grid.Row="1"
+                                Background="#26282D"
+                                BorderBrush="{DynamicResource DialogBorderColor}"
+                                BorderThickness="1"
+                                CornerRadius="12">
+                            <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent" Margin="4"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="TabItem">
+        <Setter Property="Foreground" Value="{DynamicResource DialogMutedColor}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border x:Name="TabBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="14,7"
+                            Margin="0,0,6,0">
+                        <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#2A2C31"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#2A2C31"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource DialogBorderColor}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Abschnittsüberschrift innerhalb einer Registerkarte -->
+    <Style x:Key="SectionHeaderTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,0,0,16"/>
+    </Style>
 </Window.Resources>
 
-<Grid>
-    <Border Background="#1A1A1A" CornerRadius="15" Padding="18">
-        <Grid>
-            <TabControl Margin="10" Background="#1A1A1A" BorderBrush="#444444">
-                <!-- Tab für Allgemeine Einstellungen -->
-                <TabItem Header="Allgemein">
-                    <StackPanel Margin="20">
-                        <TextBlock Text="Allgemeine Einstellungen" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="White" HorizontalAlignment="Center"/>
-                        <CheckBox Name="AutoStartCheckBox" Content="Programm beim Start ausführen" Checked="AutoStartCheckBox_Checked" Unchecked="AutoStartCheckBox_Unchecked" Foreground="White" Margin="0,10,0,20"/>
-                        <TextBlock Text="Einblendzeit (Reaktionszeit zum Einblenden):" Foreground="White" Margin="0,0,0,10"/>
-                        <Slider x:Name="DockShowDelaySlider" Minimum="100" Maximum="1000" TickFrequency="50" IsSnapToTickEnabled="True" Margin="0,0,0,10"/>
-                        <TextBlock x:Name="DockShowDelayValueText" Text="Aktuelle Einblendzeit: 300 ms" Foreground="White" Margin="0,0,0,20"/>
-                    </StackPanel>
-                </TabItem>
+<Border Style="{DynamicResource DialogSurfaceBorderStyle}" Margin="12">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-                <!-- Tab für Farben -->
-                <TabItem Header="Farben">
-                    <StackPanel Margin="20">
-                        <TextBlock Text="Farben anpassen" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="White" HorizontalAlignment="Center"/>
-                        <Border Name="PrimaryColorPreview" Height="100" Margin="0,0,0,20" CornerRadius="10">
+        <!-- Kopfzeile -->
+        <Grid Grid.Row="0" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Einstellungen" Style="{DynamicResource DialogTitleTextStyle}" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="✕" Style="{StaticResource DialogCloseButtonStyle}"
+                    IsCancel="True"
+                    ToolTip="Schließen"
+                    AutomationProperties.Name="Schließen"
+                    AutomationProperties.AutomationId="SettingsCloseButton"
+                    Click="ExitButton_Click"/>
+        </Grid>
+
+        <TabControl Grid.Row="1">
+            <!-- Tab für Allgemeine Einstellungen -->
+            <TabItem Header="Allgemein">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="16">
+                        <TextBlock Text="Allgemeine Einstellungen" Style="{StaticResource SectionHeaderTextStyle}"/>
+                        <CheckBox Name="AutoStartCheckBox" Content="Programm beim Start ausführen" Checked="AutoStartCheckBox_Checked" Unchecked="AutoStartCheckBox_Unchecked" Foreground="{DynamicResource ForegroundColor}" Margin="0,0,0,20"/>
+                        <TextBlock Text="Einblendzeit (Reaktionszeit zum Einblenden):" Foreground="{DynamicResource DialogMutedColor}" Margin="0,0,0,10"/>
+                        <Slider x:Name="DockShowDelaySlider" Minimum="100" Maximum="1000" TickFrequency="50" IsSnapToTickEnabled="True" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="DockShowDelayValueText" Text="Aktuelle Einblendzeit: 300 ms" Foreground="{DynamicResource DialogMutedColor}" Margin="0,0,0,20"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab für Farben -->
+            <TabItem Header="Farben">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="16">
+                        <TextBlock Text="Farben anpassen" Style="{StaticResource SectionHeaderTextStyle}"/>
+                        <Border Name="PrimaryColorPreview" Height="90" Margin="0,0,0,12" CornerRadius="10" BorderBrush="{DynamicResource DialogBorderColor}" BorderThickness="1">
                             <Border.Background>
                                 <SolidColorBrush Color="{Binding ElementName=PrimaryColorPicker, Path=SelectedColor.Value, FallbackValue=Transparent}"/>
                             </Border.Background>
                             <TextBlock Text="Primärfarbe Vorschau" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Border>
-                        <Border Name="SecondaryColorPreview" Height="100" Margin="0,0,0,20" CornerRadius="10">
+                        <Border Name="SecondaryColorPreview" Height="90" Margin="0,0,0,20" CornerRadius="10" BorderBrush="{DynamicResource DialogBorderColor}" BorderThickness="1">
                             <Border.Background>
                                 <SolidColorBrush Color="{Binding ElementName=SecondaryColorPicker, Path=SelectedColor.Value, FallbackValue=Transparent}"/>
                             </Border.Background>
                             <TextBlock Text="Sekundärfarbe Vorschau" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Border>
-                        <UniformGrid Columns="2" Margin="0,0,0,20">
-                            <StackPanel>
-                                <TextBlock Text="Primärfarbe:" Foreground="White" ToolTip="Wähle die Hauptfarbe der Anwendung"/>
+                        <UniformGrid Columns="2">
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="Primärfarbe:" Foreground="{DynamicResource DialogMutedColor}" ToolTip="Wähle die Hauptfarbe der Anwendung"/>
                                 <xctk:ColorPicker Name="PrimaryColorPicker" SelectedColorChanged="PrimaryColorPicker_SelectedColorChanged" Margin="0,5,0,15"/>
                             </StackPanel>
-                            <StackPanel>
-                                <TextBlock Text="Sekundärfarbe:" Foreground="White" ToolTip="Wähle die Akzentfarbe der Anwendung"/>
+                            <StackPanel Margin="8,0,0,0">
+                                <TextBlock Text="Sekundärfarbe:" Foreground="{DynamicResource DialogMutedColor}" ToolTip="Wähle die Akzentfarbe der Anwendung"/>
                                 <xctk:ColorPicker Name="SecondaryColorPicker" SelectedColorChanged="SecondaryColorPicker_SelectedColorChanged" Margin="0,5,0,15"/>
                             </StackPanel>
-                            <StackPanel Margin="0,0,0,20">
-                                <TextBlock Text="Akzentfarbe:" Foreground="White" ToolTip="Wähle die Akzentfarbe der Anwendung"/>
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="Akzentfarbe:" Foreground="{DynamicResource DialogMutedColor}" ToolTip="Wähle die Akzentfarbe der Anwendung"/>
                                 <xctk:ColorPicker Name="AccentColorPicker" SelectedColorChanged="AccentColorPicker_SelectedColorChanged" Margin="0,5,0,15"/>
-                           
                             </StackPanel>
-                                <StackPanel Margin="0,0,0,20">
-                                <TextBlock Text="FeedbackColor:" Foreground="White" ToolTip="Wähle die FeedbackColor der Anwendung"/>
+                            <StackPanel Margin="8,0,0,0">
+                                <TextBlock Text="FeedbackColor:" Foreground="{DynamicResource DialogMutedColor}" ToolTip="Wähle die FeedbackColor der Anwendung"/>
                                 <xctk:ColorPicker Name="FeedbackColorPicker" SelectedColorChanged="FeedbackColorPicker_SelectedColorChanged" Margin="0,5,0,15"/>
                             </StackPanel>
-
                         </UniformGrid>
                     </StackPanel>
-                </TabItem>
+                </ScrollViewer>
+            </TabItem>
 
-                <!-- Tab für Animationen -->
-                <TabItem Header="Animationen">
-                    <StackPanel Name="AnimationSettingsPanel" Margin="20">
+            <!-- Tab für Animationen -->
+            <TabItem Header="Animationen">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Name="AnimationSettingsPanel" Margin="16">
                         <!-- Platzhalter für dynamische Steuerelemente der Animationseinstellungen -->
                     </StackPanel>
-                </TabItem>
-            </TabControl>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
 
-            <!-- Schaltflächen -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,20,0,20">
-                <Button Content="Speichern" Click="SaveButton_Click" Style="{StaticResource HoverButtonStyle}"/>
-                <Button Content="Abbrechen" Click="ExitButton_Click" Style="{StaticResource HoverButtonStyle}"/>
-            </StackPanel>
-        </Grid>
-    </Border>
-</Grid>
+        <!-- Schaltflächen -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+            <Button Content="Speichern" Click="SaveButton_Click" Style="{DynamicResource DialogPrimaryButtonStyle}"/>
+            <Button Content="Abbrechen" Click="ExitButton_Click" Style="{DynamicResource DialogSecondaryButtonStyle}"/>
+        </StackPanel>
+    </Grid>
+</Border>
 </Window>

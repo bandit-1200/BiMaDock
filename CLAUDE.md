@@ -23,6 +23,7 @@ BiMaDock ist eine personalisierbare Dock-Leiste für Windows (WPF, `net8.0-windo
 - `SettingsWindow.xaml.cs` plus `SettingsWindow.Colors.cs`, `.Animations.cs`, `.AnimationEditors.cs`; Einstellungen in `StyleSettings.json` (typisiert über `StyleSettingsFile.cs`)
 - `UpdateChecker.cs` / `ReleaseVersion.cs`: GitHub-Release-Prüfung (Asset `BiMaDockSetup.exe`)
 - `StartupManager.cs`: Autostart über `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`
+- `DialogMessageBox.xaml` / `DialogWindowBehavior.cs`: eigenes Meldungsfenster statt `MessageBox.Show`; Dialoge nutzen `DialogWindowStyle` aus `Resources\Styles.xaml` (rahmenlos, verschiebbar)
 - `GlobalMouseHook.cs`: Klick außerhalb blendet das Dock aus
 - `AppPaths.cs`: Benutzerdaten unter `%LOCALAPPDATA%\BiMaDock\`
 - Tests: `tests\BiMaDock.Tests` (xUnit, Logik) und `tests\BiMaDock.UITests` (FlaUI, startet die App mit temporärem Datenordner über `BIMADOCK_DATA_DIR`, ohne Update-Prüfung und mit eigenem Autostart-Wertnamen)

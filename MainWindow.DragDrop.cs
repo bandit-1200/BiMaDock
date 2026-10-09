@@ -630,7 +630,7 @@ namespace BiMaDock
             catch (Exception ex)
             {
                 Debug.WriteLine($"CategoryDockContainer_Drop: Fehler aufgetreten - {ex}");
-                MessageBox.Show(this, "Das Element konnte nicht zur Kategorie hinzugefügt werden.",
+                DialogMessageBox.Show(this, "Das Element konnte nicht zur Kategorie hinzugefügt werden.",
                     "BiMaDock", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             finally

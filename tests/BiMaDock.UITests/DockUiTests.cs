@@ -453,6 +453,26 @@ public sealed class DockUiTests
     }
 
     [UiFact]
+    public void Dialog_LaesstSichAnFreierFlaecheVerschieben()
+    {
+        using var session = StartWithTwoItems();
+
+        session.ClickContextMenuItem("Editor", "Über");
+        var about = session.WaitForWindow("Über BiMaDock");
+        var before = about.BoundingRectangle;
+        // Freie Fläche oben links auf der Dialogoberfläche (innerhalb von Rand und Innenabstand)
+        var from = new Point(before.Left + 20, before.Top + 20);
+        BiMaDockSession.Drag(from, new Point(from.X + 150, from.Y + 100));
+
+        BiMaDockSession.WaitUntil(() =>
+        {
+            var after = about.BoundingRectangle;
+            return Math.Abs(after.Left - before.Left - 150) <= 10 && Math.Abs(after.Top - before.Top - 100) <= 10;
+        }, "Dialog wurde nicht verschoben.");
+        BiMaDockSession.InvokeButton(about, "Schließen");
+    }
+
+    [UiFact]
     public void Kontextmenue_Aufraeumen_MeldetSaubereDock()
     {
         using var session = StartWithTwoItems();

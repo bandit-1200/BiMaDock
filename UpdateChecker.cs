@@ -74,7 +74,7 @@ namespace BiMaDock
                 }
                 else if (ignoreDefer)
                 {
-                    MessageBox.Show(
+                    DialogMessageBox.Show(
                         $"Ihre Software ist auf dem neuesten Stand.\n\nInstallierte Version: {currentVersion}\nVerfügbare Version: {latestVersion}",
                         "BiMaDock-Update",
                         MessageBoxButton.OK,
@@ -185,7 +185,7 @@ namespace BiMaDock
             Debug.WriteLine($"Update check failed: {exception}");
             if (showToUser)
             {
-                MessageBox.Show(
+                DialogMessageBox.Show(
                     $"Die Updateprüfung ist fehlgeschlagen.\n\n{exception.Message}",
                     "BiMaDock-Update",
                     MessageBoxButton.OK,

@@ -400,7 +400,7 @@ public class DockManager
         catch (Exception ex)
         {
             Debug.WriteLine($"DockPanel_Drop: Fehler aufgetreten - {ex}");
-            MessageBox.Show(mainWindow, "Das Element konnte nicht zum Dock hinzugefügt werden.",
+            DialogMessageBox.Show(mainWindow, "Das Element konnte nicht zum Dock hinzugefügt werden.",
                 "BiMaDock", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         finally

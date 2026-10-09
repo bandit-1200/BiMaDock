@@ -280,7 +280,7 @@ namespace BiMaDock
             }
             else
             {
-                MessageBox.Show("AnimationEffectComboBox oder dessen SelectedItem ist null.");
+                DialogMessageBox.Show("AnimationEffectComboBox oder dessen SelectedItem ist null.");
             }
         }
 

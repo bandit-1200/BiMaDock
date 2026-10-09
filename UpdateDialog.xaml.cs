@@ -29,7 +29,7 @@ namespace BiMaDock
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Fehler beim Öffnen des Download-Links: {ex.Message}");
+                DialogMessageBox.Show($"Fehler beim Öffnen des Download-Links: {ex.Message}");
             }
             Close();
         }
@@ -43,15 +43,15 @@ namespace BiMaDock
             }
             catch (IOException ex)
             {
-                MessageBox.Show($"Das Update konnte nicht zurückgestellt werden:\n{ex.Message}", "BiMaDock-Update", MessageBoxButton.OK, MessageBoxImage.Warning);
+                DialogMessageBox.Show($"Das Update konnte nicht zurückgestellt werden:\n{ex.Message}", "BiMaDock-Update", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (UnauthorizedAccessException ex)
             {
-                MessageBox.Show($"Das Update konnte nicht zurückgestellt werden:\n{ex.Message}", "BiMaDock-Update", MessageBoxButton.OK, MessageBoxImage.Warning);
+                DialogMessageBox.Show($"Das Update konnte nicht zurückgestellt werden:\n{ex.Message}", "BiMaDock-Update", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (InvalidOperationException ex)
             {
-                MessageBox.Show($"Das Update konnte nicht zurückgestellt werden:\n{ex.Message}", "BiMaDock-Update", MessageBoxButton.OK, MessageBoxImage.Warning);
+                DialogMessageBox.Show($"Das Update konnte nicht zurückgestellt werden:\n{ex.Message}", "BiMaDock-Update", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }

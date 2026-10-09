@@ -69,7 +69,7 @@ namespace BiMaDock
                 if (!createdNew)
                 {
                     Log("Another instance is already running. Exiting.");
-                    MessageBox.Show("BiMaDock läuft bereits. Bitte schließen Sie die laufende Instanz zuerst.", "BiMaDock", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogMessageBox.Show("BiMaDock läuft bereits. Bitte schließen Sie die laufende Instanz zuerst.", "BiMaDock", MessageBoxButton.OK, MessageBoxImage.Information);
                     Shutdown();
                     return;
                 }
@@ -99,7 +99,7 @@ namespace BiMaDock
             catch (Exception ex)
             {
                 Log("OnStartup exception: " + ex);
-                MessageBox.Show("Beim Starten von BiMaDock ist ein Fehler aufgetreten.\n\n" + ex.Message, "BiMaDock Startfehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                DialogMessageBox.Show("Beim Starten von BiMaDock ist ein Fehler aufgetreten.\n\n" + ex.Message, "BiMaDock Startfehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 throw;
             }
         }
