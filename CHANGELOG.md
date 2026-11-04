@@ -1,8 +1,10 @@
 # Versionsverlauf
 
-## Unveröffentlicht
+## 2.0.1
 
 - Alte Version wird auch entfernt, wenn sie für alle Benutzer installiert ist (Program Files): einmal fragen, dann Adminrechte. Bei "Nein" wird nicht erneut gefragt (Datei alte-version-behalten.txt im Datenordner löschen, um wieder zu fragen)
+- App-Symbol für Programm, Installer und Deinstallation
+- Installer werden über GitHub Actions gebaut und veröffentlicht
 
 ## 2.0.0
 
