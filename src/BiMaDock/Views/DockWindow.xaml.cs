@@ -349,6 +349,25 @@ public partial class DockWindow : Window
         }
     }
 
+    private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        var updates = (UpdateService)((App)Application.Current).Services.GetService(typeof(UpdateService))!;
+        _isMenuOpen = true;
+        _hideTimer.Stop();
+        try
+        {
+            await updates.CheckAsync(this, manual: true);
+        }
+        finally
+        {
+            _isMenuOpen = false;
+            if (!DockArea.IsMouseOver)
+            {
+                _hideTimer.Start();
+            }
+        }
+    }
+
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
         var result = WithDockKeptOpen(() => SettingsDialog.Edit(this, _viewModel.Settings, _startup.IsEnabled, _icons, preview => ThemeService.Apply(preview, Application.Current.Resources)));

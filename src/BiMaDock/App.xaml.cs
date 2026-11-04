@@ -18,6 +18,9 @@ public partial class App : Application
 {
     private Mutex? _singleInstance;
     private ServiceProvider? _services;
+
+    /// <summary>Dienste der App (für Stellen ohne Konstruktor-Injektion).</summary>
+    public IServiceProvider Services => _services ?? throw new InvalidOperationException("App noch nicht gestartet.");
     private ILogger<App>? _logger;
 
     protected override void OnStartup(StartupEventArgs e)
@@ -52,6 +55,12 @@ public partial class App : Application
         try
         {
             _services.GetRequiredService<DockViewModel>().Load();
+
+            // Erst wenn Einträge und Symbole übernommen und gespeichert sind, die alte Version entfernen.
+            if (File.Exists(AppPaths.DockFile) && !AppPaths.IsDataDirectoryOverridden)
+            {
+                _services.GetRequiredService<LegacyDockRemover>().RemoveOldVersion();
+            }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -62,6 +71,12 @@ public partial class App : Application
 
         MainWindow = _services.GetRequiredService<DockWindow>();
         MainWindow.Show();
+
+        if (!AppPaths.IsDataDirectoryOverridden)
+        {
+            var viewModel = _services.GetRequiredService<DockViewModel>();
+            _services.GetRequiredService<UpdateService>().Start(() => viewModel.Settings);
+        }
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -89,6 +104,8 @@ public partial class App : Application
         services.AddSingleton<StartupService>();
         services.AddSingleton(new SettingsStore(AppPaths.SettingsFile));
         services.AddSingleton<ILauncher, ShellLauncher>();
+        services.AddSingleton<UpdateService>();
+        services.AddSingleton<LegacyDockRemover>();
         services.AddSingleton<DockViewModel>();
         services.AddSingleton<DockWindow>();
         return services.BuildServiceProvider();

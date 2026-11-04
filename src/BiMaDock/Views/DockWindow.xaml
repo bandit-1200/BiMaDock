@@ -32,6 +32,7 @@
                         <MenuItem Tag="Undo" Header="Rückgängig" Click="Undo_Click" />
                         <Separator />
                         <MenuItem Header="Einstellungen …" Click="Settings_Click" />
+                        <MenuItem Header="Nach Updates suchen …" Click="CheckUpdates_Click" />
                         <MenuItem Header="Datenordner öffnen" Click="OpenDataFolder_Click" />
                         <MenuItem Header="Beenden" Click="Exit_Click" />
                     </ContextMenu>
@@ -91,6 +92,7 @@
                         <MenuItem Tag="Undo" Header="Rückgängig" Click="Undo_Click" />
                         <Separator />
                         <MenuItem Header="Einstellungen …" Click="Settings_Click" />
+                        <MenuItem Header="Nach Updates suchen …" Click="CheckUpdates_Click" />
                         <MenuItem Header="Datenordner öffnen" Click="OpenDataFolder_Click" />
                         <MenuItem Header="Beenden" Click="Exit_Click" />
                     </ContextMenu>

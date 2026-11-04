@@ -1,9 +1,19 @@
 # Versionsverlauf
 
-## Unveröffentlicht
+## 2.0.0
+
+Komplett neu entwickelte Version, ersetzt BiMaDock 26.10.x.
+
+### Umstieg von der alten Version
+
+- Einträge und Kategorien werden beim ersten Start übernommen
+- Symbole aus dem Ordner der alten Version werden in die eigenen Symbole kopiert (Kategorie "Altes Dock")
+- Danach wird das alte Dock beendet, sein Autostart entfernt und es still deinstalliert
 
 ### Neuigkeiten
 
+- Updates: automatische Suche nach dem Start und alle 6 Stunden, wahlweise nur fragen oder still installieren; manuell über Kontextmenü oder Einstellungen
+- Jede Animation hat eigene Werte: jeder Hover-Effekt merkt sich Stärke und Tempo, Nachfedern beim Einblenden, Reaktionszeit der Lupe, Anzahl und Dauer der Sprünge beim Starten, Überschwingen beim Ploppen
 - Lupe wie beim Mac: Symbol unter der Maus wächst, Nachbarn wachsen abgestuft mit (Größe und Reichweite einstellbar)
 - Dock einblenden: Sofort, Gleiten oder Gleiten mit Federn, Dauer einstellbar
 - Neue Einträge ploppen herein, entfernte schrumpfen weg (auch bei Rückgängig)

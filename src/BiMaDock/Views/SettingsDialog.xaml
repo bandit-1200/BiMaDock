@@ -167,6 +167,20 @@
                         </StackPanel>
                     </StackPanel>
                 </TabItem>
+
+                <!-- ===== Updates ===== -->
+                <TabItem Header="Updates">
+                    <StackPanel>
+                        <TextBlock Text="Neue Versionen" Style="{StaticResource DialogSectionStyle}" Margin="0,4,0,0" />
+                        <WrapPanel x:Name="UpdateModes" Margin="0,8,0,0" />
+                        <TextBlock x:Name="UpdateModeHint" Style="{StaticResource DialogHintStyle}" />
+                        <TextBlock x:Name="VersionInfo" Style="{StaticResource DialogHintStyle}" Margin="0,14,0,0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Button Content="Jetzt suchen" Style="{StaticResource AccentDialogButtonStyle}" Margin="0" Click="CheckNow_Click" />
+                            <Button Content="Releases ansehen" Style="{StaticResource DialogButtonStyle}" Click="OpenReleases_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </TabItem>
             </TabControl>
         </DockPanel>
     </Border>

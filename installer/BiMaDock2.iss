@@ -60,3 +60,11 @@ Name: "{autodesktop}\BiMaDock 2"; Filename: "{app}\BiMaDock.exe"; Tasks: desktop
 ; runasoriginaluser: auch nach einer Admin-Installation startet das Dock als der angemeldete Benutzer,
 ; damit dessen Daten in seinem eigenen Profil landen.
 Filename: "{app}\BiMaDock.exe"; Description: "{cm:LaunchProgram,BiMaDock 2}"; Flags: nowait postinstall skipifsilent runasoriginaluser
+; Update aus der App (/UPDATE): auch im stillen Modus danach wieder starten.
+Filename: "{app}\BiMaDock.exe"; Flags: nowait runasoriginaluser; Check: IsUpdate
+
+[Code]
+function IsUpdate: Boolean;
+begin
+  Result := ExpandConstant('{param:UPDATE|0}') <> '0';
+end;

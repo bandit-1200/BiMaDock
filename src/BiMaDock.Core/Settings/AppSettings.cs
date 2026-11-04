@@ -75,6 +75,9 @@ public sealed record AppSettings
     /// <summary>Dauer von Hereinploppen und Wegschrumpfen.</summary>
     public int ItemPopDurationMs { get; init; } = 280;
 
+    /// <summary>Wie mit neuen Versionen umgegangen wird.</summary>
+    public UpdateMode UpdateMode { get; init; } = UpdateMode.Notify;
+
     public const string DefaultDockColor = "#2A2A30";
     public const string DefaultBorderColor = "#FFFFFF";
     public const string DefaultAccentColor = "#4CC2FF";
@@ -116,6 +119,7 @@ public sealed record AppSettings
         ItemPopOvershoot = Math.Clamp(ItemPopOvershoot, 0, 100),
         MagnifyScale = Math.Clamp(MagnifyScale, 110, 200),
         MagnifyRange = Math.Clamp(MagnifyRange, 1, 4),
+        UpdateMode = Enum.IsDefined(UpdateMode) ? UpdateMode : UpdateMode.Notify,
         SlideStyle = Enum.IsDefined(SlideStyle) ? SlideStyle : SlideStyle.Spring,
         SlideDurationMs = Math.Clamp(SlideDurationMs, 80, 600),
         ItemPopDurationMs = Math.Clamp(ItemPopDurationMs, 100, 600),
@@ -193,6 +197,19 @@ public enum HoverEffect
     Swing,
     Wiggle,
     Pulse,
+}
+
+/// <summary>Umgang mit neuen Versionen.</summary>
+public enum UpdateMode
+{
+    /// <summary>Nur von Hand suchen.</summary>
+    Off,
+
+    /// <summary>Automatisch suchen und fragen.</summary>
+    Notify,
+
+    /// <summary>Automatisch suchen und still installieren.</summary>
+    Automatic,
 }
 
 /// <summary>Bewegung beim Ein- und Ausblenden des Docks.</summary>

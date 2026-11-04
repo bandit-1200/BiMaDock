@@ -32,6 +32,14 @@ public partial class SettingsDialog : DialogWindow
         (SlideStyle.Spring, "Gleiten mit Federn"),
     ];
 
+    private static readonly (UpdateMode Value, string Label)[] UpdateChoices =
+    [
+        (UpdateMode.Off, "Nur von Hand"),
+        (UpdateMode.Notify, "Suchen und fragen"),
+        (UpdateMode.Automatic, "Automatisch installieren"),
+    ];
+
+    private readonly ChipGroup<UpdateMode> _updateMode;
     private readonly ColorField _dockColor;
     private readonly ColorField _borderColor;
     private readonly ColorField _accentColor;
@@ -60,6 +68,8 @@ public partial class SettingsDialog : DialogWindow
 
         _hoverEffect = new ChipGroup<HoverEffect>(HoverEffects, HoverChoices, ShowHoverValues);
         _slideStyle = new ChipGroup<SlideStyle>(SlideStyles, SlideChoices, Preview);
+        _updateMode = new ChipGroup<UpdateMode>(UpdateModes, UpdateChoices, Preview);
+        VersionInfo.Text = $"Installiert: BiMaDock {UpdateService.CurrentVersion}. Updates kommen von github.com/{BiMaDock.Core.Updates.UpdateChecker.Repository}.";
 
         Apply(settings);
         Autostart.IsChecked = autostart;
@@ -105,6 +115,7 @@ public partial class SettingsDialog : DialogWindow
         MagnifySpeedMs = (int)MagnifySpeed.Value,
         SlideSpring = (int)SlideSpring.Value,
         ItemPopOvershoot = (int)ItemPopOvershoot.Value,
+        UpdateMode = _updateMode.Value,
         MagnifyEnabled = MagnifyEnabled.IsChecked == true,
         MagnifyScale = (int)MagnifyScale.Value,
         MagnifyRange = (int)MagnifyRange.Value,
@@ -153,6 +164,7 @@ public partial class SettingsDialog : DialogWindow
         MagnifySpeed.Value = settings.MagnifySpeedMs;
         SlideSpring.Value = settings.SlideSpring;
         ItemPopOvershoot.Value = settings.ItemPopOvershoot;
+        _updateMode.Value = settings.UpdateMode;
         MagnifyEnabled.IsChecked = settings.MagnifyEnabled;
         MagnifyScale.Value = settings.MagnifyScale;
         MagnifyRange.Value = settings.MagnifyRange;
@@ -177,6 +189,12 @@ public partial class SettingsDialog : DialogWindow
         bool zoomByMagnify = _hoverEffect.Value == HoverEffect.Zoom && MagnifyEnabled.IsChecked == true;
         ZoomHint.Visibility = zoomByMagnify ? Visibility.Visible : Visibility.Collapsed;
         HoverPanel.Visibility = _hoverEffect.Value == HoverEffect.None || zoomByMagnify ? Visibility.Collapsed : Visibility.Visible;
+        UpdateModeHint.Text = _updateMode.Value switch
+        {
+            UpdateMode.Off => "Es wird nur gesucht, wenn du auf „Jetzt suchen“ oder im Kontextmenü auf „Nach Updates suchen“ klickst.",
+            UpdateMode.Notify => "Kurz nach dem Start und alle 6 Stunden wird gesucht. Gibt es eine neue Version, wirst du gefragt.",
+            _ => "Kurz nach dem Start und alle 6 Stunden wird gesucht. Neue Versionen werden ohne Nachfrage installiert, das Dock startet danach neu.",
+        };
         _preview(Result.Normalized());
     }
 
@@ -229,6 +247,15 @@ public partial class SettingsDialog : DialogWindow
         Directory.CreateDirectory(_icons.Library.UserDirectory);
         Process.Start(new ProcessStartInfo("explorer.exe", $"\"{_icons.Library.UserDirectory}\"") { UseShellExecute = true });
     }
+
+    private async void CheckNow_Click(object sender, RoutedEventArgs e)
+    {
+        var updates = (UpdateService)((App)Application.Current).Services.GetService(typeof(UpdateService))!;
+        await updates.CheckAsync(this, manual: true);
+    }
+
+    private void OpenReleases_Click(object sender, RoutedEventArgs e) =>
+        Process.Start(new ProcessStartInfo($"https://github.com/{BiMaDock.Core.Updates.UpdateChecker.Repository}/releases") { UseShellExecute = true });
 
     private void Defaults_Click(object sender, RoutedEventArgs e) => Apply(new AppSettings());
 
