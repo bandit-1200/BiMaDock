@@ -1,0 +1,92 @@
+# Baut bei jedem Tag vX.Y.Z den Installer und legt das GitHub-Release an.
+# Ablauf lokal: Version in Directory.Build.props erhöhen, Abschnitt "## X.Y.Z" in CHANGELOG.md, dann tools\release.ps1
+# (prüft, setzt den Tag und pusht). Signiert wird, wenn die Secrets CERTIFICATE_FILE (PFX als Base64)
+# und CERTIFICATE_PASSWORD gesetzt sind, sonst kommt das Setup unsigniert mit Warnung.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Vorhandener Tag, z. B. v2.0.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+    steps:
+      - name: Code holen
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Version prüfen
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$props = Get-Content Directory.Build.props
+          $version = ($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version
+          if ("v$version" -ne $env:TAG) { throw "Tag $env:TAG passt nicht zur Version $version in Directory.Build.props." }
+          $changelog = Get-Content CHANGELOG.md -Raw -Encoding utf8
+          $match = [regex]::Match($changelog, "(?ms)^## $([regex]::Escape($version))\b[^\n]*\n(.*?)(?=^## |\z)")
+          if (-not $match.Success) { throw "In CHANGELOG.md fehlt der Abschnitt '## $version'." }
+          $match.Groups[1].Value.Trim() | Set-Content release-notes.md -Encoding utf8
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Inno Setup bereitstellen
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+
+      - name: Testen, veröffentlichen, Installer bauen
+        shell: pwsh
+        run: ./installer/build.ps1
+
+      - name: Signieren
+        id: sign
+        continue-on-error: true
+        shell: pwsh
+        env:
+          CERTIFICATE_FILE: ${{ secrets.CERTIFICATE_FILE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:CERTIFICATE_FILE)) { throw 'Secret CERTIFICATE_FILE fehlt.' }
+          $pfx = Join-Path $env:RUNNER_TEMP 'signing.pfx'
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String(($env:CERTIFICATE_FILE -replace '\s', '')))
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
+            Where-Object FullName -match '\\x64\\' | Sort-Object FullName -Descending | Select-Object -First 1
+          if (-not $signtool) { throw 'signtool.exe nicht gefunden.' }
+          $setup = "artifacts/installer/BiMaDock2-Setup-${{ steps.version.outputs.version }}.exe"
+          & $signtool.FullName sign /f $pfx /p $env:CERTIFICATE_PASSWORD /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $setup
+          $code = $LASTEXITCODE
+          Remove-Item $pfx -Force
+          if ($code) { throw "Signieren fehlgeschlagen ($code)." }
+
+      - name: Hinweis unsigniert
+        if: steps.sign.outcome == 'failure'
+        shell: pwsh
+        run: Write-Output "::warning::Das Setup ist nicht signiert. Secrets CERTIFICATE_FILE und CERTIFICATE_PASSWORD prüfen."
+
+      - name: GitHub-Release anlegen
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: BiMaDock ${{ steps.version.outputs.version }}
+          body_path: release-notes.md
+          make_latest: true
+          fail_on_unmatched_files: true
+          files: artifacts/installer/BiMaDock2-Setup-${{ steps.version.outputs.version }}.exe

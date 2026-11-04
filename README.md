@@ -17,7 +17,8 @@ Neuentwicklung von BiMaDock: eine Dock-Leiste am oberen Bildschirmrand für Wind
 ## Versionen und Updates
 
 - Versionsnummer in `Directory.Build.props` (SemVer), Tags `vX.Y.Z`
-- Release: Version erhöhen, Abschnitt in `CHANGELOG.md`, dann `.	oolselease.ps1` (baut den Installer, setzt den Tag, pusht nach Gitea und GitHub, legt das GitHub-Release an)
+- Release: Version erhöhen, Abschnitt in `CHANGELOG.md`, dann `.	oolselease.ps1` (prüft, setzt den Tag, pusht nach Gitea und GitHub). GitHub Actions baut daraus Installer und Release (`.github/workflows/release.yml`), signiert, wenn die Secrets `CERTIFICATE_FILE` und `CERTIFICATE_PASSWORD` gesetzt sind
+elease.ps1` (baut den Installer, setzt den Tag, pusht nach Gitea und GitHub, legt das GitHub-Release an)
 - Die App sucht über `api.github.com/repos/bandit-1200/BiMaDock/releases/latest` nach dem Anhang `BiMaDock2-Setup-*.exe`
 
 ## Aufbau
