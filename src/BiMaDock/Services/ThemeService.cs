@@ -26,6 +26,12 @@ public static class ThemeService
         resources["AccentBrush"] = Frozen(accent);
         resources["AccentSoftBrush"] = Frozen(Color.FromArgb(0x40, accent.R, accent.G, accent.B));
 
+        var hover = Parse(settings.HoverColor);
+        byte hoverAlpha = (byte)Math.Round(settings.HoverOpacity * 255 / 100.0);
+        resources["HoverBrush"] = Frozen(Color.FromArgb(hoverAlpha, hover.R, hover.G, hover.B));
+        // Geöffnete Kategorie: dieselbe Farbe, etwas kräftiger
+        resources["OpenPlateBrush"] = Frozen(Color.FromArgb((byte)Math.Min(255, (hoverAlpha * 1.4) + 6), hover.R, hover.G, hover.B));
+
         var feedback = Parse(settings.FeedbackColor);
         resources["DropFeedbackColor"] = Color.FromArgb(alpha, feedback.R, feedback.G, feedback.B);
         resources["LabelVisibility"] = settings.ShowLabels ? Visibility.Visible : Visibility.Collapsed;

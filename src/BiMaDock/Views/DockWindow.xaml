@@ -44,6 +44,32 @@
         <ItemsPanelTemplate x:Key="HorizontalPanel">
             <StackPanel Orientation="Horizontal" />
         </ItemsPanelTemplate>
+        <!-- Pfeil zum Scrollen, wenn die Leiste breiter als der Bildschirm ist -->
+        <Style x:Key="DockScrollArrowStyle" TargetType="Button">
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="AllowDrop" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Plate" Background="Transparent" CornerRadius="10" Margin="1,6">
+                            <Path Data="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}" Stroke="{StaticResource ForegroundBrush}"
+                                  StrokeThickness="2.2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Plate" Property="Background" Value="{DynamicResource HoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.25" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <!-- Durchsichtige Bereiche (Background = null) lassen Mausklicks zu den Fenstern dahinter durch. -->
@@ -66,15 +92,39 @@
             <views:LiquidFlow x:Name="Liquid" Grid.RowSpan="2" Panel.ZIndex="0" Fill="{DynamicResource LiquidBrush}" />
 
             <!-- Kategorie-Dock: erscheint, sobald die Flüssigkeit seine Form angenommen hat -->
+            <!-- Fläche und Schatten des Kategorie-Docks als eigenes, leeres Element: Der Schatten wird so nicht bei
+                 jeder Bewegung der Symbole mit dem ganzen Inhalt neu berechnet. -->
+            <views:SoftShadow Grid.Row="1" Panel.ZIndex="1" CornerRadius="18"
+                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,24,0,14"
+                    Width="{Binding ActualWidth, ElementName=CategoryDock}" Height="{Binding ActualHeight, ElementName=CategoryDock}"
+                    Visibility="{Binding Visibility, ElementName=CategoryDock}" Opacity="{Binding Opacity, ElementName=CategoryDock}"
+                    RenderTransform="{Binding RenderTransform, ElementName=CategoryDock}" />
+            <Border x:Name="CategorySurface" Grid.Row="1" Panel.ZIndex="1" Style="{StaticResource DockSurfaceStyle}" Effect="{x:Null}"
+                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,24,0,14" IsHitTestVisible="False"
+                    Width="{Binding ActualWidth, ElementName=CategoryDock}" Height="{Binding ActualHeight, ElementName=CategoryDock}"
+                    Visibility="{Binding Visibility, ElementName=CategoryDock}" Opacity="{Binding Opacity, ElementName=CategoryDock}"
+                    RenderTransform="{Binding RenderTransform, ElementName=CategoryDock}" />
             <Border x:Name="CategoryDock" Grid.Row="1" Panel.ZIndex="1" Style="{StaticResource DockSurfaceStyle}"
+                    Background="Transparent" BorderBrush="Transparent" Effect="{x:Null}" VerticalAlignment="Top"
                     HorizontalAlignment="Center" Margin="0,24,0,14" Visibility="Collapsed" MinWidth="72">
                 <Border.RenderTransform>
                     <TranslateTransform x:Name="CategoryOffset" />
                 </Border.RenderTransform>
                 <Grid>
-                    <ItemsControl x:Name="CategoryItemsControl" ItemsSource="{Binding CategoryItems}"
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="CategoryScrollLeft" Style="{StaticResource DockScrollArrowStyle}" Content="M6,0 L0,6 L6,12" Visibility="Collapsed" />
+                        <views:DockScrollPanel x:Name="CategoryScroll" Grid.Column="1">
+    <ItemsControl x:Name="CategoryItemsControl" UseLayoutRounding="False" ItemsSource="{Binding CategoryItems}"
                                   ItemTemplate="{StaticResource DockItemTemplate}"
                                   ItemsPanel="{StaticResource HorizontalPanel}" />
+                        </views:DockScrollPanel>
+                        <Button x:Name="CategoryScrollRight" Grid.Column="2" Style="{StaticResource DockScrollArrowStyle}" Content="M0,0 L6,6 L0,12" Visibility="Collapsed" />
+                    </Grid>
                     <TextBlock x:Name="EmptyCategoryHint" Text="Elemente hierher ziehen" Margin="16,22"
                                Foreground="#99FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"
                                IsHitTestVisible="False" />
@@ -82,7 +132,14 @@
             </Border>
 
             <!-- Hauptdock -->
+            <views:SoftShadow Panel.ZIndex="2" CornerRadius="0,0,18,18" HorizontalAlignment="Center" VerticalAlignment="Top"
+                    Width="{Binding ActualWidth, ElementName=MainDock}" Height="{Binding ActualHeight, ElementName=MainDock}" />
+            <Border x:Name="MainSurface" Panel.ZIndex="2" Style="{StaticResource DockSurfaceStyle}" Effect="{x:Null}"
+                    CornerRadius="0,0,18,18" BorderThickness="1,0,1,1" HorizontalAlignment="Center" VerticalAlignment="Top"
+                    IsHitTestVisible="False"
+                    Width="{Binding ActualWidth, ElementName=MainDock}" Height="{Binding ActualHeight, ElementName=MainDock}" />
             <Border x:Name="MainDock" Panel.ZIndex="2" Style="{StaticResource DockSurfaceStyle}"
+                    Background="Transparent" BorderBrush="Transparent" Effect="{x:Null}" VerticalAlignment="Top"
                     CornerRadius="0,0,18,18" BorderThickness="1,0,1,1" HorizontalAlignment="Center"
                     MinWidth="120" MinHeight="40">
                 <Border.ContextMenu>
@@ -100,9 +157,20 @@
                     </ContextMenu>
                 </Border.ContextMenu>
                 <Grid>
-                    <ItemsControl x:Name="MainItemsControl" ItemsSource="{Binding MainItems}"
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="MainScrollLeft" Style="{StaticResource DockScrollArrowStyle}" Content="M6,0 L0,6 L6,12" Visibility="Collapsed" />
+                        <views:DockScrollPanel x:Name="MainScroll" Grid.Column="1">
+    <ItemsControl x:Name="MainItemsControl" UseLayoutRounding="False" ItemsSource="{Binding MainItems}"
                                   ItemTemplate="{StaticResource DockItemTemplate}"
                                   ItemsPanel="{StaticResource HorizontalPanel}" />
+                        </views:DockScrollPanel>
+                        <Button x:Name="MainScrollRight" Grid.Column="2" Style="{StaticResource DockScrollArrowStyle}" Content="M0,0 L6,6 L0,12" Visibility="Collapsed" />
+                    </Grid>
                     <TextBlock x:Name="EmptyMainHint" Text="Programme, Dateien oder Links hierher ziehen" Margin="16,22"
                                Foreground="#99FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"
                                IsHitTestVisible="False" Visibility="Collapsed" />

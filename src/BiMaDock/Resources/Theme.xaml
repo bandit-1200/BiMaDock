@@ -12,6 +12,7 @@
     <SolidColorBrush x:Key="AccentBrush" Color="#FF4CC2FF" />
     <SolidColorBrush x:Key="AccentSoftBrush" Color="#404CC2FF" />
     <SolidColorBrush x:Key="HoverBrush" Color="#24FFFFFF" />
+    <SolidColorBrush x:Key="OpenPlateBrush" Color="#33FFFFFF" />
     <SolidColorBrush x:Key="ForegroundBrush" Color="#F2FFFFFF" />
     <Visibility x:Key="LabelVisibility">Collapsed</Visibility>
 
@@ -44,7 +45,7 @@
                     <StackPanel Background="Transparent">
                         <Grid x:Name="IconArea" Height="64">
                             <Border x:Name="HoverPlate" CornerRadius="12" Margin="3" Opacity="0"
-                                    Background="{StaticResource HoverBrush}" />
+                                    Background="{DynamicResource HoverBrush}" />
                             <Border x:Name="DropPlate" CornerRadius="12" Margin="3" Visibility="Collapsed"
                                     Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1.5" />
                             <Image x:Name="IconImage" Source="{Binding Icon}" Width="44" Height="44"
@@ -52,18 +53,14 @@
                             <Ellipse x:Name="OpenMarker" Width="5" Height="5" Margin="0,0,0,1"
                                      VerticalAlignment="Bottom" Fill="{DynamicResource AccentBrush}" Visibility="Collapsed" />
                         </Grid>
-                        <TextBlock Text="{Binding Name}" Visibility="{DynamicResource LabelVisibility}"
-                                   Foreground="{StaticResource ForegroundBrush}" FontSize="11" Margin="1,-4,1,2"
-                                   TextAlignment="Center" TextTrimming="CharacterEllipsis">
-                            <TextBlock.Effect>
-                                <DropShadowEffect BlurRadius="4" ShadowDepth="0" Opacity="0.9" Color="Black" />
-                            </TextBlock.Effect>
-                        </TextBlock>
+                        <!-- Beschriftung als fertiges Bild (Schatten nur einmal berechnet, siehe ShadowLabel) -->
+                        <views:ShadowLabel Text="{Binding Name}" Visibility="{DynamicResource LabelVisibility}"
+                                           HorizontalAlignment="Center" Margin="0,-7,0,-1" />
                     </StackPanel>
                     <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsOpen}" Value="True">
                             <Setter TargetName="OpenMarker" Property="Visibility" Value="Visible" />
-                            <Setter TargetName="HoverPlate" Property="Background" Value="#33FFFFFF" />
+                            <Setter TargetName="HoverPlate" Property="Background" Value="{DynamicResource OpenPlateBrush}" />
                         </DataTrigger>
                         <DataTrigger Binding="{Binding IsDropTarget}" Value="True">
                             <Setter TargetName="DropPlate" Property="Visibility" Value="Visible" />

@@ -41,6 +41,46 @@
 
                 <!-- ===== Aussehen ===== -->
                 <TabItem Header="Aussehen">
+                    <DockPanel>
+                    <!-- Live-Vorschau: zeigt, wo welche Farbe sitzt (nutzt dieselben Ressourcen wie das Dock) -->
+                    <Grid DockPanel.Dock="Top" Margin="0,4,8,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel HorizontalAlignment="Center">
+                            <Border Background="{DynamicResource DockSurfaceBrush}" BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                                    BorderThickness="1,0,1,1" CornerRadius="0,0,14,14" Padding="6,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <Grid Margin="2,0">
+                                        <Border CornerRadius="9" Background="{DynamicResource HoverBrush}" />
+                                        <Image x:Name="PreviewIcon1" Width="32" Height="32" Margin="6" />
+                                    </Grid>
+                                    <Grid Margin="2,0">
+                                        <Border CornerRadius="9" Background="{DynamicResource OpenPlateBrush}" />
+                                        <Image x:Name="PreviewIcon2" Width="32" Height="32" Margin="6" />
+                                        <Ellipse Width="5" Height="5" VerticalAlignment="Bottom" Margin="0,0,0,1" Fill="{DynamicResource AccentBrush}" />
+                                    </Grid>
+                                    <Grid Margin="2,0">
+                                        <Border CornerRadius="9" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1.5" />
+                                        <Image x:Name="PreviewIcon3" Width="32" Height="32" Margin="6" />
+                                    </Grid>
+                                    <Image x:Name="PreviewIcon4" Width="32" Height="32" Margin="6" />
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Style="{StaticResource DialogHintStyle}" HorizontalAlignment="Center" Margin="0,6,0,0"
+                                       Text="1. Symbol: Fläche unter der Maus · 2.: geöffnete Kategorie · 3.: Ablegen (Akzent)" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                            <Border Width="92" Height="46" CornerRadius="12" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1">
+                                <Border.Background>
+                                    <SolidColorBrush Color="{DynamicResource DropFeedbackColor}" />
+                                </Border.Background>
+                                <Image x:Name="PreviewIcon5" Width="28" Height="28" Opacity="0.85" />
+                            </Border>
+                            <TextBlock Style="{StaticResource DialogHintStyle}" HorizontalAlignment="Center" Margin="0,6,0,0" Text="Beim Ziehen" />
+                        </StackPanel>
+                    </Grid>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
                         <StackPanel>
                             <TextBlock Text="Symbole" Style="{StaticResource DialogSectionStyle}" Margin="0,4,0,0" />
@@ -57,10 +97,17 @@
                             <ContentControl x:Name="BorderColorHost" />
                             <TextBlock Text="Akzent (geöffnete Kategorie, Ablegen)" Style="{StaticResource DialogLabelStyle}" />
                             <ContentControl x:Name="AccentColorHost" />
+                            <TextBlock Text="Fläche unter der Maus" Style="{StaticResource DialogLabelStyle}" />
+                            <ContentControl x:Name="HoverColorHost" />
+                            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                <Run Text="Deckkraft der Fläche" /> <Run Text="{Binding Value, ElementName=HoverOpacity, StringFormat={}{0:0} %}" />
+                            </TextBlock>
+                            <Slider x:Name="HoverOpacity" Style="{StaticResource DialogSliderStyle}" Minimum="0" Maximum="80" TickFrequency="1" />
                             <TextBlock Text="Hinweis beim Ziehen (Hintergrund des Ziel-Docks)" Style="{StaticResource DialogLabelStyle}" />
                             <ContentControl x:Name="FeedbackColorHost" />
                         </StackPanel>
                     </ScrollViewer>
+                    </DockPanel>
                 </TabItem>
 
                 <!-- ===== Animationen ===== -->

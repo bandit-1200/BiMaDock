@@ -2,6 +2,10 @@
 
 ## 2.0.0
 
+- Volle Leisten: Passen nicht alle Symbole auf den Bildschirm, erscheinen Pfeile; Klick, Halten, Mausrad und Ziehen scrollen
+- Lupe läuft im Bildtakt, ohne Zittern und ohne Zusammenfallen zwischen zwei Symbolen; bei vielen Symbolen deutlich schneller (Schatten ohne Weichzeichner, Beschriftungen als fertige Bilder)
+- Verbindungssteg zum Kategorie-Dock bleibt an beiden Docks angeheftet und federt leicht nach
+- Farbe und Deckkraft der Fläche unter der Maus einstellbar, Live-Vorschau der Farben in den Einstellungen
 - Neu: „Über BiMaDock …“ im Kontextmenü mit Version, Entwickler und Lizenz (MIT, LICENSE-Datei wieder im Repo)
 
 Komplett neu entwickelte Version, ersetzt BiMaDock 26.10.x.

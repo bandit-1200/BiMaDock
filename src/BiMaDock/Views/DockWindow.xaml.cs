@@ -59,8 +59,9 @@ public partial class DockWindow : Window
         };
 
         ApplySettings();
-        HookMagnify(MainItemsControl);
-        HookMagnify(CategoryItemsControl);
+        HookMagnify(MainItemsControl, MainDock);
+        HookMagnify(CategoryItemsControl, CategoryDock);
+        SetUpScrolling();
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         viewModel.MainItems.CollectionChanged += (_, _) => UpdateHints();
         viewModel.CategoryItems.CollectionChanged += (_, _) => UpdateHints();
@@ -108,6 +109,7 @@ public partial class DockWindow : Window
         Left = 0;
         Top = 0;
         Width = SystemParameters.PrimaryScreenWidth;
+        UpdateScrollLimits();
     }
 
     private void UpdateHints()

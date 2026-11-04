@@ -8,37 +8,133 @@ namespace BiMaDock.Views;
 /// <summary>Lupe wie beim Mac: Symbole unter der Maus wachsen, Nachbarn wachsen etwas mit.</summary>
 public partial class DockWindow
 {
-    private DateTime _magnifyEnteredAt;
-
-    private void HookMagnify(ItemsControl items)
+    /// <summary>Zustand der Lupe pro Leiste.</summary>
+    private sealed class MagnifyState
     {
-        items.MouseEnter += (_, e) =>
-        {
-            _magnifyEnteredAt = DateTime.UtcNow;
-            UpdateMagnify(items, e, smooth: true);
-        };
-        items.MouseMove += (_, e) =>
-        {
-            // In der kurzen Einblendphase läuft die weiche Animation weiter.
-            bool smooth = DateTime.UtcNow - _magnifyEnteredAt < TimeSpan.FromMilliseconds(110);
-            UpdateMagnify(items, e, smooth);
-        };
-        items.MouseLeave += (_, _) => ItemAnimations.ResetMagnify(ItemButtons(items), animate: true);
+        public bool Inside;
+        public double MouseX; // relativ zur Leiste (tatsächliche, vergrößerte Lage)
+
+        /// <summary>Zwischengespeicherte Buttons; null = neu suchen (nach Änderungen an der Liste).</summary>
+        public List<Button>? Buttons;
     }
 
-    private void UpdateMagnify(ItemsControl items, MouseEventArgs e, bool smooth)
+    private readonly Dictionary<ItemsControl, MagnifyState> _magnify = [];
+    private TimeSpan _lastMagnifyFrame;
+    private bool _magnifyRunning;
+
+    /// <summary>Mit Umgebungsvariable BIMADOCK_PERF=1 schreibt die Lupe Bildrate und Rechenzeit ins Protokoll.</summary>
+    private static readonly bool PerfLogging = Environment.GetEnvironmentVariable("BIMADOCK_PERF") == "1";
+    private System.Diagnostics.Stopwatch? _perfWatch;
+    private System.Diagnostics.Stopwatch? _perfSw;
+    private int _perfFrames;
+    private Microsoft.Extensions.Logging.ILogger? _perfLog;
+    private double _perfWorst;
+    private double _perfWork;
+
+    /// <summary>
+    /// Die Lupe läuft im Takt der Bildwiederholung statt bei jedem Mausereignis: Jedes Bild nähert sich jeder
+    /// Faktor weich seinem Ziel. Die Ziele werden aus den Ruhepositionen der Symbole berechnet, nicht aus den
+    /// vergrößerten, sonst schaukeln sich Mausposition und Layout gegenseitig auf (Zittern).
+    /// </summary>
+    private void HookMagnify(ItemsControl items, FrameworkElement surface)
+    {
+        // Maus an der ganzen Dock-Fläche verfolgen: Zwischen zwei Symbolen ist keine Trefferfläche,
+        // sonst fiele die Lupe dort kurz zusammen.
+        var state = new MagnifyState();
+        _magnify[items] = state;
+        ((System.Collections.Specialized.INotifyCollectionChanged)items.Items).CollectionChanged += (_, _) => state.Buttons = null;
+        items.ItemContainerGenerator.StatusChanged += (_, _) => state.Buttons = null;
+        surface.MouseEnter += (_, e) => { state.Inside = true; TrackMouse(items, state, e); };
+        surface.MouseMove += (_, e) => { state.Inside = true; TrackMouse(items, state, e); };
+        surface.MouseLeave += (_, _) => { state.Inside = false; StartMagnifyLoop(); };
+    }
+
+    private void TrackMouse(ItemsControl items, MagnifyState state, MouseEventArgs e)
     {
         if (!ItemAnimations.Settings.MagnifyEnabled || IsDragActive || e.LeftButton == MouseButtonState.Pressed)
         {
-            return;
+            state.Inside = false;
+        }
+        else
+        {
+            state.MouseX = e.GetPosition(items).X;
         }
 
-        ItemAnimations.Magnify(ItemButtons(items), items, e.GetPosition(items).X, smooth);
+        StartMagnifyLoop();
+    }
+
+    private void StartMagnifyLoop()
+    {
+        if (!_magnifyRunning)
+        {
+            _magnifyRunning = true;
+            _lastMagnifyFrame = TimeSpan.Zero;
+            CompositionTarget.Rendering += MagnifyFrame;
+        }
+    }
+
+    private void MagnifyFrame(object? sender, EventArgs e)
+    {
+        var now = ((RenderingEventArgs)e).RenderingTime;
+        if (now == _lastMagnifyFrame)
+        {
+            return; // gleiches Bild doppelt gemeldet
+        }
+
+        double dt = _lastMagnifyFrame == TimeSpan.Zero ? 1.0 / 60 : Math.Min((now - _lastMagnifyFrame).TotalSeconds, 0.05);
+        _lastMagnifyFrame = now;
+
+        // Zeitkonstante aus der eingestellten Reaktionszeit, unabhängig von der Bildrate
+        double tau = Math.Max(ItemAnimations.Settings.MagnifySpeedMs, 16) / 3000.0;
+        double blend = 1 - Math.Exp(-dt / tau);
+
+        if (PerfLogging)
+        {
+            _perfFrames++;
+            _perfWorst = Math.Max(_perfWorst, dt);
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            _perfWatch ??= System.Diagnostics.Stopwatch.StartNew();
+            if (_perfWatch.Elapsed.TotalSeconds >= 2)
+            {
+                Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(_perfLog ??= (Microsoft.Extensions.Logging.ILogger)((App)Application.Current).Services.GetService(typeof(Microsoft.Extensions.Logging.ILogger<DockWindow>))!, "Lupe: {Fps:0} Bilder/s, langsamstes {Worst:0} ms, Rechenzeit {Work:0.0} ms/Bild",
+                    _perfFrames / _perfWatch.Elapsed.TotalSeconds, _perfWorst * 1000, _perfWork / Math.Max(1, _perfFrames));
+                _perfFrames = 0;
+                _perfWorst = 0;
+                _perfWork = 0;
+                _perfWatch.Restart();
+            }
+
+            _perfSw = sw;
+        }
+
+        bool busy = false;
+        foreach (var (items, state) in _magnify)
+        {
+            var buttons = state.Buttons is { } cached && cached.Count == items.Items.Count ? cached : state.Buttons = ItemButtons(items);
+            busy |= ItemAnimations.StepMagnify(buttons, items, state.Inside ? state.MouseX : null, blend);
+        }
+
+        if (_perfSw is not null)
+        {
+            _perfWork += _perfSw.Elapsed.TotalMilliseconds;
+            _perfSw = null;
+        }
+
+        if (!busy)
+        {
+            CompositionTarget.Rendering -= MagnifyFrame;
+            _magnifyRunning = false;
+        }
     }
 
     /// <summary>Lupe sofort zurücksetzen, z. B. bevor ein Symbol gezogen wird (Lücke braucht feste Größen).</summary>
     private void ResetMagnifyNow()
     {
+        foreach (var state in _magnify.Values)
+        {
+            state.Inside = false;
+        }
+
         ItemAnimations.ResetMagnify(ItemButtons(MainItemsControl), animate: false);
         ItemAnimations.ResetMagnify(ItemButtons(CategoryItemsControl), animate: false);
         UpdateLayout();

@@ -82,6 +82,7 @@ public sealed record AppSettings
     public const string DefaultBorderColor = "#FFFFFF";
     public const string DefaultAccentColor = "#4CC2FF";
     public const string DefaultFeedbackColor = "#D2691E";
+    public const string DefaultHoverColor = "#FFFFFF";
     public const int MinOpacity = 40;
 
     /// <summary>Farbe von Haupt- und Kategorie-Dock (#RRGGBB).</summary>
@@ -99,6 +100,12 @@ public sealed record AppSettings
     /// <summary>Hintergrund des Docks, über dem gerade etwas gezogen wird (#RRGGBB).</summary>
     public string FeedbackColor { get; init; } = DefaultFeedbackColor;
 
+    /// <summary>Fläche hinter einem Symbol unter der Maus.</summary>
+    public string HoverColor { get; init; } = DefaultHoverColor;
+
+    /// <summary>Deckkraft der Hover-Fläche in Prozent (0 = unsichtbar).</summary>
+    public int HoverOpacity { get; init; } = 14;
+
     public AppSettings Normalized() => this with
     {
         ShowDelayMs = Math.Clamp(ShowDelayMs, MinDelay, MaxDelay),
@@ -109,6 +116,8 @@ public sealed record AppSettings
         BorderColor = NormalizeColor(BorderColor, DefaultBorderColor),
         AccentColor = NormalizeColor(AccentColor, DefaultAccentColor),
         FeedbackColor = NormalizeColor(FeedbackColor, DefaultFeedbackColor),
+        HoverColor = NormalizeColor(HoverColor, DefaultHoverColor),
+        HoverOpacity = Math.Clamp(HoverOpacity, 0, 80),
         HoverEffect = Enum.IsDefined(HoverEffect) ? HoverEffect : HoverEffect.Zoom,
         HoverTunings = new(Enum.GetValues<HoverEffect>().ToDictionary(e => e, e => Hover(e).Normalized())),
         LaunchBounceHeight = Math.Clamp(LaunchBounceHeight, 6, 30),

@@ -42,12 +42,9 @@ public partial class DockWindow
         double desiredLeft = Math.Clamp(iconCenter - (width / 2), 8, Math.Max(8, Root.ActualWidth - width - 8));
         CategoryOffset.X = desiredLeft - naturalLeft;
 
-        // Austrittspunkt: Unterkante des Hauptdocks unter dem Symbol; Ziel: endgültige Fläche des Kategorie-Docks.
-        var source = new Point(
-            icon.TranslatePoint(new Point(icon.ActualWidth / 2, 0), Liquid).X,
-            MainDock.TranslatePoint(new Point(0, MainDock.ActualHeight), Liquid).Y);
-        var targetTopLeft = CategoryDock.TranslatePoint(new Point(0, 0), Liquid);
-        Liquid.Configure(source, icon.ActualWidth, new Rect(targetTopLeft, CategoryDock.RenderSize), CategoryDock.CornerRadius.TopLeft);
+        _flowCategory = category;
+        UpdateLiquidAnchors(snap: true);
+        StartAnchorTracking();
 
         if (!_viewModel.Settings.FlowAnimationEnabled)
         {
@@ -89,6 +86,7 @@ public partial class DockWindow
         {
             CategoryDock.Visibility = Visibility.Collapsed;
             StopFlowAnimations();
+            StopAnchorTracking();
             return;
         }
 
@@ -102,6 +100,7 @@ public partial class DockWindow
             {
                 CategoryDock.Visibility = Visibility.Collapsed;
                 StopFlowAnimations();
+                StopAnchorTracking();
             }
         };
         Liquid.BeginAnimation(LiquidFlow.ProgressProperty, drain);
@@ -142,6 +141,65 @@ public partial class DockWindow
                 EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.6 },
             });
         }
+    }
+
+    /// <summary>Kategorie, an deren Symbol der Steg hängt.</summary>
+    private DockItemViewModel? _flowCategory;
+
+    private bool _trackingAnchors;
+
+    /// <summary>
+    /// Steg an beiden Enden festhalten: Austritt unter dem (evtl. per Lupe verschobenen) Symbol an der
+    /// aktuellen Unterkante des Hauptdocks, Ziel die aktuelle Fläche des Kategorie-Docks. Läuft nach jedem
+    /// Layout-Durchgang (LayoutUpdated), also im selben Bild wie die Docks selbst. Mit dem Render-Takt hinge
+    /// der Steg ein Bild hinterher und wirkte wacklig.
+    /// </summary>
+    private void UpdateLiquidAnchors(bool snap = false)
+    {
+        if (_flowCategory is null
+            || MainItemsControl.ItemContainerGenerator.ContainerFromItem(_flowCategory) is not FrameworkElement icon
+            || !icon.IsVisible || !CategoryDock.IsVisible)
+        {
+            return;
+        }
+
+        var iconLeft = icon.TranslatePoint(new Point(0, 0), Liquid);
+        var iconRight = icon.TranslatePoint(new Point(icon.ActualWidth, 0), Liquid);
+        var source = new Point(
+            (iconLeft.X + iconRight.X) / 2,
+            MainDock.TranslatePoint(new Point(0, MainDock.ActualHeight), Liquid).Y);
+        var targetTopLeft = CategoryDock.TranslatePoint(new Point(0, 0), Liquid);
+        var targetBottomRight = CategoryDock.TranslatePoint(new Point(CategoryDock.ActualWidth, CategoryDock.ActualHeight), Liquid);
+        Liquid.Configure(source, Math.Abs(iconRight.X - iconLeft.X), new Rect(targetTopLeft, targetBottomRight), CategoryDock.CornerRadius.TopLeft, snap);
+    }
+
+    private void StartAnchorTracking()
+    {
+        if (!_trackingAnchors)
+        {
+            _trackingAnchors = true;
+            LayoutUpdated += TrackAnchors;
+        }
+    }
+
+    private void StopAnchorTracking()
+    {
+        if (_trackingAnchors)
+        {
+            _trackingAnchors = false;
+            LayoutUpdated -= TrackAnchors;
+        }
+    }
+
+    private void TrackAnchors(object? sender, EventArgs e)
+    {
+        if (CategoryDock.Visibility != Visibility.Visible)
+        {
+            StopAnchorTracking();
+            return;
+        }
+
+        UpdateLiquidAnchors();
     }
 
     private void StopFlowAnimations()

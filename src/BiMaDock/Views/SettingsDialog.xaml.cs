@@ -44,6 +44,7 @@ public partial class SettingsDialog : DialogWindow
     private readonly ColorField _borderColor;
     private readonly ColorField _accentColor;
     private readonly ColorField _feedbackColor;
+    private readonly ColorField _hoverColor;
     private readonly ChipGroup<HoverEffect> _hoverEffect;
     private readonly ChipGroup<SlideStyle> _slideStyle;
     private readonly IconService _icons;
@@ -61,10 +62,13 @@ public partial class SettingsDialog : DialogWindow
         _borderColor = new ColorField(BorderPresets, settings.BorderColor);
         _accentColor = new ColorField(AccentPresets, settings.AccentColor);
         _feedbackColor = new ColorField(FeedbackPresets, settings.FeedbackColor);
+        _hoverColor = new ColorField(["#FFFFFF", "#D2691E", "#2A7FB8", "#2E7D32", "#8E24AA", "#F9A825", "#000000"], settings.HoverColor);
+        LoadPreviewIcons();
         DockColorHost.Content = _dockColor;
         BorderColorHost.Content = _borderColor;
         AccentColorHost.Content = _accentColor;
         FeedbackColorHost.Content = _feedbackColor;
+        HoverColorHost.Content = _hoverColor;
 
         _hoverEffect = new ChipGroup<HoverEffect>(HoverEffects, HoverChoices, ShowHoverValues);
         _slideStyle = new ChipGroup<SlideStyle>(SlideStyles, SlideChoices, Preview);
@@ -75,7 +79,7 @@ public partial class SettingsDialog : DialogWindow
         Autostart.IsChecked = autostart;
         UpdateLibraryInfo();
 
-        foreach (var field in new[] { _dockColor, _borderColor, _accentColor, _feedbackColor })
+        foreach (var field in new[] { _dockColor, _borderColor, _accentColor, _feedbackColor, _hoverColor })
         {
             field.ValueChanged += (_, _) => Preview();
         }
@@ -83,7 +87,7 @@ public partial class SettingsDialog : DialogWindow
         HoverIntensity.ValueChanged += (_, _) => StoreHoverValues();
         HoverSpeed.ValueChanged += (_, _) => StoreHoverValues();
 
-        foreach (var slider in new[] { DockOpacity, ShowDelay, HideDelay, FlowDuration, SlideDuration, SlideSpring, MagnifyScale, MagnifyRange, MagnifySpeed, LaunchBounceHeight, LaunchBounceCount, LaunchBounceDuration, ItemPopDuration, ItemPopOvershoot })
+        foreach (var slider in new[] { DockOpacity, HoverOpacity, ShowDelay, HideDelay, FlowDuration, SlideDuration, SlideSpring, MagnifyScale, MagnifyRange, MagnifySpeed, LaunchBounceHeight, LaunchBounceCount, LaunchBounceDuration, ItemPopDuration, ItemPopOvershoot })
         {
             slider.ValueChanged += (_, _) => Preview();
         }
@@ -105,6 +109,8 @@ public partial class SettingsDialog : DialogWindow
         BorderColor = _borderColor.Value,
         AccentColor = _accentColor.Value,
         FeedbackColor = _feedbackColor.Value,
+        HoverColor = _hoverColor.Value,
+        HoverOpacity = (int)HoverOpacity.Value,
         ShowLabels = ShowLabels.IsChecked == true,
         HoverEffect = _hoverEffect.Value,
         HoverTunings = new(_tunings),
@@ -153,6 +159,8 @@ public partial class SettingsDialog : DialogWindow
         _borderColor.Value = settings.BorderColor;
         _accentColor.Value = settings.AccentColor;
         _feedbackColor.Value = settings.FeedbackColor;
+        _hoverColor.Value = settings.HoverColor;
+        HoverOpacity.Value = settings.HoverOpacity;
         ShowLabels.IsChecked = settings.ShowLabels;
         _hoverEffect.Value = settings.HoverEffect;
         _tunings = new(Enum.GetValues<HoverEffect>().ToDictionary(e => e, settings.Hover));
@@ -246,6 +254,22 @@ public partial class SettingsDialog : DialogWindow
     {
         Directory.CreateDirectory(_icons.Library.UserDirectory);
         Process.Start(new ProcessStartInfo("explorer.exe", $"\"{_icons.Library.UserDirectory}\"") { UseShellExecute = true });
+    }
+
+    /// <summary>Beispielsymbole aus der mitgelieferten Bibliothek für die Farbvorschau.</summary>
+    private void LoadPreviewIcons()
+    {
+        string root = Path.Combine(AppContext.BaseDirectory, "Icons");
+        string[] names = [@"Allgemein\Ordner.png", @"Allgemein\Web.png", @"Medien\Musik.png", @"Entwicklung\Code.png", @"Allgemein\Dokument.png"];
+        System.Windows.Controls.Image[] targets = [PreviewIcon1, PreviewIcon2, PreviewIcon3, PreviewIcon4, PreviewIcon5];
+        for (int i = 0; i < targets.Length; i++)
+        {
+            string file = Path.Combine(root, names[i]);
+            if (File.Exists(file))
+            {
+                targets[i].Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(file));
+            }
+        }
     }
 
     private async void CheckNow_Click(object sender, RoutedEventArgs e)

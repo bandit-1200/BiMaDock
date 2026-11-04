@@ -63,13 +63,77 @@ internal sealed class LiquidFlow : FrameworkElement
         set => SetValue(ShowBodyProperty, value);
     }
 
-    /// <summary>Legt Austrittspunkt (Mitte unter dem Symbol, Unterkante Hauptdock) und Ziel-Fläche fest.</summary>
-    public void Configure(Point source, double sourceWidth, Rect target, double cornerRadius)
+    // Nachfedern des Stegs: Die Waagerechte des Austrittspunkts folgt dem Symbol als gedämpfte Feder.
+    // Oben (Unterkante Hauptdock) und unten (Kategorie-Dock) bleibt er senkrecht fest angeheftet.
+    private const double SpringStiffness = 180; // je höher, desto straffer
+    private const double SpringDamping = 0.65;  // < 1 schwingt leicht über, 1 = ohne Überschwingen
+
+    private double _springX;
+    private double _springVelocity;
+    private double _targetX;
+    private TimeSpan _lastFrame;
+    private bool _springing;
+
+    /// <summary>
+    /// Legt Austrittspunkt (Mitte unter dem Symbol, Unterkante Hauptdock) und Ziel-Fläche fest.
+    /// <paramref name="snap"/> setzt den Steg sofort (beim Öffnen), sonst federt er zur neuen Lage nach.
+    /// </summary>
+    public void Configure(Point source, double sourceWidth, Rect target, double cornerRadius, bool snap = false)
     {
-        _source = source;
+        if (!snap && source == new Point(_targetX, _source.Y) && sourceWidth.Equals(_sourceWidth) && target == _target && cornerRadius.Equals(_cornerRadius))
+        {
+            return; // unverändert, kein Neuzeichnen
+        }
+
+        _targetX = source.X;
+        if (snap)
+        {
+            _springX = source.X;
+            _springVelocity = 0;
+        }
+        else if (!_springing && Math.Abs(_targetX - _springX) > 0.05)
+        {
+            _springing = true;
+            _lastFrame = TimeSpan.Zero;
+            CompositionTarget.Rendering += SpringFrame;
+        }
+
+        _source = new Point(_springX, source.Y);
         _sourceWidth = sourceWidth;
         _target = target;
         _cornerRadius = cornerRadius;
+        InvalidateVisual();
+    }
+
+    private void SpringFrame(object? sender, EventArgs e)
+    {
+        var now = ((RenderingEventArgs)e).RenderingTime;
+        if (now == _lastFrame)
+        {
+            return;
+        }
+
+        double dt = _lastFrame == TimeSpan.Zero ? 1.0 / 60 : Math.Min((now - _lastFrame).TotalSeconds, 0.04);
+        _lastFrame = now;
+
+        // halbimplizites Euler, in kleinen Schritten für Stabilität
+        double damping = 2 * Math.Sqrt(SpringStiffness) * SpringDamping;
+        for (double left = dt; left > 0; left -= 0.004)
+        {
+            double h = Math.Min(0.004, left);
+            _springVelocity += ((SpringStiffness * (_targetX - _springX)) - (damping * _springVelocity)) * h;
+            _springX += _springVelocity * h;
+        }
+
+        if (Math.Abs(_targetX - _springX) < 0.05 && Math.Abs(_springVelocity) < 0.5)
+        {
+            _springX = _targetX;
+            _springVelocity = 0;
+            _springing = false;
+            CompositionTarget.Rendering -= SpringFrame;
+        }
+
+        _source = new Point(_springX, _source.Y);
         InvalidateVisual();
     }
 
@@ -145,7 +209,7 @@ internal sealed class LiquidFlow : FrameworkElement
         using var ctx = geometry.Open();
         double half = width / 2;
         double waist = half * 0.82;
-        double topHalf = half + Math.Min(16, (bottom - top) * 0.7);
+        double topHalf = half + Math.Min(12, (bottom - top) * 0.45); // feste Ausrundung, wackelt nicht mit der Länge
         double bottomHalf = half + flare;
         double h = bottom - top;
         top -= 1; // bündig an die Unterkante des Hauptdocks

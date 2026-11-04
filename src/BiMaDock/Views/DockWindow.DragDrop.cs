@@ -424,9 +424,11 @@ public partial class DockWindow
 
     private void FadeBackground(Border dock, Color to, bool clearWhenDone)
     {
-        var from = dock.Background is SolidColorBrush current ? current.Color : SurfaceColor();
+        // Die sichtbare Fläche liegt als eigenes Element hinter dem Dock (Schatten ohne Inhalt).
+        var surface = dock == MainDock ? MainSurface : CategorySurface;
+        var from = surface.Background is SolidColorBrush current ? current.Color : SurfaceColor();
         var brush = new SolidColorBrush(from);
-        dock.Background = brush;
+        surface.Background = brush;
         var animation = new ColorAnimation(to, FeedbackDuration);
         if (clearWhenDone)
         {
@@ -435,7 +437,7 @@ public partial class DockWindow
                 // Zurück an die Farbe aus den Einstellungen binden, sofern nicht inzwischen wieder Ziel
                 if (_feedbackDock != dock)
                 {
-                    dock.ClearValue(Border.BackgroundProperty);
+                    surface.ClearValue(Border.BackgroundProperty);
                 }
             };
         }

@@ -213,6 +213,85 @@ public static class ItemAnimations
         }
     }
 
+    /// <summary>Abstand von Symbolmitte zu Symbolmitte in Ruhe (Breite plus Rand, siehe DockItemButtonStyle).</summary>
+    private const double SlotPitch = SlotSize + 4;
+
+    /// <summary>
+    /// Ein Bild der Lupe: Jeder Faktor nähert sich um <paramref name="blend"/> seinem Ziel.
+    /// <paramref name="mouseX"/> ist die Maus relativ zu <paramref name="panel"/> in der tatsächlichen (vergrößerten)
+    /// Lage; sie wird in die Ruhelage umgerechnet (welches Symbol, wie weit darin), damit Layout und Maus sich nicht
+    /// gegenseitig aufschaukeln. Funktioniert so auch, wenn die Leiste gescrollt ist. null = Maus weg, alles auf 1.
+    /// </summary>
+    public static bool StepMagnify(IReadOnlyList<Button> buttons, FrameworkElement panel, double? mouseX, double blend)
+    {
+        double max = _settings.MagnifyScale / 100.0;
+        double reach = (_settings.MagnifyRange + 0.6) * SlotSize;
+        double? restMouse = mouseX is { } mx && buttons.Count > 0 ? ToRest(buttons, panel, mx) : null;
+        bool moving = false;
+        for (int i = 0; i < buttons.Count; i++)
+        {
+            var button = buttons[i];
+            double target = 1;
+            if (restMouse is { } x && _settings.MagnifyEnabled)
+            {
+                double center = (i + 0.5) * SlotPitch;
+                double t = Math.Max(0, 1 - (Math.Abs(x - center) / reach));
+                target = 1 + ((max - 1) * (t * t * (3 - (2 * t))));
+            }
+
+            if (button.HasAnimatedProperties)
+            {
+                button.BeginAnimation(MagnificationProperty, null);
+            }
+
+            double current = GetMagnification(button);
+            double next = current + ((target - current) * blend);
+            if (Math.Abs(target - next) < 0.002)
+            {
+                next = target;
+            }
+            else
+            {
+                moving = true;
+            }
+
+            if (next != current)
+            {
+                SetMagnification(button, next);
+            }
+        }
+
+        return moving || mouseX is not null;
+    }
+
+    /// <summary>
+    /// Mausposition in Ruhekoordinaten: Symbol i belegt ohne Lupe [i, i + 1) * Abstand. Die tatsächlichen Lagen
+    /// werden aus den aktuellen Lupenfaktoren aufsummiert (die Leiste reiht die Symbole lückenlos), nur die
+    /// Lage des ersten Symbols wird abgefragt. Das hält die Rechnung auch bei sehr vielen Symbolen billig.
+    /// </summary>
+    private static double ToRest(IReadOnlyList<Button> buttons, FrameworkElement panel, double x)
+    {
+        const double Margin = 2;
+        double left = buttons[0].TranslatePoint(new Point(0, 0), panel).X - Margin;
+        if (x < left)
+        {
+            return x - left;
+        }
+
+        for (int i = 0; i < buttons.Count; i++)
+        {
+            double width = SlotSize + (IconSize * (GetMagnification(buttons[i]) - 1)) + (2 * Margin);
+            if (x < left + width)
+            {
+                return (i + Math.Clamp((x - left) / width, 0, 1)) * SlotPitch;
+            }
+
+            left += width;
+        }
+
+        return (buttons.Count * SlotPitch) + (x - left);
+    }
+
     /// <summary>Lupe zurücknehmen, weich oder sofort (z. B. vor dem Ziehen).</summary>
     public static void ResetMagnify(IEnumerable<Button> buttons, bool animate)
     {
