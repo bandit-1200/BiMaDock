@@ -70,3 +70,51 @@ function IsUpdate: Boolean;
 begin
   Result := ExpandConstant('{param:UPDATE|0}') <> '0';
 end;
+
+// Alte Version 1 ("BiMaDock_is1") vor der Installation entfernen. Die Daten in %LOCALAPPDATA%\BiMaDock
+// bleiben dabei stehen, das neue Dock übernimmt sie beim ersten Start.
+const
+  LegacyKey = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\BiMaDock_is1';
+  LegacyArgs = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART';
+
+function LegacyUninstaller(RootKey: Integer): String;
+begin
+  Result := '';
+  if RegQueryStringValue(RootKey, LegacyKey, 'UninstallString', Result) then
+  begin
+    Result := RemoveQuotes(Trim(Result));
+    if not FileExists(Result) then
+      Result := '';
+  end;
+end;
+
+procedure StopLegacyDock;
+var
+  Code: Integer;
+begin
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM BiMaDock.exe', '', SW_HIDE, ewWaitUntilTerminated, Code);
+end;
+
+procedure RemoveLegacy(RootKey: Integer; Verb: String);
+var
+  Exe: String;
+  Code: Integer;
+begin
+  Exe := LegacyUninstaller(RootKey);
+  if Exe = '' then
+    Exit;
+  StopLegacyDock;
+  Log('Alte Version wird deinstalliert: ' + Exe);
+  // Für alle Benutzer installiert: runas löst die Windows-Abfrage nach Adminrechten aus.
+  if not ShellExec(Verb, Exe, LegacyArgs, '', SW_HIDE, ewWaitUntilTerminated, Code) then
+    Log('Alte Version nicht deinstalliert (Code ' + IntToStr(Code) + ')');
+end;
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+begin
+  Result := '';
+  RemoveLegacy(HKCU, '');
+  RemoveLegacy(HKLM32, 'runas');
+  if IsWin64 then
+    RemoveLegacy(HKLM64, 'runas');
+end;

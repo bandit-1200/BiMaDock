@@ -1,5 +1,9 @@
 # Versionsverlauf
 
+## 2.0.2
+
+- Das Setup entfernt die alte Version 1 jetzt selbst, bei einer Installation für alle Benutzer mit einer Windows-Abfrage nach Adminrechten. Das Dock fragt nicht mehr nach. Einträge und Symbole bleiben erhalten und werden beim ersten Start übernommen.
+
 ## 2.0.1
 
 - Alte Version wird auch entfernt, wenn sie für alle Benutzer installiert ist (Program Files): einmal fragen, dann Adminrechte. Bei "Nein" wird nicht erneut gefragt (Datei alte-version-behalten.txt im Datenordner löschen, um wieder zu fragen)

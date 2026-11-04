@@ -1,4 +1,3 @@
-using BiMaDock.Core;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
@@ -6,14 +5,14 @@ using Microsoft.Win32;
 namespace BiMaDock.Services;
 
 /// <summary>
-/// Ersetzt die alte Version: beendet das alte Dock, entfernt dessen Autostart und deinstalliert es still.
+/// Räumt Reste der alten Version auf: beendet das alte Dock und entfernt dessen Autostart.
+/// Deinstalliert wird die alte Version vom Setup (installer/BiMaDock2.iss, PrepareToInstall).
 /// Läuft erst, nachdem Einträge und Symbole übernommen sind (siehe DockViewModel.Load), und immer
 /// als der angemeldete Benutzer, weil die alte Version pro Benutzer installiert wurde.
 /// </summary>
 public sealed class LegacyDockRemover(ILogger<LegacyDockRemover> logger)
 {
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\BiMaDock_is1";
     private const string LegacyValueName = "BiMaDock";
 
     public void RemoveOldVersion()
@@ -22,7 +21,6 @@ public sealed class LegacyDockRemover(ILogger<LegacyDockRemover> logger)
         {
             StopOldProcesses();
             RemoveAutostart();
-            Uninstall();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception or InvalidOperationException)
         {
@@ -59,64 +57,6 @@ public sealed class LegacyDockRemover(ILogger<LegacyDockRemover> logger)
             key.DeleteValue(LegacyValueName, throwOnMissingValue: false);
             logger.LogInformation("Autostart des alten Docks entfernt");
         }
-    }
-
-    private void Uninstall()
-    {
-        // Pro Benutzer installiert: still und ohne Rückfrage deinstallieren.
-        if (FindUninstaller(Registry.CurrentUser, RegistryView.Default) is { } user)
-        {
-            logger.LogInformation("Alte Version (Benutzer) wird deinstalliert: {Exe}", user);
-            Process.Start(new ProcessStartInfo(user, SilentArgs) { UseShellExecute = true });
-            return;
-        }
-
-        // Für alle Benutzer installiert (Program Files): braucht Adminrechte, daher einmal fragen.
-        string? machine = FindUninstaller(Registry.LocalMachine, RegistryView.Registry32)
-            ?? FindUninstaller(Registry.LocalMachine, RegistryView.Registry64);
-        if (machine is null || File.Exists(DeclinedMarker))
-        {
-            return;
-        }
-
-        var answer = System.Windows.MessageBox.Show(
-            "Die alte Version von BiMaDock ist noch für alle Benutzer installiert.\n\n"
-            + "Deine Einträge und Symbole sind schon übernommen. Soll die alte Version jetzt entfernt werden? "
-            + "Windows fragt dafür nach Administratorrechten.",
-            "BiMaDock", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
-        if (answer != System.Windows.MessageBoxResult.Yes)
-        {
-            File.WriteAllText(DeclinedMarker, "Deinstallation der alten Version abgelehnt. Datei löschen, um erneut zu fragen.");
-            logger.LogInformation("Deinstallation der alten Version (alle Benutzer) abgelehnt");
-            return;
-        }
-
-        try
-        {
-            logger.LogInformation("Alte Version (alle Benutzer) wird deinstalliert: {Exe}", machine);
-            Process.Start(new ProcessStartInfo(machine, SilentArgs) { UseShellExecute = true, Verb = "runas" });
-        }
-        catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
-        {
-            logger.LogInformation("Adminrechte für die Deinstallation verweigert");
-        }
-    }
-
-    private const string SilentArgs = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART";
-
-    private static string DeclinedMarker => Path.Combine(AppPaths.DataDirectory, "alte-version-behalten.txt");
-
-    private static string? FindUninstaller(RegistryKey hive, RegistryView view)
-    {
-        using var root = RegistryKey.OpenBaseKey(hive == Registry.CurrentUser ? RegistryHive.CurrentUser : RegistryHive.LocalMachine, view);
-        using var key = root.OpenSubKey(UninstallKey);
-        if (key?.GetValue("UninstallString") is not string command)
-        {
-            return null;
-        }
-
-        string exe = command.Trim().Trim('"');
-        return File.Exists(exe) ? exe : null;
     }
 
     private static string? TryPath(Process process)
