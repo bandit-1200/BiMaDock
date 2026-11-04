@@ -327,7 +327,7 @@ public partial class DockWindow : Window
 
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
-        var result = WithDockKeptOpen(() => SettingsDialog.Edit(this, _viewModel.Settings, _startup.IsEnabled));
+        var result = WithDockKeptOpen(() => SettingsDialog.Edit(this, _viewModel.Settings, _startup.IsEnabled, preview => ThemeService.Apply(preview, Application.Current.Resources)));
         if (result is not { } chosen)
         {
             return;
@@ -344,6 +344,7 @@ public partial class DockWindow : Window
     private void ApplySettings()
     {
         var settings = _viewModel.Settings;
+        ThemeService.Apply(settings, Application.Current.Resources);
         _showTimer.Interval = TimeSpan.FromMilliseconds(Math.Max(1, settings.ShowDelayMs));
         _hideTimer.Interval = TimeSpan.FromMilliseconds(Math.Max(1, settings.HideDelayMs));
     }

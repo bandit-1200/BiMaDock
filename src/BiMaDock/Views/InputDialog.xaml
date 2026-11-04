@@ -5,7 +5,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True"
         WindowStartupLocation="CenterScreen" UseLayoutRounding="True">
-    <Border Margin="16" CornerRadius="12" Background="#FF242429" BorderBrush="{StaticResource SurfaceBorderBrush}" BorderThickness="1"
+    <Border Margin="16" CornerRadius="12" Background="#FF242429" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1"
             Padding="20" MouseLeftButtonDown="Frame_MouseLeftButtonDown">
         <Border.Effect>
             <DropShadowEffect BlurRadius="20" ShadowDepth="4" Direction="270" Opacity="0.5" />

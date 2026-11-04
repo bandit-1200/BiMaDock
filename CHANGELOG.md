@@ -10,7 +10,8 @@
 - Übernahme der Einträge aus der bisherigen Version beim ersten Start
 - Scharfe Symbole in 128 px, Per-Monitor-DPI
 - Beschädigte Dock-Datei wird gesichert statt die App zu blockieren
-- Kategorie-Dock fließt wie Wasser aus dem Hauptdock: Ein Tropfen quillt unter dem Kategorie-Symbol hervor, fällt nach unten und breitet sich zur Dock-Fläche aus; ein geschwungener Steg bleibt mit dem Symbol verbunden. Beim Schließen fließt es zurück. Dauer einstellbar, abschaltbar
+- Kategorie-Dock fließt wie Wasser aus dem Hauptdock: Ein Tropfen quillt unter dem Kategorie-Symbol hervor und fällt nach unten, beim Aufprall läuft er als flacher Strom mit Wellen nach beiden Seiten und füllt sich zur Dock-Fläche auf; ein geschwungener Steg bleibt mit dem Symbol verbunden. Beim Schließen fließt es zurück. Dauer einstellbar, abschaltbar
+- Farbeinstellungen: Dock-Farbe, Deckkraft, Rand und Akzent mit Farbfeldern oder eigenem Hex-Wert; Änderungen sind sofort am Dock zu sehen
 - Kontextmenü auf Einträgen: Öffnen, Im Explorer zeigen, Bearbeiten (Name, Ziel, eigenes Symbol mit Vorschau), Entfernen (Kategorien samt Inhalt nach Rückfrage)
 - Rückgängig für Entfernen, Bearbeiten, Verschieben und Aufräumen (bis zu 20 Schritte)
 - Aufräumen: findet fehlende Ziele (vorausgewählt), nicht erreichbare Netzwerk-/USB-Pfade und leere Kategorien (nicht vorausgewählt)

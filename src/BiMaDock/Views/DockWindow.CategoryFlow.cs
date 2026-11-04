@@ -52,17 +52,27 @@ public partial class DockWindow
         if (!_viewModel.Settings.FlowAnimationEnabled)
         {
             // Ohne Animation: fertige Form sofort zeigen (Steg zum Symbol bleibt)
+            Liquid.ShowBody = false;
             Liquid.Progress = 1;
             CategoryDock.Opacity = 1;
             return;
         }
 
         HideCategoryItems();
+        Liquid.ShowBody = true;
         var flow = new DoubleAnimation(0, 1, OpenDuration);
         Liquid.BeginAnimation(LiquidFlow.ProgressProperty, flow);
 
         // Rahmen und Symbole erst, wenn die Flüssigkeit fast ihre Form hat.
         var frameIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140)) { BeginTime = OpenDuration * 0.82 };
+        frameIn.Completed += (_, _) =>
+        {
+            // Ab jetzt liegt das echte Dock darüber; die Flüssigkeit zeichnet nur noch den Steg.
+            if (generation == _flowGeneration)
+            {
+                Liquid.ShowBody = false;
+            }
+        };
         CategoryDock.BeginAnimation(OpacityProperty, frameIn);
         RevealItems(generation, OpenDuration * 0.78);
     }
@@ -82,6 +92,7 @@ public partial class DockWindow
             return;
         }
 
+        Liquid.ShowBody = true;
         CategoryDock.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(90)));
 
         var drain = new DoubleAnimation(0, CloseDuration) { EasingFunction = new SineEase { EasingMode = EasingMode.EaseIn } };

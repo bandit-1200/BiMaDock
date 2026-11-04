@@ -2,11 +2,12 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:BiMaDock.Views"
-        Title="Einstellungen" Width="460">
+        Title="Einstellungen" Width="560">
     <Border Style="{StaticResource DialogFrameStyle}">
         <StackPanel>
             <TextBlock Text="Einstellungen" Style="{StaticResource DialogTitleStyle}" />
 
+            <TextBlock Text="Verhalten" FontWeight="SemiBold" Margin="0,0,0,2" />
             <TextBlock Style="{StaticResource DialogLabelStyle}">
                 <Run Text="Einblenden nach" /> <Run Text="{Binding Value, ElementName=ShowDelay, StringFormat={}{0:0} ms}" />
             </TextBlock>
@@ -18,14 +19,27 @@
             <Slider x:Name="HideDelay" Style="{StaticResource DialogSliderStyle}" Minimum="0" Maximum="1500" TickFrequency="50" />
 
             <CheckBox x:Name="FlowEnabled" Content="Kategorie-Dock fließt aus dem Hauptdock" Style="{StaticResource DialogCheckBoxStyle}" Margin="0,16,0,0" />
-            <TextBlock Style="{StaticResource DialogLabelStyle}"
-                       IsEnabled="{Binding IsChecked, ElementName=FlowEnabled}">
+            <TextBlock Style="{StaticResource DialogLabelStyle}">
                 <Run Text="Dauer des Herausfließens" /> <Run Text="{Binding Value, ElementName=FlowDuration, StringFormat={}{0:0} ms}" />
             </TextBlock>
             <Slider x:Name="FlowDuration" Style="{StaticResource DialogSliderStyle}" Minimum="200" Maximum="1500" TickFrequency="20"
                     IsEnabled="{Binding IsChecked, ElementName=FlowEnabled}" />
 
             <CheckBox x:Name="Autostart" Content="Mit Windows starten" Style="{StaticResource DialogCheckBoxStyle}" Margin="0,16,0,0" />
+
+            <TextBlock Text="Farben" FontWeight="SemiBold" Margin="0,22,0,2" />
+            <TextBlock Text="Dock" Style="{StaticResource DialogLabelStyle}" />
+            <ContentControl x:Name="DockColorHost" />
+            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                <Run Text="Deckkraft" /> <Run Text="{Binding Value, ElementName=DockOpacity, StringFormat={}{0:0} %}" />
+            </TextBlock>
+            <Slider x:Name="DockOpacity" Style="{StaticResource DialogSliderStyle}" Minimum="40" Maximum="100" TickFrequency="1" />
+            <TextBlock Text="Rand" Style="{StaticResource DialogLabelStyle}" />
+            <ContentControl x:Name="BorderColorHost" />
+            <TextBlock Text="Akzent (geöffnete Kategorie, Ablegen)" Style="{StaticResource DialogLabelStyle}" />
+            <ContentControl x:Name="AccentColorHost" />
+            <TextBlock Text="Änderungen sind sofort am Dock zu sehen; „Abbrechen“ stellt den alten Stand wieder her."
+                       Foreground="#80FFFFFF" TextWrapping="Wrap" Margin="0,12,0,0" />
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
                 <Button Content="Standardwerte" Style="{StaticResource DialogButtonStyle}" Click="Defaults_Click" />

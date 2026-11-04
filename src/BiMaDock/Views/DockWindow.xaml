@@ -60,7 +60,7 @@
             </Grid.RowDefinitions>
 
             <!-- Flüssigkeit, aus der das Kategorie-Dock entsteht (liegt hinter dem Hauptdock) -->
-            <views:LiquidFlow x:Name="Liquid" Grid.RowSpan="2" Panel.ZIndex="0" Fill="{StaticResource LiquidBrush}" />
+            <views:LiquidFlow x:Name="Liquid" Grid.RowSpan="2" Panel.ZIndex="0" Fill="{DynamicResource LiquidBrush}" />
 
             <!-- Kategorie-Dock: erscheint, sobald die Flüssigkeit seine Form angenommen hat -->
             <Border x:Name="CategoryDock" Grid.Row="1" Panel.ZIndex="1" Style="{StaticResource DockSurfaceStyle}"

@@ -106,6 +106,29 @@ public sealed class CleanupAndEditTests : IDisposable
         Assert.Equal(AppSettings.MinFlow, loaded.FlowDurationMs);
     }
 
+    [Theory]
+    [InlineData("#2a2a30", "#2A2A30")]
+    [InlineData("  ff8800 ", "#FF8800")]
+    [InlineData("#abc", "#AABBCC")]
+    [InlineData("#12345", "#FALLBK")]
+    [InlineData("grün", "#FALLBK")]
+    [InlineData(null, "#FALLBK")]
+    public void NormalizeColor_AcceptsHexAndRejectsGarbage(string? input, string expected) =>
+        Assert.Equal(expected, AppSettings.NormalizeColor(input, "#FALLBK"));
+
+    [Fact]
+    public void Settings_ColorsAreValidatedOnLoad()
+    {
+        var store = new SettingsStore(Path.Combine(_dir, "settings.json"));
+        store.Save(new AppSettings { DockColor = "kaputt", AccentColor = "#00ff00", DockOpacity = 5 });
+
+        var loaded = store.Load();
+
+        Assert.Equal(AppSettings.DefaultDockColor, loaded.DockColor);
+        Assert.Equal("#00FF00", loaded.AccentColor);
+        Assert.Equal(AppSettings.MinOpacity, loaded.DockOpacity);
+    }
+
     [Fact]
     public void Settings_CorruptFile_FallsBackToDefaults()
     {

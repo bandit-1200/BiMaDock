@@ -24,12 +24,50 @@ public sealed record AppSettings
     /// <summary>Dauer des Herausfließens.</summary>
     public int FlowDurationMs { get; init; } = 520;
 
+    public const string DefaultDockColor = "#2A2A30";
+    public const string DefaultBorderColor = "#FFFFFF";
+    public const string DefaultAccentColor = "#4CC2FF";
+    public const int MinOpacity = 40;
+
+    /// <summary>Farbe von Haupt- und Kategorie-Dock (#RRGGBB).</summary>
+    public string DockColor { get; init; } = DefaultDockColor;
+
+    /// <summary>Deckkraft der Dock-Fläche in Prozent.</summary>
+    public int DockOpacity { get; init; } = 92;
+
+    /// <summary>Farbe des feinen Rands um die Docks (#RRGGBB, wird halbtransparent gezeichnet).</summary>
+    public string BorderColor { get; init; } = DefaultBorderColor;
+
+    /// <summary>Akzent für geöffnete Kategorie und Ablegen-Markierung (#RRGGBB).</summary>
+    public string AccentColor { get; init; } = DefaultAccentColor;
+
     public AppSettings Normalized() => this with
     {
         ShowDelayMs = Math.Clamp(ShowDelayMs, MinDelay, MaxDelay),
         HideDelayMs = Math.Clamp(HideDelayMs, MinDelay, MaxDelay),
         FlowDurationMs = Math.Clamp(FlowDurationMs, MinFlow, MaxFlow),
+        DockOpacity = Math.Clamp(DockOpacity, MinOpacity, 100),
+        DockColor = NormalizeColor(DockColor, DefaultDockColor),
+        BorderColor = NormalizeColor(BorderColor, DefaultBorderColor),
+        AccentColor = NormalizeColor(AccentColor, DefaultAccentColor),
     };
+
+    /// <summary>Gibt die Farbe als "#RRGGBB" in Großbuchstaben zurück; ungültige Werte ergeben <paramref name="fallback"/>.</summary>
+    public static string NormalizeColor(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        string hex = value.Trim().TrimStart('#');
+        if (hex.Length == 3)
+        {
+            hex = string.Concat(hex.Select(c => $"{c}{c}"));
+        }
+
+        return hex.Length == 6 && hex.All(Uri.IsHexDigit) ? $"#{hex.ToUpperInvariant()}" : fallback;
+    }
 }
 
 public sealed class SettingsStore

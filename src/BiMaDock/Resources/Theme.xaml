@@ -3,29 +3,20 @@
 
     <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
 
-    <!-- Farben -->
-    <Color x:Key="SurfaceTopColor">#E6303036</Color>
-    <Color x:Key="SurfaceBottomColor">#EB1C1C21</Color>
-    <Color x:Key="AccentColor">#FF4CC2FF</Color>
-
-    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <!-- Farben. Die Dock-Farben werden zur Laufzeit von ThemeService aus den Einstellungen gesetzt;
+         hier stehen nur die Standardwerte. Deshalb überall DynamicResource. -->
+    <SolidColorBrush x:Key="DockSurfaceBrush" Color="#EB2A2A30" />
+    <SolidColorBrush x:Key="LiquidBrush" Color="#EB2A2A30" />
     <SolidColorBrush x:Key="SurfaceBorderBrush" Color="#38FFFFFF" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#FF4CC2FF" />
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="#404CC2FF" />
     <SolidColorBrush x:Key="HoverBrush" Color="#24FFFFFF" />
     <SolidColorBrush x:Key="ForegroundBrush" Color="#F2FFFFFF" />
 
-    <SolidColorBrush x:Key="SurfaceTopBrush" Color="{StaticResource SurfaceTopColor}" />
-    <!-- Deckend, damit sich überlappende Teile der Flüssigkeit nicht abdunkeln -->
-    <SolidColorBrush x:Key="LiquidBrush" Color="#FF2A2A30" />
-
-    <LinearGradientBrush x:Key="SurfaceBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Offset="0" Color="{StaticResource SurfaceTopColor}" />
-        <GradientStop Offset="1" Color="{StaticResource SurfaceBottomColor}" />
-    </LinearGradientBrush>
-
     <!-- Fläche von Haupt- und Kategorie-Dock -->
     <Style x:Key="DockSurfaceStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource DockSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="18" />
         <Setter Property="Padding" Value="8,6" />
@@ -52,7 +43,7 @@
                         <Border x:Name="HoverPlate" CornerRadius="12" Margin="3" Opacity="0"
                                 Background="{StaticResource HoverBrush}" />
                         <Border x:Name="DropPlate" CornerRadius="12" Margin="3" Visibility="Collapsed"
-                                Background="#404CC2FF" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1.5" />
+                                Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1.5" />
                         <Image x:Name="IconImage" Source="{Binding Icon}" Width="44" Height="44"
                                RenderOptions.BitmapScalingMode="HighQuality" RenderTransformOrigin="0.5,0.5">
                             <Image.RenderTransform>
@@ -60,7 +51,7 @@
                             </Image.RenderTransform>
                         </Image>
                         <Ellipse x:Name="OpenMarker" Width="5" Height="5" Margin="0,0,0,1"
-                                 VerticalAlignment="Bottom" Fill="{StaticResource AccentBrush}" Visibility="Collapsed" />
+                                 VerticalAlignment="Bottom" Fill="{DynamicResource AccentBrush}" Visibility="Collapsed" />
                     </Grid>
                     <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsOpen}" Value="True">
@@ -111,7 +102,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ContextMenu">
-                    <Border Background="#F2242429" BorderBrush="{StaticResource SurfaceBorderBrush}" BorderThickness="1"
+                    <Border Background="#F2242429" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1"
                             CornerRadius="10" Padding="4" Margin="0,0,8,8">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Opacity="0.4" />
@@ -171,7 +162,7 @@
         <Setter Property="Margin" Value="16" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Background" Value="#FF242429" />
-        <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="20" />
         <Setter Property="TextBlock.Foreground" Value="{StaticResource ForegroundBrush}" />
@@ -222,13 +213,13 @@
     <Style x:Key="DialogSliderStyle" TargetType="Slider">
         <Setter Property="IsSnapToTickEnabled" Value="True" />
         <Setter Property="Margin" Value="0,2,0,0" />
-        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
     </Style>
 
     <Style x:Key="DialogTextBoxStyle" TargetType="TextBox">
         <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
         <Setter Property="CaretBrush" Value="{StaticResource ForegroundBrush}" />
-        <Setter Property="SelectionBrush" Value="{StaticResource AccentBrush}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Template">
             <Setter.Value>
@@ -238,7 +229,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -280,7 +271,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToolTip">
-                    <Border Background="#F2242429" BorderBrush="{StaticResource SurfaceBorderBrush}" BorderThickness="1"
+                    <Border Background="#F2242429" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1"
                             CornerRadius="6" Padding="8,4">
                         <ContentPresenter />
                     </Border>
