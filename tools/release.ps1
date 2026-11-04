@@ -28,6 +28,6 @@ if (-not (Test-Path $setup)) { throw "Installer fehlt: $setup" }
 
 git tag -a $tag -m "BiMaDock $version"
 git push origin main $tag
-git push github main $tag
+git -c core.sshCommand=ssh push github main $tag   # GitHub mit dem normalen SSH-Schlüssel, nicht dem Gitea-Deploy-Key
 gh release create $tag $setup --repo bandit-1200/BiMaDock --title "BiMaDock $version" --notes-file $notesFile --latest
 Write-Host "Fertig: https://github.com/bandit-1200/BiMaDock/releases/tag/$tag"
