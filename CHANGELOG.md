@@ -1,5 +1,9 @@
 # Versionsverlauf
 
+## 26.11.1
+
+- Nach einem Update startet das Dock wieder von selbst. Das Setup hat den Schalter /UPDATE ohne Wert nicht erkannt.
+
 ## 26.11.0
 
 - Neues Versionsschema Jahr.Monat.Nummer, wie bei Version 1. Damit findet auch die alte Version 1 (26.10.x) das Update und kann auf BiMaDock 2 wechseln. Das Setup liegt dafür zusätzlich als BiMaDockSetup.exe im Release.

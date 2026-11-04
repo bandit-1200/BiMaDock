@@ -66,9 +66,16 @@ Filename: "{app}\BiMaDock.exe"; Description: "{cm:LaunchProgram,BiMaDock 2}"; Fl
 Filename: "{app}\BiMaDock.exe"; Flags: nowait runasoriginaluser; Check: IsUpdate
 
 [Code]
+// Die App startet das Setup mit "/UPDATE" ohne Wert. {param:UPDATE} erkennt nur "/UPDATE=wert",
+// deshalb die Parameter selbst durchsuchen.
 function IsUpdate: Boolean;
+var
+  I: Integer;
 begin
-  Result := ExpandConstant('{param:UPDATE|0}') <> '0';
+  Result := False;
+  for I := 1 to ParamCount do
+    if (CompareText(ParamStr(I), '/UPDATE') = 0) or (Pos('/UPDATE=', Uppercase(ParamStr(I))) = 1) then
+      Result := True;
 end;
 
 // Alte Version 1 ("BiMaDock_is1") vor der Installation entfernen. Die Daten in %LOCALAPPDATA%\BiMaDock
