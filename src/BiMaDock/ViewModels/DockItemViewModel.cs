@@ -1,0 +1,31 @@
+using System.Windows.Media;
+using BiMaDock.Core.Model;
+using BiMaDock.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+
+namespace BiMaDock.ViewModels;
+
+public sealed partial class DockItemViewModel : ObservableObject
+{
+    private readonly IconService _icons;
+    private ImageSource? _icon;
+
+    public DockItemViewModel(DockEntry entry, IconService icons)
+    {
+        Entry = entry;
+        _icons = icons;
+    }
+
+    public DockEntry Entry { get; }
+
+    public string Name => Entry.Name;
+
+    public bool IsCategory => Entry.IsCategory;
+
+    /// <summary>Wird erst geladen, wenn die Oberfläche das Symbol anzeigt.</summary>
+    public ImageSource Icon => _icon ??= _icons.GetIcon(Entry);
+
+    /// <summary>Kategorie ist gerade im Kategorie-Dock geöffnet.</summary>
+    [ObservableProperty]
+    public partial bool IsOpen { get; set; }
+}
