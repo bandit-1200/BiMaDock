@@ -9,6 +9,6 @@
     <Copyright>Copyright (c) 2024-2026 Marco Bilz</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Product>BiMaDock</Product>
-    <Version>2.0.2</Version>
+    <Version>26.11.0</Version>
   </PropertyGroup>
 </Project>

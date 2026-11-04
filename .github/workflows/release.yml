@@ -81,6 +81,11 @@ jobs:
         shell: pwsh
         run: Write-Output "::warning::Das Setup ist nicht signiert. Secrets CERTIFICATE_FILE und CERTIFICATE_PASSWORD prüfen."
 
+      # Brücke für die alte Version 1: deren Updater sucht genau diesen Dateinamen.
+      - name: Setup für alte Version 1 kopieren
+        shell: pwsh
+        run: Copy-Item "artifacts/installer/BiMaDock2-Setup-${{ steps.version.outputs.version }}.exe" artifacts/installer/BiMaDockSetup.exe
+
       - name: GitHub-Release anlegen
         uses: softprops/action-gh-release@v2
         with:
@@ -89,4 +94,6 @@ jobs:
           body_path: release-notes.md
           make_latest: true
           fail_on_unmatched_files: true
-          files: artifacts/installer/BiMaDock2-Setup-${{ steps.version.outputs.version }}.exe
+          files: |
+            artifacts/installer/BiMaDock2-Setup-${{ steps.version.outputs.version }}.exe
+            artifacts/installer/BiMaDockSetup.exe

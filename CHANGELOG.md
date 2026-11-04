@@ -1,5 +1,9 @@
 # Versionsverlauf
 
+## 26.11.0
+
+- Neues Versionsschema Jahr.Monat.Nummer, wie bei Version 1. Damit findet auch die alte Version 1 (26.10.x) das Update und kann auf BiMaDock 2 wechseln. Das Setup liegt dafür zusätzlich als BiMaDockSetup.exe im Release.
+
 ## 2.0.2
 
 - Das Setup entfernt die alte Version 1 jetzt selbst, bei einer Installation für alle Benutzer mit einer Windows-Abfrage nach Adminrechten. Das Dock fragt nicht mehr nach. Einträge und Symbole bleiben erhalten und werden beim ersten Start übernommen.
