@@ -74,12 +74,34 @@ public sealed partial class DockViewModel : ObservableObject
     public void Load()
     {
         _layout = _store.Load();
+        AdoptLegacyIcons();
         _icons.ClearCache();
         OpenCategory = null;
         MainItems.Clear();
         CategoryItems.Clear();
         Sync();
         _logger.LogInformation("{Count} Einträge geladen, davon {Main} im Hauptdock", _layout.Entries.Count, MainItems.Count);
+    }
+
+    /// <summary>
+    /// Symbole, die noch im Ordner des alten Docks liegen, in die eigenen Symbole kopieren. Sonst wären sie weg,
+    /// sobald das alte Dock deinstalliert wird.
+    /// </summary>
+    private void AdoptLegacyIcons()
+    {
+        try
+        {
+            int count = BiMaDock.Core.Icons.LegacyIconAdopter.Adopt(_layout, _icons.Library);
+            if (count > 0)
+            {
+                _store.Save(_layout);
+                _logger.LogInformation("{Count} Symbole aus dem alten Dock in die eigenen Symbole übernommen", count);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            _logger.LogError(ex, "Symbole des alten Docks konnten nicht übernommen werden");
+        }
     }
 
     // ---------- Aktionen ----------
