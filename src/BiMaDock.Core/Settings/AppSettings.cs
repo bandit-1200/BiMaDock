@@ -33,14 +33,26 @@ public sealed record AppSettings
     /// <summary>Symbol hüpft kurz, wenn ein Eintrag gestartet wird.</summary>
     public bool LaunchBounce { get; init; } = true;
 
-    /// <summary>Stärke der Hover-Animation in Prozent (Größe, Winkel, Sprunghöhe).</summary>
-    public int HoverIntensity { get; init; } = 100;
-
-    /// <summary>Tempo der Hover-Animation in Prozent; höher ist schneller.</summary>
-    public int HoverSpeed { get; init; } = 100;
+    /// <summary>Stärke und Tempo je Hover-Effekt; jeder Effekt behält seine eigenen Werte.</summary>
+    public HoverTuningMap HoverTunings { get; init; } = [];
 
     /// <summary>Sprunghöhe beim Starten in DIP.</summary>
     public int LaunchBounceHeight { get; init; } = 18;
+
+    /// <summary>Dauer des Hüpfens beim Starten.</summary>
+    public int LaunchBounceDurationMs { get; init; } = 700;
+
+    /// <summary>Anzahl der Sprünge beim Starten (jeder folgende ist flacher).</summary>
+    public int LaunchBounceCount { get; init; } = 3;
+
+    /// <summary>Wie schnell die Lupe der Maus folgt (Überblendzeit beim Eintritt).</summary>
+    public int MagnifySpeedMs { get; init; } = 110;
+
+    /// <summary>Stärke des Nachfederns beim Einblenden in Prozent (nur "Gleiten mit Federn").</summary>
+    public int SlideSpring { get; init; } = 35;
+
+    /// <summary>Überschwingen beim Hereinploppen in Prozent.</summary>
+    public int ItemPopOvershoot { get; init; } = 50;
 
     /// <summary>Lupe wie beim Mac: Symbol unter der Maus wächst, Nachbarn wachsen etwas mit.</summary>
     public bool MagnifyEnabled { get; init; } = true;
@@ -95,15 +107,23 @@ public sealed record AppSettings
         AccentColor = NormalizeColor(AccentColor, DefaultAccentColor),
         FeedbackColor = NormalizeColor(FeedbackColor, DefaultFeedbackColor),
         HoverEffect = Enum.IsDefined(HoverEffect) ? HoverEffect : HoverEffect.Zoom,
-        HoverIntensity = Math.Clamp(HoverIntensity, 25, 200),
-        HoverSpeed = Math.Clamp(HoverSpeed, 50, 200),
+        HoverTunings = new(Enum.GetValues<HoverEffect>().ToDictionary(e => e, e => Hover(e).Normalized())),
         LaunchBounceHeight = Math.Clamp(LaunchBounceHeight, 6, 30),
+        LaunchBounceDurationMs = Math.Clamp(LaunchBounceDurationMs, 300, 1400),
+        LaunchBounceCount = Math.Clamp(LaunchBounceCount, 1, 4),
+        MagnifySpeedMs = Math.Clamp(MagnifySpeedMs, 40, 300),
+        SlideSpring = Math.Clamp(SlideSpring, 5, 100),
+        ItemPopOvershoot = Math.Clamp(ItemPopOvershoot, 0, 100),
         MagnifyScale = Math.Clamp(MagnifyScale, 110, 200),
         MagnifyRange = Math.Clamp(MagnifyRange, 1, 4),
         SlideStyle = Enum.IsDefined(SlideStyle) ? SlideStyle : SlideStyle.Spring,
         SlideDurationMs = Math.Clamp(SlideDurationMs, 80, 600),
         ItemPopDurationMs = Math.Clamp(ItemPopDurationMs, 100, 600),
     };
+
+    /// <summary>Werte des angegebenen Hover-Effekts (Standard, wenn noch keine gespeichert sind).</summary>
+    public HoverTuning Hover(HoverEffect effect) =>
+        HoverTunings is not null && HoverTunings.TryGetValue(effect, out var t) && t is not null ? t : new HoverTuning();
 
     /// <summary>Gibt die Farbe als "#RRGGBB" in Großbuchstaben zurück; ungültige Werte ergeben <paramref name="fallback"/>.</summary>
     public static string NormalizeColor(string? value, string fallback)
@@ -121,6 +141,47 @@ public sealed record AppSettings
 
         return hex.Length == 6 && hex.All(Uri.IsHexDigit) ? $"#{hex.ToUpperInvariant()}" : fallback;
     }
+}
+
+/// <summary>Werte je Hover-Effekt; vergleicht nach Inhalt, damit AppSettings als Record vergleichbar bleibt.</summary>
+public sealed class HoverTuningMap : Dictionary<HoverEffect, HoverTuning>, IEquatable<HoverTuningMap>
+{
+    public HoverTuningMap()
+    {
+    }
+
+    public HoverTuningMap(IDictionary<HoverEffect, HoverTuning> values)
+        : base(values)
+    {
+    }
+
+    public bool Equals(HoverTuningMap? other) =>
+        other is not null && Count == other.Count && this.All(kv => other.TryGetValue(kv.Key, out var v) && Equals(v, kv.Value));
+
+    public override bool Equals(object? obj) => Equals(obj as HoverTuningMap);
+
+    public override int GetHashCode() => Count;
+}
+
+/// <summary>Stärke und Tempo eines Hover-Effekts in Prozent.</summary>
+public sealed record HoverTuning
+{
+    public const int MinIntensity = 25;
+    public const int MaxIntensity = 200;
+    public const int MinSpeed = 50;
+    public const int MaxSpeed = 200;
+
+    /// <summary>Stärke in Prozent (Größe, Winkel, Sprunghöhe).</summary>
+    public int Intensity { get; init; } = 100;
+
+    /// <summary>Tempo in Prozent; höher ist schneller.</summary>
+    public int Speed { get; init; } = 100;
+
+    public HoverTuning Normalized() => this with
+    {
+        Intensity = Math.Clamp(Intensity, MinIntensity, MaxIntensity),
+        Speed = Math.Clamp(Speed, MinSpeed, MaxSpeed),
+    };
 }
 
 /// <summary>Animation beim Überfahren eines Symbols.</summary>

@@ -95,9 +95,11 @@ public static class ItemAnimations
 
     // ---------- Hover ----------
 
-    private static double Strength => _settings.HoverIntensity / 100.0;
+    private static HoverTuning Tuning => _settings.Hover(_settings.HoverEffect);
 
-    private static int Ms(int baseMs) => (int)Math.Round(baseMs * 100.0 / _settings.HoverSpeed);
+    private static double Strength => Tuning.Intensity / 100.0;
+
+    private static int Ms(int baseMs) => (int)Math.Round(baseMs * 100.0 / Tuning.Speed);
 
     private static void StartHover(IconParts p)
     {
@@ -143,9 +145,23 @@ public static class ItemAnimations
     /// <summary>Kurzes Hüpfen beim Starten, wie beim Mac.</summary>
     private static void Bounce(IconParts p)
     {
+        // Jeder Sprung ist flacher und kürzer als der vorige (Höhe 1, 0.45, 0.2, 0.09 ...).
         double h = _settings.LaunchBounceHeight;
-        p.Translate.BeginAnimation(TranslateTransform.YProperty,
-            Keys(700, (0, 0), (0.22, -h), (0.45, 0), (0.62, -h * 0.45), (0.8, 0), (0.9, -h * 0.12), (1, 0)));
+        int count = _settings.LaunchBounceCount;
+        var heights = Enumerable.Range(0, count).Select(i => Math.Pow(0.45, i)).ToArray();
+        var lengths = Enumerable.Range(0, count).Select(i => Math.Pow(0.7, i)).ToArray();
+        double total = lengths.Sum();
+        var frames = new List<(double, double)> { (0, 0) };
+        double at = 0;
+        for (int i = 0; i < count; i++)
+        {
+            double len = lengths[i] / total;
+            frames.Add((at + (len / 2), -h * heights[i]));
+            at += len;
+            frames.Add((Math.Min(1, at), 0));
+        }
+
+        p.Translate.BeginAnimation(TranslateTransform.YProperty, Keys(_settings.LaunchBounceDurationMs, [.. frames]));
     }
 
     // ---------- Lupe ----------
@@ -187,7 +203,7 @@ public static class ItemAnimations
             double f = 1 + ((max - 1) * (t * t * (3 - (2 * t)))); // weicher Abfall (smoothstep)
             if (smooth)
             {
-                button.BeginAnimation(MagnificationProperty, To(f, 110, new CubicEase { EasingMode = EasingMode.EaseOut }));
+                button.BeginAnimation(MagnificationProperty, To(f, _settings.MagnifySpeedMs, new CubicEase { EasingMode = EasingMode.EaseOut }));
             }
             else
             {
@@ -233,7 +249,7 @@ public static class ItemAnimations
     {
         int ms = _settings.ItemPopDurationMs;
         var scale = ButtonScale(button);
-        var grow = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(ms)) { EasingFunction = new BackEase { Amplitude = 0.5, EasingMode = EasingMode.EaseOut } };
+        var grow = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(ms)) { EasingFunction = new BackEase { Amplitude = _settings.ItemPopOvershoot / 100.0, EasingMode = EasingMode.EaseOut } };
         scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
         scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
 

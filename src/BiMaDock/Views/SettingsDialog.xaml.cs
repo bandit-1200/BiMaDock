@@ -40,6 +40,7 @@ public partial class SettingsDialog : DialogWindow
     private readonly ChipGroup<SlideStyle> _slideStyle;
     private readonly IconService _icons;
     private readonly Action<AppSettings> _preview;
+    private HoverTuningMap _tunings = [];
     private bool _loading;
 
     private SettingsDialog(AppSettings settings, bool autostart, IconService icons, Action<AppSettings> preview)
@@ -57,7 +58,7 @@ public partial class SettingsDialog : DialogWindow
         AccentColorHost.Content = _accentColor;
         FeedbackColorHost.Content = _feedbackColor;
 
-        _hoverEffect = new ChipGroup<HoverEffect>(HoverEffects, HoverChoices, Preview);
+        _hoverEffect = new ChipGroup<HoverEffect>(HoverEffects, HoverChoices, ShowHoverValues);
         _slideStyle = new ChipGroup<SlideStyle>(SlideStyles, SlideChoices, Preview);
 
         Apply(settings);
@@ -69,7 +70,10 @@ public partial class SettingsDialog : DialogWindow
             field.ValueChanged += (_, _) => Preview();
         }
 
-        foreach (var slider in new[] { DockOpacity, ShowDelay, HideDelay, FlowDuration, SlideDuration, MagnifyScale, MagnifyRange, HoverIntensity, HoverSpeed, LaunchBounceHeight, ItemPopDuration })
+        HoverIntensity.ValueChanged += (_, _) => StoreHoverValues();
+        HoverSpeed.ValueChanged += (_, _) => StoreHoverValues();
+
+        foreach (var slider in new[] { DockOpacity, ShowDelay, HideDelay, FlowDuration, SlideDuration, SlideSpring, MagnifyScale, MagnifyRange, MagnifySpeed, LaunchBounceHeight, LaunchBounceCount, LaunchBounceDuration, ItemPopDuration, ItemPopOvershoot })
         {
             slider.ValueChanged += (_, _) => Preview();
         }
@@ -93,10 +97,14 @@ public partial class SettingsDialog : DialogWindow
         FeedbackColor = _feedbackColor.Value,
         ShowLabels = ShowLabels.IsChecked == true,
         HoverEffect = _hoverEffect.Value,
-        HoverIntensity = (int)HoverIntensity.Value,
-        HoverSpeed = (int)HoverSpeed.Value,
+        HoverTunings = new(_tunings),
         LaunchBounce = LaunchBounce.IsChecked == true,
         LaunchBounceHeight = (int)LaunchBounceHeight.Value,
+        LaunchBounceCount = (int)LaunchBounceCount.Value,
+        LaunchBounceDurationMs = (int)LaunchBounceDuration.Value,
+        MagnifySpeedMs = (int)MagnifySpeed.Value,
+        SlideSpring = (int)SlideSpring.Value,
+        ItemPopOvershoot = (int)ItemPopOvershoot.Value,
         MagnifyEnabled = MagnifyEnabled.IsChecked == true,
         MagnifyScale = (int)MagnifyScale.Value,
         MagnifyRange = (int)MagnifyRange.Value,
@@ -136,10 +144,15 @@ public partial class SettingsDialog : DialogWindow
         _feedbackColor.Value = settings.FeedbackColor;
         ShowLabels.IsChecked = settings.ShowLabels;
         _hoverEffect.Value = settings.HoverEffect;
-        HoverIntensity.Value = settings.HoverIntensity;
-        HoverSpeed.Value = settings.HoverSpeed;
+        _tunings = new(Enum.GetValues<HoverEffect>().ToDictionary(e => e, settings.Hover));
+        LoadHoverValues();
         LaunchBounce.IsChecked = settings.LaunchBounce;
         LaunchBounceHeight.Value = settings.LaunchBounceHeight;
+        LaunchBounceCount.Value = settings.LaunchBounceCount;
+        LaunchBounceDuration.Value = settings.LaunchBounceDurationMs;
+        MagnifySpeed.Value = settings.MagnifySpeedMs;
+        SlideSpring.Value = settings.SlideSpring;
+        ItemPopOvershoot.Value = settings.ItemPopOvershoot;
         MagnifyEnabled.IsChecked = settings.MagnifyEnabled;
         MagnifyScale.Value = settings.MagnifyScale;
         MagnifyRange.Value = settings.MagnifyRange;
@@ -158,12 +171,43 @@ public partial class SettingsDialog : DialogWindow
             return;
         }
 
+        // Nur die Regler der gewählten Animation zeigen.
         SlideDuration.IsEnabled = _slideStyle.Value != SlideStyle.None;
-        ZoomHint.Visibility = _hoverEffect.Value == HoverEffect.Zoom && MagnifyEnabled.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-        bool hasEffect = _hoverEffect.Value != HoverEffect.None;
-        HoverIntensity.IsEnabled = hasEffect;
-        HoverSpeed.IsEnabled = hasEffect;
+        SpringPanel.Visibility = _slideStyle.Value == SlideStyle.Spring ? Visibility.Visible : Visibility.Collapsed;
+        bool zoomByMagnify = _hoverEffect.Value == HoverEffect.Zoom && MagnifyEnabled.IsChecked == true;
+        ZoomHint.Visibility = zoomByMagnify ? Visibility.Visible : Visibility.Collapsed;
+        HoverPanel.Visibility = _hoverEffect.Value == HoverEffect.None || zoomByMagnify ? Visibility.Collapsed : Visibility.Visible;
         _preview(Result.Normalized());
+    }
+
+    /// <summary>Effekt gewechselt: dessen eigene Werte in die Regler laden.</summary>
+    private void ShowHoverValues()
+    {
+        bool wasLoading = _loading;
+        _loading = true;
+        LoadHoverValues();
+        _loading = wasLoading;
+        Preview();
+    }
+
+    private void LoadHoverValues()
+    {
+        var tuning = _tunings.GetValueOrDefault(_hoverEffect.Value) ?? new HoverTuning();
+        HoverIntensity.Value = tuning.Intensity;
+        HoverSpeed.Value = tuning.Speed;
+        string name = HoverChoices.First(c => c.Value == _hoverEffect.Value).Label;
+        HoverValuesTitle.Text = $"Werte für „{name}“, jeder Effekt merkt sich seine eigenen.";
+    }
+
+    private void StoreHoverValues()
+    {
+        if (_loading)
+        {
+            return;
+        }
+
+        _tunings[_hoverEffect.Value] = new HoverTuning { Intensity = (int)HoverIntensity.Value, Speed = (int)HoverSpeed.Value };
+        Preview();
     }
 
     private void UpdateLibraryInfo()

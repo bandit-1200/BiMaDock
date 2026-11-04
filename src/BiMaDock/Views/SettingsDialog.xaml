@@ -73,6 +73,12 @@
                                 <Run Text="Dauer" /> <Run Text="{Binding Value, ElementName=SlideDuration, StringFormat={}{0:0} ms}" />
                             </TextBlock>
                             <Slider x:Name="SlideDuration" Style="{StaticResource DialogSliderStyle}" Minimum="80" Maximum="600" TickFrequency="20" />
+                            <StackPanel x:Name="SpringPanel">
+                                <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                    <Run Text="Nachfedern" /> <Run Text="{Binding Value, ElementName=SlideSpring, StringFormat={}{0:0} %}" />
+                                </TextBlock>
+                                <Slider x:Name="SlideSpring" Style="{StaticResource DialogSliderStyle}" Minimum="5" Maximum="100" TickFrequency="5" />
+                            </StackPanel>
 
                             <TextBlock Text="Kategorie-Dock" Style="{StaticResource DialogSectionStyle}" />
                             <CheckBox x:Name="FlowEnabled" Content="Fließt aus dem Hauptdock" Style="{StaticResource DialogCheckBoxStyle}" />
@@ -93,36 +99,57 @@
                                     <Run Text="Nachbarn je Seite" /> <Run Text="{Binding Value, ElementName=MagnifyRange, StringFormat={}{0:0}}" />
                                 </TextBlock>
                                 <Slider x:Name="MagnifyRange" Style="{StaticResource DialogSliderStyle}" Minimum="1" Maximum="4" TickFrequency="1" />
+                                <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                    <Run Text="Reaktionszeit" /> <Run Text="{Binding Value, ElementName=MagnifySpeed, StringFormat={}{0:0} ms}" />
+                                </TextBlock>
+                                <Slider x:Name="MagnifySpeed" Style="{StaticResource DialogSliderStyle}" Minimum="40" Maximum="300" TickFrequency="10" />
                             </StackPanel>
 
                             <TextBlock Text="Beim Überfahren" Style="{StaticResource DialogSectionStyle}" />
                             <WrapPanel x:Name="HoverEffects" Margin="0,8,0,0" />
                             <TextBlock x:Name="ZoomHint" Text="„Vergrößern“ übernimmt bei eingeschalteter Lupe die Lupe selbst."
                                        Style="{StaticResource DialogHintStyle}" Margin="0,0,0,0" />
-                            <TextBlock Style="{StaticResource DialogLabelStyle}">
-                                <Run Text="Stärke" /> <Run Text="{Binding Value, ElementName=HoverIntensity, StringFormat={}{0:0} %}" />
-                            </TextBlock>
-                            <Slider x:Name="HoverIntensity" Style="{StaticResource DialogSliderStyle}" Minimum="25" Maximum="200" TickFrequency="5" />
-                            <TextBlock Style="{StaticResource DialogLabelStyle}">
-                                <Run Text="Tempo" /> <Run Text="{Binding Value, ElementName=HoverSpeed, StringFormat={}{0:0} %}" />
-                            </TextBlock>
-                            <Slider x:Name="HoverSpeed" Style="{StaticResource DialogSliderStyle}" Minimum="50" Maximum="200" TickFrequency="5" />
+                            <StackPanel x:Name="HoverPanel">
+                                <TextBlock x:Name="HoverValuesTitle" Style="{StaticResource DialogHintStyle}" />
+                                <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                    <Run Text="Stärke" /> <Run Text="{Binding Value, ElementName=HoverIntensity, StringFormat={}{0:0} %}" />
+                                </TextBlock>
+                                <Slider x:Name="HoverIntensity" Style="{StaticResource DialogSliderStyle}" Minimum="25" Maximum="200" TickFrequency="5" />
+                                <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                    <Run Text="Tempo" /> <Run Text="{Binding Value, ElementName=HoverSpeed, StringFormat={}{0:0} %}" />
+                                </TextBlock>
+                                <Slider x:Name="HoverSpeed" Style="{StaticResource DialogSliderStyle}" Minimum="50" Maximum="200" TickFrequency="5" />
+                            </StackPanel>
 
                             <TextBlock Text="Starten" Style="{StaticResource DialogSectionStyle}" />
                             <CheckBox x:Name="LaunchBounce" Content="Symbol hüpft beim Starten" Style="{StaticResource DialogCheckBoxStyle}" />
                             <TextBlock Style="{StaticResource DialogLabelStyle}">
                                 <Run Text="Sprunghöhe" /> <Run Text="{Binding Value, ElementName=LaunchBounceHeight, StringFormat={}{0:0} px}" />
                             </TextBlock>
-                            <Slider x:Name="LaunchBounceHeight" Style="{StaticResource DialogSliderStyle}" Minimum="6" Maximum="30" TickFrequency="1"
-                                    IsEnabled="{Binding IsChecked, ElementName=LaunchBounce}" />
+                            <StackPanel IsEnabled="{Binding IsChecked, ElementName=LaunchBounce}">
+                                <Slider x:Name="LaunchBounceHeight" Style="{StaticResource DialogSliderStyle}" Minimum="6" Maximum="30" TickFrequency="1" />
+                                <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                    <Run Text="Sprünge" /> <Run Text="{Binding Value, ElementName=LaunchBounceCount, StringFormat={}{0:0}}" />
+                                </TextBlock>
+                                <Slider x:Name="LaunchBounceCount" Style="{StaticResource DialogSliderStyle}" Minimum="1" Maximum="4" TickFrequency="1" />
+                                <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                    <Run Text="Dauer" /> <Run Text="{Binding Value, ElementName=LaunchBounceDuration, StringFormat={}{0:0} ms}" />
+                                </TextBlock>
+                                <Slider x:Name="LaunchBounceDuration" Style="{StaticResource DialogSliderStyle}" Minimum="300" Maximum="1400" TickFrequency="20" />
+                            </StackPanel>
 
                             <TextBlock Text="Hinzufügen und Entfernen" Style="{StaticResource DialogSectionStyle}" />
                             <CheckBox x:Name="ItemPopEnabled" Content="Neue Einträge ploppen herein, entfernte schrumpfen weg" Style="{StaticResource DialogCheckBoxStyle}" />
                             <TextBlock Style="{StaticResource DialogLabelStyle}">
                                 <Run Text="Dauer" /> <Run Text="{Binding Value, ElementName=ItemPopDuration, StringFormat={}{0:0} ms}" />
                             </TextBlock>
-                            <Slider x:Name="ItemPopDuration" Style="{StaticResource DialogSliderStyle}" Minimum="100" Maximum="600" TickFrequency="20"
-                                    IsEnabled="{Binding IsChecked, ElementName=ItemPopEnabled}" />
+                            <StackPanel IsEnabled="{Binding IsChecked, ElementName=ItemPopEnabled}">
+                                <Slider x:Name="ItemPopDuration" Style="{StaticResource DialogSliderStyle}" Minimum="100" Maximum="600" TickFrequency="20" />
+                                <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                    <Run Text="Überschwingen" /> <Run Text="{Binding Value, ElementName=ItemPopOvershoot, StringFormat={}{0:0} %}" />
+                                </TextBlock>
+                                <Slider x:Name="ItemPopOvershoot" Style="{StaticResource DialogSliderStyle}" Minimum="0" Maximum="100" TickFrequency="5" />
+                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>

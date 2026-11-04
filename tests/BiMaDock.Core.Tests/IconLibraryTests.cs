@@ -85,19 +85,48 @@ public sealed class AnimationSettingsTests
     {
         var s = new BiMaDock.Core.Settings.AppSettings
         {
-            HoverIntensity = 999, HoverSpeed = 1, LaunchBounceHeight = 100, MagnifyScale = 50,
+            HoverTunings = new() { [BiMaDock.Core.Settings.HoverEffect.Hop] = new BiMaDock.Core.Settings.HoverTuning { Intensity = 999, Speed = 1 } }, LaunchBounceCount = 9, SlideSpring = 0, LaunchBounceHeight = 100, MagnifyScale = 50,
             MagnifyRange = 9, SlideDurationMs = 5, ItemPopDurationMs = 5000,
             SlideStyle = (BiMaDock.Core.Settings.SlideStyle)42,
         }.Normalized();
 
-        Assert.Equal(200, s.HoverIntensity);
-        Assert.Equal(50, s.HoverSpeed);
+        Assert.Equal(200, s.Hover(BiMaDock.Core.Settings.HoverEffect.Hop).Intensity);
+        Assert.Equal(50, s.Hover(BiMaDock.Core.Settings.HoverEffect.Hop).Speed);
+        Assert.Equal(100, s.Hover(BiMaDock.Core.Settings.HoverEffect.Pulse).Intensity);
+        Assert.Equal(4, s.LaunchBounceCount);
+        Assert.Equal(5, s.SlideSpring);
         Assert.Equal(30, s.LaunchBounceHeight);
         Assert.Equal(110, s.MagnifyScale);
         Assert.Equal(4, s.MagnifyRange);
         Assert.Equal(80, s.SlideDurationMs);
         Assert.Equal(600, s.ItemPopDurationMs);
         Assert.Equal(BiMaDock.Core.Settings.SlideStyle.Spring, s.SlideStyle);
+    }
+
+    [Fact]
+    public void Each_hover_effect_keeps_its_own_values()
+    {
+        string file = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
+        try
+        {
+            var store = new BiMaDock.Core.Settings.SettingsStore(file);
+            store.Save(new BiMaDock.Core.Settings.AppSettings
+            {
+                HoverTunings = new()
+                {
+                    [BiMaDock.Core.Settings.HoverEffect.Hop] = new() { Intensity = 150, Speed = 80 },
+                    [BiMaDock.Core.Settings.HoverEffect.Swing] = new() { Intensity = 60, Speed = 180 },
+                },
+            });
+            var loaded = store.Load();
+            Assert.Equal(150, loaded.Hover(BiMaDock.Core.Settings.HoverEffect.Hop).Intensity);
+            Assert.Equal(180, loaded.Hover(BiMaDock.Core.Settings.HoverEffect.Swing).Speed);
+            Assert.Equal(100, loaded.Hover(BiMaDock.Core.Settings.HoverEffect.Wiggle).Speed);
+        }
+        finally
+        {
+            File.Delete(file);
+        }
     }
 
     [Fact]

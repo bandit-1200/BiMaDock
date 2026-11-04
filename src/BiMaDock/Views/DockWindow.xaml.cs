@@ -196,7 +196,7 @@ public partial class DockWindow : Window
         {
             // Beim Einblenden federt das Dock je nach Einstellung kurz nach; Ausblenden ist immer glatt.
             EasingFunction = showing && settings.SlideStyle == SlideStyle.Spring
-                ? new BackEase { Amplitude = 0.35, EasingMode = EasingMode.EaseOut }
+                ? new BackEase { Amplitude = settings.SlideSpring / 100.0, EasingMode = EasingMode.EaseOut }
                 : new CubicEase { EasingMode = EasingMode.EaseOut },
         };
         animation.Completed += (_, _) =>
