@@ -34,6 +34,7 @@
                         <MenuItem Header="Einstellungen …" Click="Settings_Click" />
                         <MenuItem Header="Nach Updates suchen …" Click="CheckUpdates_Click" />
                         <MenuItem Header="Datenordner öffnen" Click="OpenDataFolder_Click" />
+                        <MenuItem Header="Über BiMaDock …" Click="About_Click" />
                         <MenuItem Header="Beenden" Click="Exit_Click" />
                     </ContextMenu>
                 </Button.ContextMenu>
@@ -94,6 +95,7 @@
                         <MenuItem Header="Einstellungen …" Click="Settings_Click" />
                         <MenuItem Header="Nach Updates suchen …" Click="CheckUpdates_Click" />
                         <MenuItem Header="Datenordner öffnen" Click="OpenDataFolder_Click" />
+                        <MenuItem Header="Über BiMaDock …" Click="About_Click" />
                         <MenuItem Header="Beenden" Click="Exit_Click" />
                     </ContextMenu>
                 </Border.ContextMenu>

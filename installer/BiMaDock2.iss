@@ -15,6 +15,7 @@
 #endif
 
 [Setup]
+LicenseFile=..LICENSE
 AppId={{6E3C2B1D-9A7F-4C35-B0E2-6B1D2C8F4A27}
 AppName=BiMaDock 2
 AppVersion={#AppVersion}

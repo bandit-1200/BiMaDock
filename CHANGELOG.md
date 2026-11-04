@@ -2,6 +2,8 @@
 
 ## 2.0.0
 
+- Neu: „Über BiMaDock …“ im Kontextmenü mit Version, Entwickler und Lizenz (MIT, LICENSE-Datei wieder im Repo)
+
 Komplett neu entwickelte Version, ersetzt BiMaDock 26.10.x.
 
 ### Umstieg von der alten Version

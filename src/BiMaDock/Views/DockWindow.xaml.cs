@@ -368,6 +368,9 @@ public partial class DockWindow : Window
         }
     }
 
+    private void About_Click(object sender, RoutedEventArgs e) =>
+        WithDockKeptOpen(() => { AboutDialog.Show(this); return true; });
+
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
         var result = WithDockKeptOpen(() => SettingsDialog.Edit(this, _viewModel.Settings, _startup.IsEnabled, _icons, preview => ThemeService.Apply(preview, Application.Current.Resources)));

@@ -39,3 +39,7 @@ dotnet run --project src/BiMaDock
 ```
 
 Voraussetzung: .NET 10 SDK.
+
+## Lizenz
+
+MIT, siehe [LICENSE](LICENSE). Entwickler: Marco Bilz.
