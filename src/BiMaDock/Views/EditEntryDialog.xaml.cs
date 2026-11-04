@@ -89,6 +89,14 @@ public partial class EditEntryDialog : DialogWindow
         }
     }
 
+    private void LibraryIcon_Click(object sender, RoutedEventArgs e)
+    {
+        if (IconPickerDialog.Pick(this, _icons) is { } reference)
+        {
+            IconBox.Text = reference;
+        }
+    }
+
     private void ResetIcon_Click(object sender, RoutedEventArgs e) => IconBox.Text = string.Empty;
 
     private void Save_Click(object sender, RoutedEventArgs e) => DialogResult = true;

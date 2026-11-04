@@ -78,6 +78,8 @@ public partial class DockWindow
         _draggedItem = item;
         _draggedContainer = container;
 
+        ResetMagnifyNow();
+
         // Element verschwindet an seinem Platz, an dessen Stelle steht sofort eine gleich große Lücke.
         int index = VisibleContainers(owner).IndexOf(container);
         container.Visibility = Visibility.Collapsed;

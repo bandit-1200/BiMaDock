@@ -8,6 +8,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using BiMaDock.Core.Settings;
 using BiMaDock.Native;
 using BiMaDock.Services;
 using BiMaDock.ViewModels;
@@ -24,8 +25,6 @@ public partial class DockWindow : Window
 {
     /// <summary>So viel vom Hauptdock bleibt im ausgeblendeten Zustand sichtbar (Auslöser zum Einblenden).</summary>
     private const double PeekHeight = 4;
-
-    private static readonly Duration SlideDuration = TimeSpan.FromMilliseconds(170);
 
     private readonly DockViewModel _viewModel;
     private readonly IconService _icons;
@@ -60,6 +59,8 @@ public partial class DockWindow : Window
         };
 
         ApplySettings();
+        HookMagnify(MainItemsControl);
+        HookMagnify(CategoryItemsControl);
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         viewModel.MainItems.CollectionChanged += (_, _) => UpdateHints();
         viewModel.CategoryItems.CollectionChanged += (_, _) => UpdateHints();
@@ -182,16 +183,21 @@ public partial class DockWindow : Window
 
     private void Slide(double to, bool animate)
     {
-        if (!animate)
+        if (!animate || _viewModel.Settings.SlideStyle == SlideStyle.None)
         {
             SlideTransform.BeginAnimation(TranslateTransform.YProperty, null);
             SlideTransform.Y = to;
             return;
         }
 
-        var animation = new DoubleAnimation(to, SlideDuration)
+        var settings = _viewModel.Settings;
+        bool showing = to == 0;
+        var animation = new DoubleAnimation(to, TimeSpan.FromMilliseconds(settings.SlideDurationMs * (showing ? 1.0 : 0.75)))
         {
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            // Beim Einblenden federt das Dock je nach Einstellung kurz nach; Ausblenden ist immer glatt.
+            EasingFunction = showing && settings.SlideStyle == SlideStyle.Spring
+                ? new BackEase { Amplitude = 0.35, EasingMode = EasingMode.EaseOut }
+                : new CubicEase { EasingMode = EasingMode.EaseOut },
         };
         animation.Completed += (_, _) =>
         {
@@ -303,10 +309,28 @@ public partial class DockWindow : Window
             }
         }
 
-        _viewModel.RemoveEntry(item);
+        if (ButtonOf(item) is { } button)
+        {
+            button.IsHitTestVisible = false;
+            ItemAnimations.ShrinkOut(button, () => _viewModel.RemoveEntry(item));
+        }
+        else
+        {
+            _viewModel.RemoveEntry(item);
+        }
     }
 
     private void Undo_Click(object sender, RoutedEventArgs e) => _viewModel.UndoCommand.Execute(null);
+
+    private void IconLibrary_Click(object sender, RoutedEventArgs e)
+    {
+        WithDockKeptOpen(() =>
+        {
+            IconPickerDialog.Manage(this, _icons);
+            return true;
+        });
+        _viewModel.RefreshIcons();
+    }
 
     private void Cleanup_Click(object sender, RoutedEventArgs e)
     {
@@ -327,7 +351,7 @@ public partial class DockWindow : Window
 
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
-        var result = WithDockKeptOpen(() => SettingsDialog.Edit(this, _viewModel.Settings, _startup.IsEnabled, preview => ThemeService.Apply(preview, Application.Current.Resources)));
+        var result = WithDockKeptOpen(() => SettingsDialog.Edit(this, _viewModel.Settings, _startup.IsEnabled, _icons, preview => ThemeService.Apply(preview, Application.Current.Resources)));
         if (result is not { } chosen)
         {
             return;

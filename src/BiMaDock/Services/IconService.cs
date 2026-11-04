@@ -1,5 +1,6 @@
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using BiMaDock.Core.Icons;
 using BiMaDock.Core.Model;
 using BiMaDock.Native;
 using Microsoft.Extensions.Logging;
@@ -9,8 +10,11 @@ namespace BiMaDock.Services;
 /// <summary>
 /// Liefert Symbole für Dock-Einträge. Ergebnisse werden zwischengespeichert; Aufrufe nur auf dem UI-Thread.
 /// </summary>
-public sealed class IconService(ILogger<IconService> logger)
+public sealed class IconService(IconLibrary library, ILogger<IconService> logger)
 {
+    /// <summary>Symbolbibliothek (mitgelieferte und eigene Symbole).</summary>
+    public IconLibrary Library { get; } = library;
+
     /// <summary>Symbole werden mit 48 DIP angezeigt; 128 px reichen für 250 % Skalierung.</summary>
     public const int PixelSize = 128;
 
@@ -43,9 +47,9 @@ public sealed class IconService(ILogger<IconService> logger)
 
     public void ClearCache() => _cache.Clear();
 
-    private static ImageSource? Load(DockEntry entry)
+    private ImageSource? Load(DockEntry entry)
     {
-        if (!string.IsNullOrWhiteSpace(entry.IconPath) && LoadCustom(entry.IconPath) is { } custom)
+        if (!string.IsNullOrWhiteSpace(entry.IconPath) && Library.Resolve(entry.IconPath) is { } path && LoadCustom(path) is { } custom)
         {
             return custom;
         }
@@ -61,6 +65,29 @@ public sealed class IconService(ILogger<IconService> logger)
         }
 
         return string.IsNullOrWhiteSpace(entry.Target) ? null : ShellIcons.FromPath(entry.Target, PixelSize);
+    }
+
+    /// <summary>Lädt ein Bild der Bibliothek (Vorschau im Auswahldialog), zwischengespeichert.</summary>
+    public ImageSource GetLibraryIcon(LibraryIcon icon)
+    {
+        ArgumentNullException.ThrowIfNull(icon);
+        string key = "lib|" + icon.FullPath;
+        if (!_cache.TryGetValue(key, out var image))
+        {
+            try
+            {
+                image = LoadCustom(icon.FullPath) ?? Placeholder();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or ArgumentException or InvalidOperationException)
+            {
+                logger.LogWarning(ex, "Symbol {Path} konnte nicht geladen werden", icon.FullPath);
+                image = Placeholder();
+            }
+
+            _cache[key] = image;
+        }
+
+        return image;
     }
 
     private static ImageSource? LoadCustom(string path)

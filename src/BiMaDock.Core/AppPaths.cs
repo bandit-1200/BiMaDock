@@ -20,6 +20,15 @@ public static class AppPaths
 
     public static string LogDirectory => Path.Combine(DataDirectory, "logs");
 
+    /// <summary>Eigene Symbole des Benutzers. Liegt im Benutzerprofil, damit jeder Benutzer seine eigenen hat.</summary>
+    public static string UserIconDirectory => Path.Combine(DataDirectory, "Icons");
+
+    /// <summary>
+    /// Mitgelieferte Symbole im Programmordner. Der Installer legt sie dort für alle Benutzer ab,
+    /// es wird nie etwas in ein Benutzerprofil kopiert.
+    /// </summary>
+    public static string BuiltInIconDirectory => Path.Combine(AppContext.BaseDirectory, "Icons");
+
     /// <summary>Daten der bisherigen Version; werden beim ersten Start einmalig übernommen (nur gelesen).</summary>
     public static string? LegacyDockFile => IsDataDirectoryOverridden
         ? null

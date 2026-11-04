@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\BiMaDock.Core\BiMaDock.Core.csproj" />
@@ -10,6 +10,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.14" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Symbolbibliothek: wird neben die exe kopiert (Programmordner, für alle Benutzer) -->
+    <Content Include="Icons\**\*.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
@@ -19,6 +24,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>BiMaDock</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SatelliteResourceLanguages>de</SatelliteResourceLanguages>
   </PropertyGroup>
 
 </Project>

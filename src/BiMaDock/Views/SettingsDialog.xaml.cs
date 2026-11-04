@@ -1,7 +1,10 @@
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using BiMaDock.Core.Settings;
+using BiMaDock.Services;
 
 namespace BiMaDock.Views;
 
@@ -12,11 +15,7 @@ public partial class SettingsDialog : DialogWindow
     private static readonly string[] FeedbackPresets = ["#D2691E", "#2A7FB8", "#2E7D32", "#8E24AA", "#C62828", "#546E7A", "#F9A825"];
     private static readonly string[] AccentPresets = ["#4CC2FF", "#FF8C00", "#6CCB5F", "#FF5C8A", "#B388FF", "#FFD54F", "#E74C3C", "#FFFFFF"];
 
-    private readonly ColorField _dockColor;
-    private readonly ColorField _borderColor;
-    private readonly ColorField _accentColor;
-    private readonly ColorField _feedbackColor;
-    private static readonly (HoverEffect Effect, string Label)[] Effects =
+    private static readonly (HoverEffect Value, string Label)[] HoverChoices =
     [
         (HoverEffect.None, "Keine"),
         (HoverEffect.Zoom, "Vergrößern"),
@@ -26,56 +25,59 @@ public partial class SettingsDialog : DialogWindow
         (HoverEffect.Pulse, "Pulsieren"),
     ];
 
+    private static readonly (SlideStyle Value, string Label)[] SlideChoices =
+    [
+        (SlideStyle.None, "Sofort"),
+        (SlideStyle.Glide, "Gleiten"),
+        (SlideStyle.Spring, "Gleiten mit Federn"),
+    ];
+
+    private readonly ColorField _dockColor;
+    private readonly ColorField _borderColor;
+    private readonly ColorField _accentColor;
+    private readonly ColorField _feedbackColor;
+    private readonly ChipGroup<HoverEffect> _hoverEffect;
+    private readonly ChipGroup<SlideStyle> _slideStyle;
+    private readonly IconService _icons;
     private readonly Action<AppSettings> _preview;
-    private HoverEffect _hoverEffect;
     private bool _loading;
 
-    private SettingsDialog(AppSettings settings, bool autostart, Action<AppSettings> preview)
+    private SettingsDialog(AppSettings settings, bool autostart, IconService icons, Action<AppSettings> preview)
     {
         _preview = preview;
+        _icons = icons;
         InitializeComponent();
 
         _dockColor = new ColorField(DockPresets, settings.DockColor);
         _borderColor = new ColorField(BorderPresets, settings.BorderColor);
         _accentColor = new ColorField(AccentPresets, settings.AccentColor);
+        _feedbackColor = new ColorField(FeedbackPresets, settings.FeedbackColor);
         DockColorHost.Content = _dockColor;
         BorderColorHost.Content = _borderColor;
         AccentColorHost.Content = _accentColor;
-        _feedbackColor = new ColorField(FeedbackPresets, settings.FeedbackColor);
         FeedbackColorHost.Content = _feedbackColor;
 
-        foreach (var (effect, label) in Effects)
-        {
-            var chip = new Border
-            {
-                Tag = effect,
-                CornerRadius = new CornerRadius(6),
-                BorderThickness = new Thickness(1.5),
-                Padding = new Thickness(10, 5, 10, 5),
-                Margin = new Thickness(0, 0, 6, 6),
-                Cursor = System.Windows.Input.Cursors.Hand,
-                Child = new TextBlock { Text = label, Foreground = Brushes.White },
-            };
-            chip.MouseLeftButtonDown += (_, e) =>
-            {
-                e.Handled = true;
-                SelectEffect(effect);
-                Preview();
-            };
-            HoverEffects.Children.Add(chip);
-        }
+        _hoverEffect = new ChipGroup<HoverEffect>(HoverEffects, HoverChoices, Preview);
+        _slideStyle = new ChipGroup<SlideStyle>(SlideStyles, SlideChoices, Preview);
 
         Apply(settings);
         Autostart.IsChecked = autostart;
+        UpdateLibraryInfo();
 
         foreach (var field in new[] { _dockColor, _borderColor, _accentColor, _feedbackColor })
         {
             field.ValueChanged += (_, _) => Preview();
         }
 
-        DockOpacity.ValueChanged += (_, _) => Preview();
-        ShowLabels.Click += (_, _) => Preview();
-        LaunchBounce.Click += (_, _) => Preview();
+        foreach (var slider in new[] { DockOpacity, ShowDelay, HideDelay, FlowDuration, SlideDuration, MagnifyScale, MagnifyRange, HoverIntensity, HoverSpeed, LaunchBounceHeight, ItemPopDuration })
+        {
+            slider.ValueChanged += (_, _) => Preview();
+        }
+
+        foreach (var box in new[] { ShowLabels, FlowEnabled, MagnifyEnabled, LaunchBounce, ItemPopEnabled })
+        {
+            box.Click += (_, _) => Preview();
+        }
     }
 
     private AppSettings Result => new()
@@ -90,17 +92,27 @@ public partial class SettingsDialog : DialogWindow
         AccentColor = _accentColor.Value,
         FeedbackColor = _feedbackColor.Value,
         ShowLabels = ShowLabels.IsChecked == true,
-        HoverEffect = _hoverEffect,
+        HoverEffect = _hoverEffect.Value,
+        HoverIntensity = (int)HoverIntensity.Value,
+        HoverSpeed = (int)HoverSpeed.Value,
         LaunchBounce = LaunchBounce.IsChecked == true,
+        LaunchBounceHeight = (int)LaunchBounceHeight.Value,
+        MagnifyEnabled = MagnifyEnabled.IsChecked == true,
+        MagnifyScale = (int)MagnifyScale.Value,
+        MagnifyRange = (int)MagnifyRange.Value,
+        SlideStyle = _slideStyle.Value,
+        SlideDurationMs = (int)SlideDuration.Value,
+        ItemPopEnabled = ItemPopEnabled.IsChecked == true,
+        ItemPopDurationMs = (int)ItemPopDuration.Value,
     };
 
     /// <summary>
     /// Gibt die neuen Einstellungen und den gewünschten Autostart zurück, oder null bei Abbruch.
-    /// <paramref name="preview"/> wird bei jeder Farbänderung aufgerufen; bei Abbruch mit den alten Werten.
+    /// <paramref name="preview"/> wird bei jeder Änderung aufgerufen; bei Abbruch mit den alten Werten.
     /// </summary>
-    public static (AppSettings Settings, bool Autostart)? Edit(Window? owner, AppSettings settings, bool autostart, Action<AppSettings> preview)
+    public static (AppSettings Settings, bool Autostart)? Edit(Window? owner, AppSettings settings, bool autostart, IconService icons, Action<AppSettings> preview)
     {
-        var dialog = new SettingsDialog(settings, autostart, preview);
+        var dialog = new SettingsDialog(settings, autostart, icons, preview);
         if (dialog.ShowFor(owner) == true)
         {
             return (dialog.Result.Normalized(), dialog.Autostart.IsChecked == true);
@@ -123,33 +135,107 @@ public partial class SettingsDialog : DialogWindow
         _accentColor.Value = settings.AccentColor;
         _feedbackColor.Value = settings.FeedbackColor;
         ShowLabels.IsChecked = settings.ShowLabels;
+        _hoverEffect.Value = settings.HoverEffect;
+        HoverIntensity.Value = settings.HoverIntensity;
+        HoverSpeed.Value = settings.HoverSpeed;
         LaunchBounce.IsChecked = settings.LaunchBounce;
-        SelectEffect(settings.HoverEffect);
+        LaunchBounceHeight.Value = settings.LaunchBounceHeight;
+        MagnifyEnabled.IsChecked = settings.MagnifyEnabled;
+        MagnifyScale.Value = settings.MagnifyScale;
+        MagnifyRange.Value = settings.MagnifyRange;
+        _slideStyle.Value = settings.SlideStyle;
+        SlideDuration.Value = settings.SlideDurationMs;
+        ItemPopEnabled.IsChecked = settings.ItemPopEnabled;
+        ItemPopDuration.Value = settings.ItemPopDurationMs;
         _loading = false;
         Preview();
     }
 
-    private void SelectEffect(HoverEffect effect)
-    {
-        _hoverEffect = effect;
-        var accent = (Brush)FindResource("AccentBrush");
-        foreach (Border chip in HoverEffects.Children)
-        {
-            bool selected = (HoverEffect)chip.Tag == effect;
-            chip.BorderBrush = selected ? accent : new SolidColorBrush(Color.FromArgb(0x40, 0xFF, 0xFF, 0xFF));
-            chip.Background = selected ? new SolidColorBrush(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF)) : Brushes.Transparent;
-        }
-    }
-
     private void Preview()
     {
-        if (!_loading)
+        if (_loading)
         {
-            _preview(Result.Normalized());
+            return;
         }
+
+        SlideDuration.IsEnabled = _slideStyle.Value != SlideStyle.None;
+        ZoomHint.Visibility = _hoverEffect.Value == HoverEffect.Zoom && MagnifyEnabled.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        bool hasEffect = _hoverEffect.Value != HoverEffect.None;
+        HoverIntensity.IsEnabled = hasEffect;
+        HoverSpeed.IsEnabled = hasEffect;
+        _preview(Result.Normalized());
+    }
+
+    private void UpdateLibraryInfo()
+    {
+        var icons = _icons.Library.Load();
+        int own = icons.Count(i => !i.IsBuiltIn);
+        int categories = icons.Where(i => i.IsBuiltIn).Select(i => i.Category).Distinct().Count();
+        LibraryInfo.Text = $"{icons.Count - own} mitgelieferte Symbole in {categories} Kategorien, {own} eigene.";
+    }
+
+    private void OpenLibrary_Click(object sender, RoutedEventArgs e)
+    {
+        IconPickerDialog.Manage(this, _icons);
+        UpdateLibraryInfo();
+    }
+
+    private void OpenUserIcons_Click(object sender, RoutedEventArgs e)
+    {
+        Directory.CreateDirectory(_icons.Library.UserDirectory);
+        Process.Start(new ProcessStartInfo("explorer.exe", $"\"{_icons.Library.UserDirectory}\"") { UseShellExecute = true });
     }
 
     private void Defaults_Click(object sender, RoutedEventArgs e) => Apply(new AppSettings());
 
     private void Save_Click(object sender, RoutedEventArgs e) => DialogResult = true;
+
+    /// <summary>Auswahl als Reihe von Schaltflächen ("Chips"); genau einer ist markiert.</summary>
+    private sealed class ChipGroup<T>
+        where T : struct, Enum
+    {
+        private readonly Panel _panel;
+        private T _value;
+
+        public ChipGroup(Panel panel, IEnumerable<(T Value, string Label)> choices, Action changed)
+        {
+            _panel = panel;
+            foreach (var (value, label) in choices)
+            {
+                var chip = new Border
+                {
+                    Tag = value,
+                    CornerRadius = new CornerRadius(6),
+                    BorderThickness = new Thickness(1.5),
+                    Padding = new Thickness(10, 5, 10, 5),
+                    Margin = new Thickness(0, 0, 6, 6),
+                    Cursor = Cursors.Hand,
+                    Child = new TextBlock { Text = label, Foreground = Brushes.White },
+                };
+                chip.MouseLeftButtonDown += (_, e) =>
+                {
+                    e.Handled = true;
+                    Value = value;
+                    changed();
+                };
+                panel.Children.Add(chip);
+            }
+        }
+
+        public T Value
+        {
+            get => _value;
+            set
+            {
+                _value = value;
+                var accent = (Brush)_panel.FindResource("AccentBrush");
+                foreach (Border chip in _panel.Children)
+                {
+                    bool selected = EqualityComparer<T>.Default.Equals((T)chip.Tag, value);
+                    chip.BorderBrush = selected ? accent : new SolidColorBrush(Color.FromArgb(0x40, 0xFF, 0xFF, 0xFF));
+                    chip.Background = selected ? new SolidColorBrush(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF)) : Brushes.Transparent;
+                }
+            }
+        }
+    }
 }

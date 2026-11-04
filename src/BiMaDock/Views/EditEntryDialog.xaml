@@ -26,7 +26,8 @@
             <TextBlock Text="Eigenes Symbol (leer = Symbol des Ziels)" Style="{StaticResource DialogLabelStyle}" />
             <DockPanel>
                 <Button Content="Standard" DockPanel.Dock="Right" Style="{StaticResource DialogButtonStyle}" MinWidth="0" Click="ResetIcon_Click" />
-                <Button Content="Wählen …" DockPanel.Dock="Right" Style="{StaticResource DialogButtonStyle}" MinWidth="0" Click="BrowseIcon_Click" />
+                <Button Content="Datei …" DockPanel.Dock="Right" Style="{StaticResource DialogButtonStyle}" MinWidth="0" Click="BrowseIcon_Click" />
+                <Button Content="Bibliothek …" DockPanel.Dock="Right" Style="{StaticResource AccentDialogButtonStyle}" MinWidth="0" Click="LibraryIcon_Click" />
                 <TextBox x:Name="IconBox" Style="{StaticResource DialogTextBoxStyle}" TextChanged="Field_Changed" />
             </DockPanel>
 

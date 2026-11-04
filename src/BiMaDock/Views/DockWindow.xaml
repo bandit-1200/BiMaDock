@@ -28,6 +28,7 @@
                         <Separator />
                         <MenuItem Header="Neue Kategorie …" Click="NewCategory_Click" />
                         <MenuItem Header="Aufräumen …" Click="Cleanup_Click" />
+                        <MenuItem Header="Symbolbibliothek …" Click="IconLibrary_Click" />
                         <MenuItem Tag="Undo" Header="Rückgängig" Click="Undo_Click" />
                         <Separator />
                         <MenuItem Header="Einstellungen …" Click="Settings_Click" />
@@ -86,6 +87,7 @@
                     <ContextMenu Opened="Menu_Opened">
                         <MenuItem Header="Neue Kategorie …" Click="NewCategory_Click" />
                         <MenuItem Header="Aufräumen …" Click="Cleanup_Click" />
+                        <MenuItem Header="Symbolbibliothek …" Click="IconLibrary_Click" />
                         <MenuItem Tag="Undo" Header="Rückgängig" Click="Undo_Click" />
                         <Separator />
                         <MenuItem Header="Einstellungen …" Click="Settings_Click" />

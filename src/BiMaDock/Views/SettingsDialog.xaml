@@ -2,58 +2,145 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:BiMaDock.Views"
-        Title="Einstellungen" Width="560">
+        Title="Einstellungen" Width="600">
     <Border Style="{StaticResource DialogFrameStyle}">
-        <StackPanel>
-            <TextBlock Text="Einstellungen" Style="{StaticResource DialogTitleStyle}" />
+        <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Text="Einstellungen" Style="{StaticResource DialogTitleStyle}" />
 
-            <TextBlock Text="Verhalten" FontWeight="SemiBold" Margin="0,0,0,2" />
-            <TextBlock Style="{StaticResource DialogLabelStyle}">
-                <Run Text="Einblenden nach" /> <Run Text="{Binding Value, ElementName=ShowDelay, StringFormat={}{0:0} ms}" />
-            </TextBlock>
-            <Slider x:Name="ShowDelay" Style="{StaticResource DialogSliderStyle}" Minimum="0" Maximum="1000" TickFrequency="50" />
-
-            <TextBlock Style="{StaticResource DialogLabelStyle}">
-                <Run Text="Ausblenden nach" /> <Run Text="{Binding Value, ElementName=HideDelay, StringFormat={}{0:0} ms}" />
-            </TextBlock>
-            <Slider x:Name="HideDelay" Style="{StaticResource DialogSliderStyle}" Minimum="0" Maximum="1500" TickFrequency="50" />
-
-            <CheckBox x:Name="FlowEnabled" Content="Kategorie-Dock fließt aus dem Hauptdock" Style="{StaticResource DialogCheckBoxStyle}" Margin="0,16,0,0" />
-            <TextBlock Style="{StaticResource DialogLabelStyle}">
-                <Run Text="Dauer des Herausfließens" /> <Run Text="{Binding Value, ElementName=FlowDuration, StringFormat={}{0:0} ms}" />
-            </TextBlock>
-            <Slider x:Name="FlowDuration" Style="{StaticResource DialogSliderStyle}" Minimum="200" Maximum="1500" TickFrequency="20"
-                    IsEnabled="{Binding IsChecked, ElementName=FlowEnabled}" />
-
-            <TextBlock Text="Symbole" FontWeight="SemiBold" Margin="0,22,0,2" />
-            <CheckBox x:Name="ShowLabels" Content="Namen unter den Symbolen anzeigen" Style="{StaticResource DialogCheckBoxStyle}" Margin="0,8,0,0" />
-            <TextBlock Text="Animation beim Überfahren" Style="{StaticResource DialogLabelStyle}" />
-            <WrapPanel x:Name="HoverEffects" Margin="0,4,0,0" />
-            <CheckBox x:Name="LaunchBounce" Content="Symbol hüpft beim Starten" Style="{StaticResource DialogCheckBoxStyle}" Margin="0,10,0,0" />
-
-            <CheckBox x:Name="Autostart" Content="Mit Windows starten" Style="{StaticResource DialogCheckBoxStyle}" Margin="0,16,0,0" />
-
-            <TextBlock Text="Farben" FontWeight="SemiBold" Margin="0,22,0,2" />
-            <TextBlock Text="Dock" Style="{StaticResource DialogLabelStyle}" />
-            <ContentControl x:Name="DockColorHost" />
-            <TextBlock Style="{StaticResource DialogLabelStyle}">
-                <Run Text="Deckkraft" /> <Run Text="{Binding Value, ElementName=DockOpacity, StringFormat={}{0:0} %}" />
-            </TextBlock>
-            <Slider x:Name="DockOpacity" Style="{StaticResource DialogSliderStyle}" Minimum="40" Maximum="100" TickFrequency="1" />
-            <TextBlock Text="Rand" Style="{StaticResource DialogLabelStyle}" />
-            <ContentControl x:Name="BorderColorHost" />
-            <TextBlock Text="Akzent (geöffnete Kategorie, Ablegen)" Style="{StaticResource DialogLabelStyle}" />
-            <ContentControl x:Name="AccentColorHost" />
-            <TextBlock Text="Hinweis beim Ziehen (Hintergrund des Ziel-Docks)" Style="{StaticResource DialogLabelStyle}" />
-            <ContentControl x:Name="FeedbackColorHost" />
-            <TextBlock Text="Änderungen sind sofort am Dock zu sehen; „Abbrechen“ stellt den alten Stand wieder her."
-                       Foreground="#80FFFFFF" TextWrapping="Wrap" Margin="0,12,0,0" />
-
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
-                <Button Content="Standardwerte" Style="{StaticResource DialogButtonStyle}" Click="Defaults_Click" />
-                <Button Content="Abbrechen" IsCancel="True" Style="{StaticResource DialogButtonStyle}" />
-                <Button Content="Speichern" IsDefault="True" Style="{StaticResource AccentDialogButtonStyle}" Click="Save_Click" />
+            <StackPanel DockPanel.Dock="Bottom">
+                <TextBlock Text="Änderungen sind sofort am Dock zu sehen; „Abbrechen“ stellt den alten Stand wieder her."
+                           Style="{StaticResource DialogHintStyle}" Margin="0,10,0,0" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                    <Button Content="Standardwerte" Style="{StaticResource DialogButtonStyle}" Click="Defaults_Click" />
+                    <Button Content="Abbrechen" IsCancel="True" Style="{StaticResource DialogButtonStyle}" />
+                    <Button Content="Speichern" IsDefault="True" Style="{StaticResource AccentDialogButtonStyle}" Click="Save_Click" />
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
+
+            <TabControl x:Name="Tabs" Style="{StaticResource DialogTabControlStyle}" Height="520">
+
+                <!-- ===== Allgemein ===== -->
+                <TabItem Header="Allgemein">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="Ein- und Ausblenden" Style="{StaticResource DialogSectionStyle}" Margin="0,4,0,0" />
+                            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                <Run Text="Einblenden nach" /> <Run Text="{Binding Value, ElementName=ShowDelay, StringFormat={}{0:0} ms}" />
+                            </TextBlock>
+                            <Slider x:Name="ShowDelay" Style="{StaticResource DialogSliderStyle}" Minimum="0" Maximum="1000" TickFrequency="50" />
+                            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                <Run Text="Ausblenden nach" /> <Run Text="{Binding Value, ElementName=HideDelay, StringFormat={}{0:0} ms}" />
+                            </TextBlock>
+                            <Slider x:Name="HideDelay" Style="{StaticResource DialogSliderStyle}" Minimum="0" Maximum="1500" TickFrequency="50" />
+
+                            <TextBlock Text="Windows" Style="{StaticResource DialogSectionStyle}" />
+                            <CheckBox x:Name="Autostart" Content="Mit Windows starten" Style="{StaticResource DialogCheckBoxStyle}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===== Aussehen ===== -->
+                <TabItem Header="Aussehen">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="Symbole" Style="{StaticResource DialogSectionStyle}" Margin="0,4,0,0" />
+                            <CheckBox x:Name="ShowLabels" Content="Namen unter den Symbolen anzeigen" Style="{StaticResource DialogCheckBoxStyle}" />
+
+                            <TextBlock Text="Farben" Style="{StaticResource DialogSectionStyle}" />
+                            <TextBlock Text="Dock" Style="{StaticResource DialogLabelStyle}" />
+                            <ContentControl x:Name="DockColorHost" />
+                            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                <Run Text="Deckkraft" /> <Run Text="{Binding Value, ElementName=DockOpacity, StringFormat={}{0:0} %}" />
+                            </TextBlock>
+                            <Slider x:Name="DockOpacity" Style="{StaticResource DialogSliderStyle}" Minimum="40" Maximum="100" TickFrequency="1" />
+                            <TextBlock Text="Rand" Style="{StaticResource DialogLabelStyle}" />
+                            <ContentControl x:Name="BorderColorHost" />
+                            <TextBlock Text="Akzent (geöffnete Kategorie, Ablegen)" Style="{StaticResource DialogLabelStyle}" />
+                            <ContentControl x:Name="AccentColorHost" />
+                            <TextBlock Text="Hinweis beim Ziehen (Hintergrund des Ziel-Docks)" Style="{StaticResource DialogLabelStyle}" />
+                            <ContentControl x:Name="FeedbackColorHost" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===== Animationen ===== -->
+                <TabItem Header="Animationen">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="Dock einblenden" Style="{StaticResource DialogSectionStyle}" Margin="0,4,0,0" />
+                            <WrapPanel x:Name="SlideStyles" Margin="0,8,0,0" />
+                            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                <Run Text="Dauer" /> <Run Text="{Binding Value, ElementName=SlideDuration, StringFormat={}{0:0} ms}" />
+                            </TextBlock>
+                            <Slider x:Name="SlideDuration" Style="{StaticResource DialogSliderStyle}" Minimum="80" Maximum="600" TickFrequency="20" />
+
+                            <TextBlock Text="Kategorie-Dock" Style="{StaticResource DialogSectionStyle}" />
+                            <CheckBox x:Name="FlowEnabled" Content="Fließt aus dem Hauptdock" Style="{StaticResource DialogCheckBoxStyle}" />
+                            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                <Run Text="Dauer des Herausfließens" /> <Run Text="{Binding Value, ElementName=FlowDuration, StringFormat={}{0:0} ms}" />
+                            </TextBlock>
+                            <Slider x:Name="FlowDuration" Style="{StaticResource DialogSliderStyle}" Minimum="200" Maximum="1500" TickFrequency="20"
+                                    IsEnabled="{Binding IsChecked, ElementName=FlowEnabled}" />
+
+                            <TextBlock Text="Lupe" Style="{StaticResource DialogSectionStyle}" />
+                            <CheckBox x:Name="MagnifyEnabled" Content="Symbole unter der Maus vergrößern, Nachbarn wachsen mit" Style="{StaticResource DialogCheckBoxStyle}" />
+                            <StackPanel IsEnabled="{Binding IsChecked, ElementName=MagnifyEnabled}">
+                                <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                    <Run Text="Größe" /> <Run Text="{Binding Value, ElementName=MagnifyScale, StringFormat={}{0:0} %}" />
+                                </TextBlock>
+                                <Slider x:Name="MagnifyScale" Style="{StaticResource DialogSliderStyle}" Minimum="110" Maximum="200" TickFrequency="5" />
+                                <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                    <Run Text="Nachbarn je Seite" /> <Run Text="{Binding Value, ElementName=MagnifyRange, StringFormat={}{0:0}}" />
+                                </TextBlock>
+                                <Slider x:Name="MagnifyRange" Style="{StaticResource DialogSliderStyle}" Minimum="1" Maximum="4" TickFrequency="1" />
+                            </StackPanel>
+
+                            <TextBlock Text="Beim Überfahren" Style="{StaticResource DialogSectionStyle}" />
+                            <WrapPanel x:Name="HoverEffects" Margin="0,8,0,0" />
+                            <TextBlock x:Name="ZoomHint" Text="„Vergrößern“ übernimmt bei eingeschalteter Lupe die Lupe selbst."
+                                       Style="{StaticResource DialogHintStyle}" Margin="0,0,0,0" />
+                            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                <Run Text="Stärke" /> <Run Text="{Binding Value, ElementName=HoverIntensity, StringFormat={}{0:0} %}" />
+                            </TextBlock>
+                            <Slider x:Name="HoverIntensity" Style="{StaticResource DialogSliderStyle}" Minimum="25" Maximum="200" TickFrequency="5" />
+                            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                <Run Text="Tempo" /> <Run Text="{Binding Value, ElementName=HoverSpeed, StringFormat={}{0:0} %}" />
+                            </TextBlock>
+                            <Slider x:Name="HoverSpeed" Style="{StaticResource DialogSliderStyle}" Minimum="50" Maximum="200" TickFrequency="5" />
+
+                            <TextBlock Text="Starten" Style="{StaticResource DialogSectionStyle}" />
+                            <CheckBox x:Name="LaunchBounce" Content="Symbol hüpft beim Starten" Style="{StaticResource DialogCheckBoxStyle}" />
+                            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                <Run Text="Sprunghöhe" /> <Run Text="{Binding Value, ElementName=LaunchBounceHeight, StringFormat={}{0:0} px}" />
+                            </TextBlock>
+                            <Slider x:Name="LaunchBounceHeight" Style="{StaticResource DialogSliderStyle}" Minimum="6" Maximum="30" TickFrequency="1"
+                                    IsEnabled="{Binding IsChecked, ElementName=LaunchBounce}" />
+
+                            <TextBlock Text="Hinzufügen und Entfernen" Style="{StaticResource DialogSectionStyle}" />
+                            <CheckBox x:Name="ItemPopEnabled" Content="Neue Einträge ploppen herein, entfernte schrumpfen weg" Style="{StaticResource DialogCheckBoxStyle}" />
+                            <TextBlock Style="{StaticResource DialogLabelStyle}">
+                                <Run Text="Dauer" /> <Run Text="{Binding Value, ElementName=ItemPopDuration, StringFormat={}{0:0} ms}" />
+                            </TextBlock>
+                            <Slider x:Name="ItemPopDuration" Style="{StaticResource DialogSliderStyle}" Minimum="100" Maximum="600" TickFrequency="20"
+                                    IsEnabled="{Binding IsChecked, ElementName=ItemPopEnabled}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===== Symbole ===== -->
+                <TabItem Header="Symbole">
+                    <StackPanel>
+                        <TextBlock Text="Symbolbibliothek" Style="{StaticResource DialogSectionStyle}" Margin="0,4,0,0" />
+                        <TextBlock x:Name="LibraryInfo" Style="{StaticResource DialogHintStyle}" />
+                        <TextBlock Style="{StaticResource DialogHintStyle}"
+                                   Text="Ein Symbol aus der Bibliothek weist du über Rechtsklick auf einen Eintrag → „Bearbeiten …“ → „Bibliothek …“ zu. Eigene Symbole liegen in deinem Benutzerprofil, die mitgelieferten im Programmordner für alle Benutzer." />
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Button Content="Bibliothek öffnen …" Style="{StaticResource AccentDialogButtonStyle}" Margin="0" Click="OpenLibrary_Click" />
+                            <Button Content="Ordner eigener Symbole" Style="{StaticResource DialogButtonStyle}" Click="OpenUserIcons_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
     </Border>
 </views:DialogWindow>

@@ -4,6 +4,14 @@
 
 ### Neuigkeiten
 
+- Lupe wie beim Mac: Symbol unter der Maus wächst, Nachbarn wachsen abgestuft mit (Größe und Reichweite einstellbar)
+- Dock einblenden: Sofort, Gleiten oder Gleiten mit Federn, Dauer einstellbar
+- Neue Einträge ploppen herein, entfernte schrumpfen weg (auch bei Rückgängig)
+- Hover-Animationen mit einstellbarer Stärke und Tempo, Sprunghöhe beim Starten einstellbar
+- Einstellungen mit Tabs: Allgemein, Aussehen, Animationen, Symbole
+- Symbolbibliothek mit 98 eigenen Symbolen in 8 Kategorien (Generator: tools/generate-icons.py), Suche, Kategorien, eigene Symbole hinzufügen per Dialog oder Ziehen
+- Installer (Inno Setup, installer/build.ps1): ohne Adminrechte für den Benutzer oder für alle; Symbolbibliothek liegt im Programmordner, nichts wird in fremde Profile geschrieben (Fehler der alten Version behoben)
+- Dunkle schmale Scrollbalken
 - Namen unter den Symbolen (abschaltbar in den Einstellungen)
 - Hover-Animationen wählbar: Keine, Vergrößern, Hüpfen, Schaukeln, Wackeln, Pulsieren
 - Symbol hüpft beim Starten (abschaltbar)

@@ -33,6 +33,36 @@ public sealed record AppSettings
     /// <summary>Symbol hüpft kurz, wenn ein Eintrag gestartet wird.</summary>
     public bool LaunchBounce { get; init; } = true;
 
+    /// <summary>Stärke der Hover-Animation in Prozent (Größe, Winkel, Sprunghöhe).</summary>
+    public int HoverIntensity { get; init; } = 100;
+
+    /// <summary>Tempo der Hover-Animation in Prozent; höher ist schneller.</summary>
+    public int HoverSpeed { get; init; } = 100;
+
+    /// <summary>Sprunghöhe beim Starten in DIP.</summary>
+    public int LaunchBounceHeight { get; init; } = 18;
+
+    /// <summary>Lupe wie beim Mac: Symbol unter der Maus wächst, Nachbarn wachsen etwas mit.</summary>
+    public bool MagnifyEnabled { get; init; } = true;
+
+    /// <summary>Größe des Symbols direkt unter der Maus in Prozent.</summary>
+    public int MagnifyScale { get; init; } = 145;
+
+    /// <summary>Wie viele Nachbarn auf jeder Seite mitwachsen.</summary>
+    public int MagnifyRange { get; init; } = 2;
+
+    /// <summary>Art, wie das Dock am oberen Rand hereinkommt.</summary>
+    public SlideStyle SlideStyle { get; init; } = SlideStyle.Spring;
+
+    /// <summary>Dauer des Ein- und Ausblendens.</summary>
+    public int SlideDurationMs { get; init; } = 260;
+
+    /// <summary>Neue Einträge ploppen herein, entfernte schrumpfen weg.</summary>
+    public bool ItemPopEnabled { get; init; } = true;
+
+    /// <summary>Dauer von Hereinploppen und Wegschrumpfen.</summary>
+    public int ItemPopDurationMs { get; init; } = 280;
+
     public const string DefaultDockColor = "#2A2A30";
     public const string DefaultBorderColor = "#FFFFFF";
     public const string DefaultAccentColor = "#4CC2FF";
@@ -65,6 +95,14 @@ public sealed record AppSettings
         AccentColor = NormalizeColor(AccentColor, DefaultAccentColor),
         FeedbackColor = NormalizeColor(FeedbackColor, DefaultFeedbackColor),
         HoverEffect = Enum.IsDefined(HoverEffect) ? HoverEffect : HoverEffect.Zoom,
+        HoverIntensity = Math.Clamp(HoverIntensity, 25, 200),
+        HoverSpeed = Math.Clamp(HoverSpeed, 50, 200),
+        LaunchBounceHeight = Math.Clamp(LaunchBounceHeight, 6, 30),
+        MagnifyScale = Math.Clamp(MagnifyScale, 110, 200),
+        MagnifyRange = Math.Clamp(MagnifyRange, 1, 4),
+        SlideStyle = Enum.IsDefined(SlideStyle) ? SlideStyle : SlideStyle.Spring,
+        SlideDurationMs = Math.Clamp(SlideDurationMs, 80, 600),
+        ItemPopDurationMs = Math.Clamp(ItemPopDurationMs, 100, 600),
     };
 
     /// <summary>Gibt die Farbe als "#RRGGBB" in Großbuchstaben zurück; ungültige Werte ergeben <paramref name="fallback"/>.</summary>
@@ -94,6 +132,19 @@ public enum HoverEffect
     Swing,
     Wiggle,
     Pulse,
+}
+
+/// <summary>Bewegung beim Ein- und Ausblenden des Docks.</summary>
+public enum SlideStyle
+{
+    /// <summary>Sofort, ohne Bewegung.</summary>
+    None,
+
+    /// <summary>Gleitet weich herein.</summary>
+    Glide,
+
+    /// <summary>Gleitet herein und federt kurz nach.</summary>
+    Spring,
 }
 
 public sealed class SettingsStore

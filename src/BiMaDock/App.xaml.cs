@@ -3,6 +3,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 using BiMaDock.Core;
+using BiMaDock.Core.Icons;
 using BiMaDock.Core.Settings;
 using BiMaDock.Core.Storage;
 using BiMaDock.Services;
@@ -83,6 +84,7 @@ public partial class App : Application
             .SetMinimumLevel(LogLevel.Information)
             .AddProvider(new FileLoggerProvider(AppPaths.LogDirectory)));
         services.AddSingleton(sp => new DockStore(AppPaths.DockFile, AppPaths.LegacyDockFile, sp.GetRequiredService<ILogger<DockStore>>()));
+        services.AddSingleton(new IconLibrary(AppPaths.BuiltInIconDirectory, AppPaths.UserIconDirectory));
         services.AddSingleton<IconService>();
         services.AddSingleton<StartupService>();
         services.AddSingleton(new SettingsStore(AppPaths.SettingsFile));

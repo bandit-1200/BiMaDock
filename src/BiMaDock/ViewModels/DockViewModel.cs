@@ -61,6 +61,16 @@ public sealed partial class DockViewModel : ObservableObject
 
     public string DataFile => _store.FilePath;
 
+    /// <summary>Alle angezeigten Symbole neu laden.</summary>
+    public void RefreshIcons()
+    {
+        _icons.ClearCache();
+        foreach (var item in MainItems.Concat(CategoryItems))
+        {
+            item.InvalidateIcon();
+        }
+    }
+
     public void Load()
     {
         _layout = _store.Load();
@@ -277,7 +287,9 @@ public sealed partial class DockViewModel : ObservableObject
     private void SyncCollection(ObservableCollection<DockItemViewModel> collection, IEnumerable<DockEntry> entries, Dictionary<Guid, DockItemViewModel> existing)
     {
         var target = entries
-            .Select(e => existing.TryGetValue(e.Id, out var vm) && vm.Entry == e ? vm : new DockItemViewModel(e, _icons))
+            .Select(e => existing.TryGetValue(e.Id, out var vm) && vm.Entry == e
+                ? vm
+                : new DockItemViewModel(e, _icons) { IsNew = existing.Count > 0 && !existing.ContainsKey(e.Id) })
             .ToList();
 
         for (int i = 0; i < target.Count; i++)
