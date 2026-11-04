@@ -1,3 +1,4 @@
+using BiMaDock.Core;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
@@ -62,20 +63,60 @@ public sealed class LegacyDockRemover(ILogger<LegacyDockRemover> logger)
 
     private void Uninstall()
     {
-        using var key = Registry.CurrentUser.OpenSubKey(UninstallKey);
-        if (key?.GetValue("UninstallString") is not string command)
+        // Pro Benutzer installiert: still und ohne Rückfrage deinstallieren.
+        if (FindUninstaller(Registry.CurrentUser, RegistryView.Default) is { } user)
+        {
+            logger.LogInformation("Alte Version (Benutzer) wird deinstalliert: {Exe}", user);
+            Process.Start(new ProcessStartInfo(user, SilentArgs) { UseShellExecute = true });
+            return;
+        }
+
+        // Für alle Benutzer installiert (Program Files): braucht Adminrechte, daher einmal fragen.
+        string? machine = FindUninstaller(Registry.LocalMachine, RegistryView.Registry32)
+            ?? FindUninstaller(Registry.LocalMachine, RegistryView.Registry64);
+        if (machine is null || File.Exists(DeclinedMarker))
         {
             return;
+        }
+
+        var answer = System.Windows.MessageBox.Show(
+            "Die alte Version von BiMaDock ist noch für alle Benutzer installiert.\n\n"
+            + "Deine Einträge und Symbole sind schon übernommen. Soll die alte Version jetzt entfernt werden? "
+            + "Windows fragt dafür nach Administratorrechten.",
+            "BiMaDock", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
+        if (answer != System.Windows.MessageBoxResult.Yes)
+        {
+            File.WriteAllText(DeclinedMarker, "Deinstallation der alten Version abgelehnt. Datei löschen, um erneut zu fragen.");
+            logger.LogInformation("Deinstallation der alten Version (alle Benutzer) abgelehnt");
+            return;
+        }
+
+        try
+        {
+            logger.LogInformation("Alte Version (alle Benutzer) wird deinstalliert: {Exe}", machine);
+            Process.Start(new ProcessStartInfo(machine, SilentArgs) { UseShellExecute = true, Verb = "runas" });
+        }
+        catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
+        {
+            logger.LogInformation("Adminrechte für die Deinstallation verweigert");
+        }
+    }
+
+    private const string SilentArgs = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART";
+
+    private static string DeclinedMarker => Path.Combine(AppPaths.DataDirectory, "alte-version-behalten.txt");
+
+    private static string? FindUninstaller(RegistryKey hive, RegistryView view)
+    {
+        using var root = RegistryKey.OpenBaseKey(hive == Registry.CurrentUser ? RegistryHive.CurrentUser : RegistryHive.LocalMachine, view);
+        using var key = root.OpenSubKey(UninstallKey);
+        if (key?.GetValue("UninstallString") is not string command)
+        {
+            return null;
         }
 
         string exe = command.Trim().Trim('"');
-        if (!File.Exists(exe))
-        {
-            return;
-        }
-
-        logger.LogInformation("Alte Version wird deinstalliert: {Exe}", exe);
-        Process.Start(new ProcessStartInfo(exe, "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART") { UseShellExecute = true });
+        return File.Exists(exe) ? exe : null;
     }
 
     private static string? TryPath(Process process)

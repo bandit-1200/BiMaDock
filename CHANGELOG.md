@@ -1,5 +1,9 @@
 # Versionsverlauf
 
+## Unveröffentlicht
+
+- Alte Version wird auch entfernt, wenn sie für alle Benutzer installiert ist (Program Files): einmal fragen, dann Adminrechte. Bei "Nein" wird nicht erneut gefragt (Datei alte-version-behalten.txt im Datenordner löschen, um wieder zu fragen)
+
 ## 2.0.0
 
 - Volle Leisten: Passen nicht alle Symbole auf den Bildschirm, erscheinen Pfeile; Klick, Halten, Mausrad und Ziehen scrollen
