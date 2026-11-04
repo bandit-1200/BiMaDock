@@ -20,6 +20,49 @@ public sealed class DockLayout
 
     public DockEntry? Find(Guid id) => Entries.Find(e => e.Id == id);
 
+    /// <summary>Einträge eines Docks: <paramref name="dockId"/> null = Hauptdock, sonst die Kategorie.</summary>
+    public List<DockEntry> EntriesIn(Guid? dockId) => Entries.Where(e => e.CategoryId == dockId).ToList();
+
+    /// <summary>
+    /// Fügt einen Eintrag an Position <paramref name="index"/> eines Docks ein (über das Ende hinaus = anhängen).
+    /// Kategorien landen immer im Hauptdock; ein unbekanntes Ziel ebenfalls. Gibt den eingefügten Eintrag zurück.
+    /// </summary>
+    public DockEntry Insert(DockEntry entry, Guid? dockId, int index)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        if (entry.IsCategory || (dockId is { } id && Find(id) is not { IsCategory: true }))
+        {
+            dockId = null;
+        }
+
+        entry = entry with { CategoryId = dockId };
+        var siblings = EntriesIn(dockId);
+        index = Math.Clamp(index, 0, siblings.Count);
+
+        int position = index < siblings.Count
+            ? Entries.IndexOf(siblings[index])
+            : siblings.Count > 0 ? Entries.IndexOf(siblings[^1]) + 1 : Entries.Count;
+        Entries.Insert(position, entry);
+        return entry;
+    }
+
+    /// <summary>
+    /// Verschiebt einen Eintrag in ein Dock an Position <paramref name="index"/>, gezählt ohne den Eintrag selbst.
+    /// Gibt false zurück, wenn der Eintrag fehlt oder in sich selbst verschoben würde.
+    /// </summary>
+    public bool Move(Guid id, Guid? dockId, int index)
+    {
+        var entry = Find(id);
+        if (entry is null || dockId == id)
+        {
+            return false;
+        }
+
+        Entries.Remove(entry);
+        Insert(entry, dockId, index);
+        return true;
+    }
+
     /// <summary>
     /// Hängt Einträge, deren Kategorie fehlt oder die selbst Kategorien sind, ins Hauptdock
     /// (keine verschachtelten Kategorien) und vergibt doppelte IDs neu.

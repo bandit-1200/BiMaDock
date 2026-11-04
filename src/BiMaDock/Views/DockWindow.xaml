@@ -14,7 +14,9 @@
                     ToolTip="{Binding Name}"
                     AutomationProperties.Name="{Binding Name}"
                     Command="{Binding DataContext.ActivateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                    CommandParameter="{Binding}" />
+                    CommandParameter="{Binding}"
+                    PreviewMouseLeftButtonDown="Item_PreviewMouseLeftButtonDown"
+                    PreviewMouseMove="Item_PreviewMouseMove" />
         </DataTemplate>
 
         <ItemsPanelTemplate x:Key="HorizontalPanel">
@@ -25,8 +27,10 @@
     <!-- Durchsichtige Bereiche (Background = null) lassen Mausklicks zu den Fenstern dahinter durch. -->
     <Grid x:Name="Root">
         <Grid x:Name="DockArea" VerticalAlignment="Top" HorizontalAlignment="Center"
-              Background="#01000000"
-              MouseEnter="DockArea_MouseEnter" MouseLeave="DockArea_MouseLeave">
+              Background="#01000000" AllowDrop="True"
+              MouseEnter="DockArea_MouseEnter" MouseLeave="DockArea_MouseLeave"
+              DragEnter="DockArea_DragEnter" DragOver="DockArea_DragOver"
+              DragLeave="DockArea_DragLeave" Drop="DockArea_Drop">
             <Grid.RenderTransform>
                 <TranslateTransform x:Name="SlideTransform" />
             </Grid.RenderTransform>
@@ -35,27 +39,9 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- Hauptdock -->
-            <Border x:Name="MainDock" Style="{StaticResource DockSurfaceStyle}"
-                    CornerRadius="0,0,18,18" BorderThickness="1,0,1,1" HorizontalAlignment="Center"
-                    MinWidth="120" MinHeight="40">
-                <Border.ContextMenu>
-                    <ContextMenu Opened="ContextMenu_Opened" Closed="ContextMenu_Closed">
-                        <MenuItem Header="Neu laden" Click="Reload_Click" />
-                        <MenuItem Header="Datenordner öffnen" Click="OpenDataFolder_Click" />
-                        <Separator />
-                        <MenuItem Header="Beenden" Click="Exit_Click" />
-                    </ContextMenu>
-                </Border.ContextMenu>
-                <ItemsControl x:Name="MainItemsControl" ItemsSource="{Binding MainItems}"
-                              ItemTemplate="{StaticResource DockItemTemplate}"
-                              ItemsPanel="{StaticResource HorizontalPanel}" />
-            </Border>
-
-            <!-- Kategorie-Dock: klappt aus dem Symbol der geöffneten Kategorie heraus -->
-            <Border x:Name="CategoryDock" Grid.Row="1" Style="{StaticResource DockSurfaceStyle}"
-                    HorizontalAlignment="Center" Margin="0,10,0,12" Visibility="Collapsed"
-                    MinWidth="64">
+            <!-- Kategorie-Dock: liegt hinter dem Hauptdock und fließt unter ihm heraus -->
+            <Border x:Name="CategoryDock" Grid.Row="1" Panel.ZIndex="0" Style="{StaticResource DockSurfaceStyle}"
+                    HorizontalAlignment="Center" Margin="0,12,0,14" Visibility="Collapsed" MinWidth="72">
                 <Border.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform x:Name="CategoryScale" />
@@ -63,11 +49,40 @@
                     </TransformGroup>
                 </Border.RenderTransform>
                 <Grid>
-                    <ItemsControl ItemsSource="{Binding CategoryItems}"
+                    <!-- Spitze, die auf das Kategorie-Symbol zeigt -->
+                    <Path x:Name="CategoryTail" Data="M0,10 L9,0 L18,10 Z" Fill="{StaticResource SurfaceTopBrush}"
+                          Stroke="{StaticResource SurfaceBorderBrush}" StrokeThickness="1"
+                          HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,-16,0,0" />
+                    <ItemsControl x:Name="CategoryItemsControl" ItemsSource="{Binding CategoryItems}"
                                   ItemTemplate="{StaticResource DockItemTemplate}"
                                   ItemsPanel="{StaticResource HorizontalPanel}" />
-                    <TextBlock x:Name="EmptyCategoryHint" Text="Leer" Margin="16,20"
-                               Foreground="#99FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock x:Name="EmptyCategoryHint" Text="Elemente hierher ziehen" Margin="16,22"
+                               Foreground="#99FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               IsHitTestVisible="False" />
+                </Grid>
+            </Border>
+
+            <!-- Hauptdock -->
+            <Border x:Name="MainDock" Panel.ZIndex="1" Style="{StaticResource DockSurfaceStyle}"
+                    CornerRadius="0,0,18,18" BorderThickness="1,0,1,1" HorizontalAlignment="Center"
+                    MinWidth="120" MinHeight="40">
+                <Border.ContextMenu>
+                    <ContextMenu Opened="ContextMenu_Opened" Closed="ContextMenu_Closed">
+                        <MenuItem Header="Neue Kategorie …" Click="NewCategory_Click" />
+                        <Separator />
+                        <MenuItem Header="Neu laden" Click="Reload_Click" />
+                        <MenuItem Header="Datenordner öffnen" Click="OpenDataFolder_Click" />
+                        <Separator />
+                        <MenuItem Header="Beenden" Click="Exit_Click" />
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <Grid>
+                    <ItemsControl x:Name="MainItemsControl" ItemsSource="{Binding MainItems}"
+                                  ItemTemplate="{StaticResource DockItemTemplate}"
+                                  ItemsPanel="{StaticResource HorizontalPanel}" />
+                    <TextBlock x:Name="EmptyMainHint" Text="Programme, Dateien oder Links hierher ziehen" Margin="16,22"
+                               Foreground="#99FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               IsHitTestVisible="False" Visibility="Collapsed" />
                 </Grid>
             </Border>
         </Grid>

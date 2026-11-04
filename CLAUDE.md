@@ -15,6 +15,6 @@ Neuentwicklung der Dock-Leiste BiMaDock (alte Version: `..\BiMaDock`, GitHub `ba
 ## Fahrplan
 
 1. Gerüst, Laden/Speichern, Import alter Daten, Ein-/Ausblenden, Starten, Kategorie-Dock ✔
-2. Drag & Drop (hinzufügen, verschieben mit Lücke, in Kategorien), Kategorie anlegen
+2. Drag & Drop (hinzufügen, verschieben mit Lücke, in Kategorien), Kategorie anlegen, Mac-artiges Herausfließen des Kategorie-Docks ✔
 3. Kontextmenü mit Bearbeiten/Löschen, Einstellungen (Farben, Verzögerung, Animation), Aufräumen mit Rückgängig
 4. Autostart, Update-Prüfung, Installer, UI-Tests, Release

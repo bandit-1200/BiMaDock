@@ -1,8 +1,10 @@
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using BiMaDock.Native;
@@ -12,8 +14,9 @@ using Microsoft.Win32;
 namespace BiMaDock.Views;
 
 /// <summary>
-/// Fenster am oberen Bildschirmrand. Kümmert sich nur um Darstellung: Ein-/Ausblenden,
-/// Position und Animation des Kategorie-Docks. Zustand und Aktionen liegen im <see cref="DockViewModel"/>.
+/// Fenster am oberen Bildschirmrand. Kümmert sich nur um Darstellung: Ein-/Ausblenden (diese Datei),
+/// Kategorie-Animation (<c>DockWindow.CategoryFlow.cs</c>) und Drag &amp; Drop (<c>DockWindow.DragDrop.cs</c>).
+/// Zustand und Aktionen liegen im <see cref="DockViewModel"/>.
 /// </summary>
 public partial class DockWindow : Window
 {
@@ -21,7 +24,6 @@ public partial class DockWindow : Window
     private const double PeekHeight = 4;
 
     private static readonly Duration SlideDuration = TimeSpan.FromMilliseconds(170);
-    private static readonly Duration FlowDuration = TimeSpan.FromMilliseconds(220);
 
     private readonly DockViewModel _viewModel;
     private readonly DispatcherTimer _showTimer;
@@ -45,12 +47,15 @@ public partial class DockWindow : Window
         _hideTimer.Tick += (_, _) =>
         {
             _hideTimer.Stop();
-            HideDock();
+            if (!IsDragActive)
+            {
+                HideDock();
+            }
         };
 
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
-        viewModel.CategoryItems.CollectionChanged += (_, _) =>
-            EmptyCategoryHint.Visibility = viewModel.CategoryItems.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        viewModel.MainItems.CollectionChanged += (_, _) => UpdateHints();
+        viewModel.CategoryItems.CollectionChanged += (_, _) => UpdateHints();
         viewModel.Launched += (_, _) => HideDock();
         viewModel.ErrorOccurred += (_, message) =>
             MessageBox.Show(this, message, "BiMaDock", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -64,12 +69,16 @@ public partial class DockWindow : Window
         };
         Deactivated += (_, _) =>
         {
-            if (!DockArea.IsMouseOver && !_isMenuOpen)
+            if (!DockArea.IsMouseOver && !_isMenuOpen && !IsDragActive)
             {
                 HideDock();
             }
         };
-        Loaded += (_, _) => HideDock(animate: false);
+        Loaded += (_, _) =>
+        {
+            UpdateHints();
+            HideDock(animate: false);
+        };
         SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
         Closed += (_, _) => SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
 
@@ -91,6 +100,29 @@ public partial class DockWindow : Window
         Left = 0;
         Top = 0;
         Width = SystemParameters.PrimaryScreenWidth;
+    }
+
+    private void UpdateHints()
+    {
+        EmptyMainHint.Visibility = _viewModel.MainItems.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        EmptyCategoryHint.Visibility = _viewModel.CategoryItems.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(DockViewModel.OpenCategory))
+        {
+            return;
+        }
+
+        if (_viewModel.OpenCategory is { } category)
+        {
+            OpenCategoryDock(category);
+        }
+        else
+        {
+            CloseCategoryDock();
+        }
     }
 
     // ---------- Ein- und Ausblenden ----------
@@ -115,6 +147,8 @@ public partial class DockWindow : Window
 
     private void ShowDock()
     {
+        _showTimer.Stop();
+        _hideTimer.Stop();
         if (_isShown)
         {
             return;
@@ -137,7 +171,7 @@ public partial class DockWindow : Window
     {
         if (!animate)
         {
-            SlideTransform.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, null);
+            SlideTransform.BeginAnimation(TranslateTransform.YProperty, null);
             SlideTransform.Y = to;
             return;
         }
@@ -149,56 +183,10 @@ public partial class DockWindow : Window
         animation.Completed += (_, _) =>
         {
             // Endwert festschreiben, damit spätere Größenänderungen den Wert setzen können.
-            SlideTransform.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, null);
+            SlideTransform.BeginAnimation(TranslateTransform.YProperty, null);
             SlideTransform.Y = _isShown ? 0 : HiddenOffset;
         };
-        SlideTransform.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, animation);
-    }
-
-    // ---------- Kategorie-Dock ----------
-
-    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName != nameof(DockViewModel.OpenCategory))
-        {
-            return;
-        }
-
-        if (_viewModel.OpenCategory is { } category)
-        {
-            OpenCategoryDock(category);
-        }
-        else
-        {
-            CategoryDock.Visibility = Visibility.Collapsed;
-        }
-    }
-
-    private void OpenCategoryDock(DockItemViewModel category)
-    {
-        CategoryOffset.X = 0;
-        CategoryDock.Visibility = Visibility.Visible;
-        DockArea.UpdateLayout();
-
-        if (MainItemsControl.ItemContainerGenerator.ContainerFromItem(category) is not FrameworkElement icon)
-        {
-            return;
-        }
-
-        // Kategorie-Dock mittig unter das Symbol legen, ohne über den Bildschirmrand hinauszuragen.
-        double iconCenter = icon.TranslatePoint(new Point(icon.ActualWidth / 2, 0), Root).X;
-        double width = CategoryDock.ActualWidth;
-        double naturalLeft = CategoryDock.TranslatePoint(new Point(0, 0), Root).X;
-        double desiredLeft = Math.Clamp(iconCenter - (width / 2), 8, Math.Max(8, Root.ActualWidth - width - 8));
-        CategoryOffset.X = desiredLeft - naturalLeft;
-
-        // Aus dem Symbol herausfließen: Skalierung mit Ursprung über dem Kategorie-Symbol.
-        CategoryDock.RenderTransformOrigin = new Point(Math.Clamp((iconCenter - desiredLeft) / width, 0, 1), 0);
-        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var grow = new DoubleAnimation(0.2, 1, FlowDuration) { EasingFunction = easing };
-        CategoryScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, grow);
-        CategoryScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, grow);
-        CategoryDock.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, FlowDuration) { EasingFunction = easing });
+        SlideTransform.BeginAnimation(TranslateTransform.YProperty, animation);
     }
 
     // ---------- Kontextmenü ----------
@@ -215,6 +203,23 @@ public partial class DockWindow : Window
         if (!DockArea.IsMouseOver)
         {
             _hideTimer.Start();
+        }
+    }
+
+    private void NewCategory_Click(object sender, RoutedEventArgs e)
+    {
+        _isMenuOpen = true;
+        try
+        {
+            string? name = InputDialog.Ask(this, "Neue Kategorie", "Name der Kategorie:");
+            if (name is not null)
+            {
+                _viewModel.AddCategory(name);
+            }
+        }
+        finally
+        {
+            _isMenuOpen = false;
         }
     }
 

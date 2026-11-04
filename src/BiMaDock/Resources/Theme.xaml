@@ -11,6 +11,8 @@
     <SolidColorBrush x:Key="HoverBrush" Color="#24FFFFFF" />
     <SolidColorBrush x:Key="ForegroundBrush" Color="#F2FFFFFF" />
 
+    <SolidColorBrush x:Key="SurfaceTopBrush" Color="{StaticResource SurfaceTopColor}" />
+
     <LinearGradientBrush x:Key="SurfaceBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Offset="0" Color="{StaticResource SurfaceTopColor}" />
         <GradientStop Offset="1" Color="{StaticResource SurfaceBottomColor}" />
@@ -45,6 +47,8 @@
                     <Grid Background="Transparent">
                         <Border x:Name="HoverPlate" CornerRadius="12" Margin="3" Opacity="0"
                                 Background="{StaticResource HoverBrush}" />
+                        <Border x:Name="DropPlate" CornerRadius="12" Margin="3" Visibility="Collapsed"
+                                Background="#404CC2FF" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1.5" />
                         <Image x:Name="IconImage" Source="{Binding Icon}" Width="44" Height="44"
                                RenderOptions.BitmapScalingMode="HighQuality" RenderTransformOrigin="0.5,0.5">
                             <Image.RenderTransform>
@@ -58,6 +62,9 @@
                         <DataTrigger Binding="{Binding IsOpen}" Value="True">
                             <Setter TargetName="OpenMarker" Property="Visibility" Value="Visible" />
                             <Setter TargetName="HoverPlate" Property="Background" Value="#33FFFFFF" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsDropTarget}" Value="True">
+                            <Setter TargetName="DropPlate" Property="Visibility" Value="Visible" />
                         </DataTrigger>
                         <EventTrigger RoutedEvent="MouseEnter">
                             <BeginStoryboard>
@@ -141,6 +148,57 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- Eingabefelder und Schaltflächen für Dialoge -->
+    <Style x:Key="DialogTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+        <Setter Property="CaretBrush" Value="{StaticResource ForegroundBrush}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource AccentBrush}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Frame" Background="#1AFFFFFF" BorderBrush="#33FFFFFF" BorderThickness="1" CornerRadius="6" Padding="8,6">
+                        <ScrollViewer x:Name="PART_ContentHost" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DialogButtonStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+        <Setter Property="Background" Value="#1FFFFFFF" />
+        <Setter Property="MinWidth" Value="96" />
+        <Setter Property="Margin" Value="8,0,0,0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Plate" Background="{TemplateBinding Background}" CornerRadius="6" Padding="14,7">
+                        <ContentPresenter HorizontalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Plate" Property="Opacity" Value="0.85" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Plate" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="AccentDialogButtonStyle" TargetType="Button" BasedOn="{StaticResource DialogButtonStyle}">
+        <Setter Property="Background" Value="#FF2A7FB8" />
     </Style>
 
     <Style TargetType="ToolTip">

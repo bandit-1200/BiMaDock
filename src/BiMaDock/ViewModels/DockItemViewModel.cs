@@ -28,4 +28,8 @@ public sealed partial class DockItemViewModel : ObservableObject
     /// <summary>Kategorie ist gerade im Kategorie-Dock geöffnet.</summary>
     [ObservableProperty]
     public partial bool IsOpen { get; set; }
+
+    /// <summary>Beim Ziehen: Ablegen landet in dieser Kategorie.</summary>
+    [ObservableProperty]
+    public partial bool IsDropTarget { get; set; }
 }
