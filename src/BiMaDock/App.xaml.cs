@@ -3,6 +3,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 using BiMaDock.Core;
+using BiMaDock.Core.Settings;
 using BiMaDock.Core.Storage;
 using BiMaDock.Services;
 using BiMaDock.ViewModels;
@@ -83,6 +84,8 @@ public partial class App : Application
             .AddProvider(new FileLoggerProvider(AppPaths.LogDirectory)));
         services.AddSingleton(sp => new DockStore(AppPaths.DockFile, AppPaths.LegacyDockFile, sp.GetRequiredService<ILogger<DockStore>>()));
         services.AddSingleton<IconService>();
+        services.AddSingleton<StartupService>();
+        services.AddSingleton(new SettingsStore(AppPaths.SettingsFile));
         services.AddSingleton<ILauncher, ShellLauncher>();
         services.AddSingleton<DockViewModel>();
         services.AddSingleton<DockWindow>();

@@ -22,6 +22,9 @@ public sealed partial class DockItemViewModel : ObservableObject
 
     public bool IsCategory => Entry.IsCategory;
 
+    /// <summary>Ziel liegt im Dateisystem und kann im Explorer gezeigt werden.</summary>
+    public bool CanReveal => !IsCategory && !IconService.IsWebLink(Entry.Target);
+
     /// <summary>Wird erst geladen, wenn die Oberfläche das Symbol anzeigt.</summary>
     public ImageSource Icon => _icon ??= _icons.GetIcon(Entry);
 

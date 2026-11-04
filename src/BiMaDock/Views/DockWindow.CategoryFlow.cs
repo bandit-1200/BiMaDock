@@ -6,30 +6,32 @@ using BiMaDock.ViewModels;
 namespace BiMaDock.Views;
 
 /// <summary>
-/// Kategorie-Dock wie beim Mac: gleitet unter dem Hauptdock hervor, wächst aus der Breite des
-/// Kategorie-Symbols auf volle Breite, die Symbole erscheinen nacheinander. Schließen läuft rückwärts.
+/// Kategorie-Dock fließt wie Wasser aus dem Hauptdock: Strahl unter dem Symbol, Tropfen, der sich zur
+/// Dock-Fläche ausbreitet (<see cref="LiquidFlow"/>). Erst dann erscheinen Rahmen und Symbole.
+/// Schließen läuft rückwärts zurück ins Hauptdock.
 /// </summary>
 public partial class DockWindow
 {
-    private static readonly TimeSpan OpenDuration = TimeSpan.FromMilliseconds(280);
-    private static readonly TimeSpan CloseDuration = TimeSpan.FromMilliseconds(170);
-    private static readonly TimeSpan ItemStagger = TimeSpan.FromMilliseconds(22);
-    private const double TailHalfWidth = 9;
+    private TimeSpan OpenDuration => TimeSpan.FromMilliseconds(_viewModel.Settings.FlowDurationMs);
 
-    /// <summary>Verhindert, dass eine ältere Schließ-Animation ein neu geöffnetes Dock wieder einklappt.</summary>
+    private TimeSpan CloseDuration => OpenDuration * 0.58;
+    private static readonly TimeSpan ItemStagger = TimeSpan.FromMilliseconds(24);
+
+    /// <summary>Verhindert, dass eine ältere Animation ein inzwischen anders geöffnetes Dock verändert.</summary>
     private int _flowGeneration;
-    private double _collapsedScaleX = 0.2;
-    private double _collapsedOffsetY = -60;
 
     private void OpenCategoryDock(DockItemViewModel category)
     {
         int generation = ++_flowGeneration;
-        ResetCategoryTransforms();
+        StopFlowAnimations();
+        CategoryOffset.X = 0;
+        CategoryDock.Opacity = 0;
         CategoryDock.Visibility = Visibility.Visible;
         DockArea.UpdateLayout();
 
         if (MainItemsControl.ItemContainerGenerator.ContainerFromItem(category) is not FrameworkElement icon)
         {
+            CategoryDock.Opacity = 1;
             return;
         }
 
@@ -40,22 +42,29 @@ public partial class DockWindow
         double desiredLeft = Math.Clamp(iconCenter - (width / 2), 8, Math.Max(8, Root.ActualWidth - width - 8));
         CategoryOffset.X = desiredLeft - naturalLeft;
 
-        double tailX = Math.Clamp(iconCenter - desiredLeft, 22, Math.Max(22, width - 22));
-        CategoryTail.Margin = new Thickness(tailX - TailHalfWidth - CategoryDock.Padding.Left - 1, -16, 0, 0);
+        // Austrittspunkt: Unterkante des Hauptdocks unter dem Symbol; Ziel: endgültige Fläche des Kategorie-Docks.
+        var source = new Point(
+            icon.TranslatePoint(new Point(icon.ActualWidth / 2, 0), Liquid).X,
+            MainDock.TranslatePoint(new Point(0, MainDock.ActualHeight), Liquid).Y);
+        var targetTopLeft = CategoryDock.TranslatePoint(new Point(0, 0), Liquid);
+        Liquid.Configure(source, icon.ActualWidth, new Rect(targetTopLeft, CategoryDock.RenderSize), CategoryDock.CornerRadius.TopLeft);
 
-        // Startzustand: so schmal wie das Symbol und hinter dem Hauptdock versteckt.
-        _collapsedScaleX = Math.Clamp(icon.ActualWidth / Math.Max(width, 1), 0.05, 1);
-        _collapsedOffsetY = -(CategoryDock.ActualHeight + CategoryDock.Margin.Top);
-        CategoryDock.RenderTransformOrigin = new Point(Math.Clamp(tailX / width, 0, 1), 0);
+        if (!_viewModel.Settings.FlowAnimationEnabled)
+        {
+            // Ohne Animation: fertige Form sofort zeigen (Steg zum Symbol bleibt)
+            Liquid.Progress = 1;
+            CategoryDock.Opacity = 1;
+            return;
+        }
 
-        var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var spring = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.25 };
-        Animate(CategoryScale, ScaleTransform.ScaleXProperty, _collapsedScaleX, 1, OpenDuration, spring);
-        Animate(CategoryScale, ScaleTransform.ScaleYProperty, 0.55, 1, OpenDuration, easeOut);
-        Animate(CategoryOffset, TranslateTransform.YProperty, _collapsedOffsetY, 0, OpenDuration, easeOut);
-        CategoryDock.BeginAnimation(OpacityProperty, new DoubleAnimation(0.3, 1, OpenDuration * 0.6));
+        HideCategoryItems();
+        var flow = new DoubleAnimation(0, 1, OpenDuration);
+        Liquid.BeginAnimation(LiquidFlow.ProgressProperty, flow);
 
-        StaggerItems(generation);
+        // Rahmen und Symbole erst, wenn die Flüssigkeit fast ihre Form hat.
+        var frameIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140)) { BeginTime = OpenDuration * 0.82 };
+        CategoryDock.BeginAnimation(OpacityProperty, frameIn);
+        RevealItems(generation, OpenDuration * 0.78);
     }
 
     private void CloseCategoryDock()
@@ -66,72 +75,69 @@ public partial class DockWindow
         }
 
         int generation = ++_flowGeneration;
-        var easeIn = new CubicEase { EasingMode = EasingMode.EaseIn };
-        Animate(CategoryScale, ScaleTransform.ScaleXProperty, null, _collapsedScaleX, CloseDuration, easeIn);
-        Animate(CategoryScale, ScaleTransform.ScaleYProperty, null, 0.55, CloseDuration, easeIn);
-        var slideBack = new DoubleAnimation(_collapsedOffsetY, CloseDuration) { EasingFunction = easeIn };
-        slideBack.Completed += (_, _) =>
+        if (!_viewModel.Settings.FlowAnimationEnabled)
+        {
+            CategoryDock.Visibility = Visibility.Collapsed;
+            StopFlowAnimations();
+            return;
+        }
+
+        CategoryDock.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(90)));
+
+        var drain = new DoubleAnimation(0, CloseDuration) { EasingFunction = new SineEase { EasingMode = EasingMode.EaseIn } };
+        drain.Completed += (_, _) =>
         {
             if (generation == _flowGeneration)
             {
                 CategoryDock.Visibility = Visibility.Collapsed;
-                ResetCategoryTransforms();
+                StopFlowAnimations();
             }
         };
-        CategoryOffset.BeginAnimation(TranslateTransform.YProperty, slideBack);
-        CategoryDock.BeginAnimation(OpacityProperty, new DoubleAnimation(0, CloseDuration));
+        Liquid.BeginAnimation(LiquidFlow.ProgressProperty, drain);
     }
 
-    /// <summary>Symbole erscheinen von links nach rechts nacheinander und fallen leicht nach unten.</summary>
-    private void StaggerItems(int generation)
+    private void HideCategoryItems()
     {
-        var generator = CategoryItemsControl.ItemContainerGenerator;
-        for (int i = 0; i < CategoryItemsControl.Items.Count; i++)
+        foreach (var container in AllContainers(CategoryItemsControl))
         {
-            if (generator.ContainerFromIndex(i) is not FrameworkElement container)
-            {
-                continue;
-            }
-
-            var shift = new TranslateTransform(0, -10);
-            container.RenderTransform = shift;
+            container.BeginAnimation(OpacityProperty, null);
             container.Opacity = 0;
-            var begin = OpenDuration * 0.3 + (ItemStagger * i);
-            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-            var appear = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(160)) { BeginTime = begin, FillBehavior = FillBehavior.Stop };
+        }
+    }
+
+    /// <summary>Symbole tauchen von links nach rechts nacheinander auf und sinken leicht ein, wie auf Wasser.</summary>
+    private void RevealItems(int generation, TimeSpan start)
+    {
+        var containers = AllContainers(CategoryItemsControl);
+        for (int i = 0; i < containers.Count; i++)
+        {
+            var container = containers[i];
+            var shift = new TranslateTransform(0, -8);
+            container.RenderTransform = shift;
+            var begin = start + (ItemStagger * i);
+
+            var appear = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(180)) { BeginTime = begin, FillBehavior = FillBehavior.Stop };
             appear.Completed += (_, _) =>
             {
-                if (generation == _flowGeneration || container.Opacity == 0)
+                if (generation == _flowGeneration)
                 {
                     container.Opacity = 1;
                 }
             };
             container.BeginAnimation(OpacityProperty, appear);
-            shift.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(-10, 0, TimeSpan.FromMilliseconds(200)) { BeginTime = begin, EasingFunction = ease });
+            shift.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(-8, 0, TimeSpan.FromMilliseconds(260))
+            {
+                BeginTime = begin,
+                EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.6 },
+            });
         }
     }
 
-    private void ResetCategoryTransforms()
+    private void StopFlowAnimations()
     {
-        CategoryScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
-        CategoryScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
-        CategoryOffset.BeginAnimation(TranslateTransform.YProperty, null);
+        Liquid.BeginAnimation(LiquidFlow.ProgressProperty, null);
+        Liquid.Progress = 0;
         CategoryDock.BeginAnimation(OpacityProperty, null);
-        CategoryScale.ScaleX = 1;
-        CategoryScale.ScaleY = 1;
-        CategoryOffset.X = 0;
-        CategoryOffset.Y = 0;
         CategoryDock.Opacity = 1;
-    }
-
-    private static void Animate(Animatable target, DependencyProperty property, double? from, double to, TimeSpan duration, IEasingFunction easing)
-    {
-        var animation = new DoubleAnimation { To = to, Duration = duration, EasingFunction = easing };
-        if (from.HasValue)
-        {
-            animation.From = from.Value;
-        }
-
-        target.BeginAnimation(property, animation);
     }
 }

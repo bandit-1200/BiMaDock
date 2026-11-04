@@ -10,7 +10,12 @@
 - Übernahme der Einträge aus der bisherigen Version beim ersten Start
 - Scharfe Symbole in 128 px, Per-Monitor-DPI
 - Beschädigte Dock-Datei wird gesichert statt die App zu blockieren
-- Kategorie-Dock fließt wie beim Mac unter dem Hauptdock hervor: wächst aus der Breite des Symbols, die Symbole erscheinen nacheinander, eine Spitze zeigt auf die Kategorie; beim Schließen läuft es zurück
+- Kategorie-Dock fließt wie Wasser aus dem Hauptdock: Ein Tropfen quillt unter dem Kategorie-Symbol hervor, fällt nach unten und breitet sich zur Dock-Fläche aus; ein geschwungener Steg bleibt mit dem Symbol verbunden. Beim Schließen fließt es zurück. Dauer einstellbar, abschaltbar
+- Kontextmenü auf Einträgen: Öffnen, Im Explorer zeigen, Bearbeiten (Name, Ziel, eigenes Symbol mit Vorschau), Entfernen (Kategorien samt Inhalt nach Rückfrage)
+- Rückgängig für Entfernen, Bearbeiten, Verschieben und Aufräumen (bis zu 20 Schritte)
+- Aufräumen: findet fehlende Ziele (vorausgewählt), nicht erreichbare Netzwerk-/USB-Pfade und leere Kategorien (nicht vorausgewählt)
+- Einstellungen: Verzögerung beim Ein- und Ausblenden, Herausfließen an/aus und Dauer, Autostart mit Windows
+- Einheitliches dunkles Design für Menüs und Dialoge; Dialoge lassen sich an jeder freien Stelle verschieben, Esc schließt
 - Drag & Drop: Dateien, Ordner, Verknüpfungen und Weblinks aus Explorer oder Browser ins Haupt- oder Kategorie-Dock ziehen
 - Verschieben im Dock mit animierter Lücke und einem Abbild, das der Maus folgt; auch zwischen Haupt- und Kategorie-Dock
 - Ablegen mitten auf einer Kategorie legt in die Kategorie; kurzes Verweilen öffnet sie

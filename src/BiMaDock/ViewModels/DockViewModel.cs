@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using BiMaDock.Core.Cleanup;
 using BiMaDock.Core.Model;
+using BiMaDock.Core.Settings;
 using BiMaDock.Core.Storage;
 using BiMaDock.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -13,15 +15,21 @@ namespace BiMaDock.ViewModels;
 /// </summary>
 public sealed partial class DockViewModel : ObservableObject
 {
+    private const int MaxUndoSteps = 20;
+
     private readonly DockStore _store;
+    private readonly SettingsStore _settingsStore;
+    private readonly Stack<(string Description, DockLayout Layout)> _undo = new();
     private readonly IconService _icons;
     private readonly ILauncher _launcher;
     private readonly ILogger<DockViewModel> _logger;
     private DockLayout _layout = new();
 
-    public DockViewModel(DockStore store, IconService icons, ILauncher launcher, ILogger<DockViewModel> logger)
+    public DockViewModel(DockStore store, SettingsStore settingsStore, IconService icons, ILauncher launcher, ILogger<DockViewModel> logger)
     {
         _store = store;
+        _settingsStore = settingsStore;
+        Settings = settingsStore.Load();
         _icons = icons;
         _launcher = launcher;
         _logger = logger;
@@ -43,6 +51,13 @@ public sealed partial class DockViewModel : ObservableObject
     public partial DockItemViewModel? OpenCategory { get; set; }
 
     public bool IsCategoryOpen => OpenCategory is not null;
+
+    [ObservableProperty]
+    public partial AppSettings Settings { get; private set; }
+
+    /// <summary>Beschreibung des letzten rückgängig machbaren Schritts, null wenn keiner.</summary>
+    [ObservableProperty]
+    public partial string? UndoDescription { get; private set; }
 
     public string DataFile => _store.FilePath;
 
@@ -116,8 +131,10 @@ public sealed partial class DockViewModel : ObservableObject
 
     public void MoveEntry(Guid id, Guid? dockId, int index)
     {
+        var before = _layout.Clone();
         if (_layout.Move(id, dockId, index))
         {
+            PushUndo("Verschieben", before);
             Commit();
         }
     }
@@ -126,6 +143,89 @@ public sealed partial class DockViewModel : ObservableObject
     {
         _layout.Insert(DockEntryFactory.NewCategory(name), null, int.MaxValue);
         Commit();
+    }
+
+    public void RemoveEntry(DockItemViewModel item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        var before = _layout.Clone();
+        if (_layout.Remove(item.Entry.Id) > 0)
+        {
+            PushUndo($"„{item.Name}“ entfernen", before);
+            Commit();
+        }
+    }
+
+    public void UpdateEntry(DockEntry updated)
+    {
+        var before = _layout.Clone();
+        if (_layout.Update(updated))
+        {
+            PushUndo($"„{updated.Name}“ bearbeiten", before);
+            _icons.ClearCache();
+            Commit();
+        }
+    }
+
+    /// <summary>Anzahl der Einträge, die beim Löschen einer Kategorie mit entfernt würden.</summary>
+    public int CountEntriesIn(DockItemViewModel category) => _layout.EntriesOf(category.Entry.Id).Count();
+
+    public List<CleanupCandidate> FindCleanupCandidates() => CleanupScanner.Scan(_layout);
+
+    public void RemoveEntries(IReadOnlyCollection<Guid> ids)
+    {
+        var before = _layout.Clone();
+        int removed = ids.Sum(_layout.Remove);
+        if (removed > 0)
+        {
+            PushUndo($"Aufräumen ({removed} Einträge)", before);
+            Commit();
+            _logger.LogInformation("Aufräumen: {Count} Einträge entfernt", removed);
+        }
+    }
+
+    [RelayCommand]
+    private void Undo()
+    {
+        if (_undo.Count == 0)
+        {
+            return;
+        }
+
+        var (description, layout) = _undo.Pop();
+        _layout = layout;
+        _icons.ClearCache();
+        UndoDescription = _undo.Count > 0 ? _undo.Peek().Description : null;
+        _logger.LogInformation("Rückgängig: {Description}", description);
+        Commit();
+    }
+
+    public void SaveSettings(AppSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        Settings = settings.Normalized();
+        try
+        {
+            _settingsStore.Save(Settings);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogError(ex, "Einstellungen konnten nicht gespeichert werden");
+            ErrorOccurred?.Invoke(this, $"Die Einstellungen konnten nicht gespeichert werden:\n{ex.Message}");
+        }
+    }
+
+    private void PushUndo(string description, DockLayout before)
+    {
+        _undo.Push((description, before));
+        if (_undo.Count > MaxUndoSteps)
+        {
+            var keep = _undo.Take(MaxUndoSteps).Reverse().ToList();
+            _undo.Clear();
+            keep.ForEach(_undo.Push);
+        }
+
+        UndoDescription = description;
     }
 
     // ---------- Speichern und Abgleich ----------

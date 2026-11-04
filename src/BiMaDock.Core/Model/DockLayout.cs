@@ -46,6 +46,45 @@ public sealed class DockLayout
         return entry;
     }
 
+    /// <summary>Kopie für Rückgängig. Einträge sind unveränderlich, eine flache Kopie der Liste genügt.</summary>
+    public DockLayout Clone() => new() { SchemaVersion = SchemaVersion, Entries = [.. Entries] };
+
+    /// <summary>Entfernt einen Eintrag; bei einer Kategorie auch ihren Inhalt. Gibt die Anzahl entfernter Einträge zurück.</summary>
+    public int Remove(Guid id)
+    {
+        var entry = Find(id);
+        if (entry is null)
+        {
+            return 0;
+        }
+
+        int removed = entry.IsCategory ? Entries.RemoveAll(e => e.CategoryId == id) : 0;
+        Entries.Remove(entry);
+        return removed + 1;
+    }
+
+    /// <summary>Ersetzt einen Eintrag mit gleicher ID; Art und Kategorie-Zugehörigkeit bleiben erhalten.</summary>
+    public bool Update(DockEntry updated)
+    {
+        ArgumentNullException.ThrowIfNull(updated);
+        int index = Entries.FindIndex(e => e.Id == updated.Id);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        var current = Entries[index];
+        Entries[index] = updated with
+        {
+            Kind = current.Kind,
+            CategoryId = current.CategoryId,
+            Name = string.IsNullOrWhiteSpace(updated.Name) ? current.Name : updated.Name.Trim(),
+            Target = current.IsCategory ? string.Empty : updated.Target.Trim(),
+            IconPath = string.IsNullOrWhiteSpace(updated.IconPath) ? null : updated.IconPath.Trim(),
+        };
+        return true;
+    }
+
     /// <summary>
     /// Verschiebt einen Eintrag in ein Dock an Position <paramref name="index"/>, gezählt ohne den Eintrag selbst.
     /// Gibt false zurück, wenn der Eintrag fehlt oder in sich selbst verschoben würde.

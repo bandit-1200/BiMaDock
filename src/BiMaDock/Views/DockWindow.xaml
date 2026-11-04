@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:BiMaDock.ViewModels"
+        xmlns:views="clr-namespace:BiMaDock.Views"
         Title="BiMaDock"
         WindowStyle="None" AllowsTransparency="True" Background="{x:Null}"
         ResizeMode="NoResize" Topmost="True" ShowInTaskbar="False"
@@ -16,7 +17,25 @@
                     Command="{Binding DataContext.ActivateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                     CommandParameter="{Binding}"
                     PreviewMouseLeftButtonDown="Item_PreviewMouseLeftButtonDown"
-                    PreviewMouseMove="Item_PreviewMouseMove" />
+                    PreviewMouseMove="Item_PreviewMouseMove">
+                <Button.ContextMenu>
+                    <ContextMenu Opened="Menu_Opened">
+                        <MenuItem Header="Öffnen" Click="ItemOpen_Click" FontWeight="SemiBold" />
+                        <MenuItem Header="Im Explorer zeigen" Click="ItemReveal_Click"
+                                  Visibility="{Binding CanReveal, Converter={StaticResource BoolToVisibility}}" />
+                        <MenuItem Header="Bearbeiten …" Click="ItemEdit_Click" />
+                        <MenuItem Header="Entfernen" Click="ItemRemove_Click" />
+                        <Separator />
+                        <MenuItem Header="Neue Kategorie …" Click="NewCategory_Click" />
+                        <MenuItem Header="Aufräumen …" Click="Cleanup_Click" />
+                        <MenuItem Tag="Undo" Header="Rückgängig" Click="Undo_Click" />
+                        <Separator />
+                        <MenuItem Header="Einstellungen …" Click="Settings_Click" />
+                        <MenuItem Header="Datenordner öffnen" Click="OpenDataFolder_Click" />
+                        <MenuItem Header="Beenden" Click="Exit_Click" />
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
         </DataTemplate>
 
         <ItemsPanelTemplate x:Key="HorizontalPanel">
@@ -29,6 +48,7 @@
         <Grid x:Name="DockArea" VerticalAlignment="Top" HorizontalAlignment="Center"
               Background="#01000000" AllowDrop="True"
               MouseEnter="DockArea_MouseEnter" MouseLeave="DockArea_MouseLeave"
+              ContextMenuOpening="DockArea_ContextMenuOpening" ContextMenuClosing="DockArea_ContextMenuClosing"
               DragEnter="DockArea_DragEnter" DragOver="DockArea_DragOver"
               DragLeave="DockArea_DragLeave" Drop="DockArea_Drop">
             <Grid.RenderTransform>
@@ -39,20 +59,16 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- Kategorie-Dock: liegt hinter dem Hauptdock und fließt unter ihm heraus -->
-            <Border x:Name="CategoryDock" Grid.Row="1" Panel.ZIndex="0" Style="{StaticResource DockSurfaceStyle}"
-                    HorizontalAlignment="Center" Margin="0,12,0,14" Visibility="Collapsed" MinWidth="72">
+            <!-- Flüssigkeit, aus der das Kategorie-Dock entsteht (liegt hinter dem Hauptdock) -->
+            <views:LiquidFlow x:Name="Liquid" Grid.RowSpan="2" Panel.ZIndex="0" Fill="{StaticResource LiquidBrush}" />
+
+            <!-- Kategorie-Dock: erscheint, sobald die Flüssigkeit seine Form angenommen hat -->
+            <Border x:Name="CategoryDock" Grid.Row="1" Panel.ZIndex="1" Style="{StaticResource DockSurfaceStyle}"
+                    HorizontalAlignment="Center" Margin="0,24,0,14" Visibility="Collapsed" MinWidth="72">
                 <Border.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform x:Name="CategoryScale" />
-                        <TranslateTransform x:Name="CategoryOffset" />
-                    </TransformGroup>
+                    <TranslateTransform x:Name="CategoryOffset" />
                 </Border.RenderTransform>
                 <Grid>
-                    <!-- Spitze, die auf das Kategorie-Symbol zeigt -->
-                    <Path x:Name="CategoryTail" Data="M0,10 L9,0 L18,10 Z" Fill="{StaticResource SurfaceTopBrush}"
-                          Stroke="{StaticResource SurfaceBorderBrush}" StrokeThickness="1"
-                          HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,-16,0,0" />
                     <ItemsControl x:Name="CategoryItemsControl" ItemsSource="{Binding CategoryItems}"
                                   ItemTemplate="{StaticResource DockItemTemplate}"
                                   ItemsPanel="{StaticResource HorizontalPanel}" />
@@ -63,16 +79,17 @@
             </Border>
 
             <!-- Hauptdock -->
-            <Border x:Name="MainDock" Panel.ZIndex="1" Style="{StaticResource DockSurfaceStyle}"
+            <Border x:Name="MainDock" Panel.ZIndex="2" Style="{StaticResource DockSurfaceStyle}"
                     CornerRadius="0,0,18,18" BorderThickness="1,0,1,1" HorizontalAlignment="Center"
                     MinWidth="120" MinHeight="40">
                 <Border.ContextMenu>
-                    <ContextMenu Opened="ContextMenu_Opened" Closed="ContextMenu_Closed">
+                    <ContextMenu Opened="Menu_Opened">
                         <MenuItem Header="Neue Kategorie …" Click="NewCategory_Click" />
+                        <MenuItem Header="Aufräumen …" Click="Cleanup_Click" />
+                        <MenuItem Tag="Undo" Header="Rückgängig" Click="Undo_Click" />
                         <Separator />
-                        <MenuItem Header="Neu laden" Click="Reload_Click" />
+                        <MenuItem Header="Einstellungen …" Click="Settings_Click" />
                         <MenuItem Header="Datenordner öffnen" Click="OpenDataFolder_Click" />
-                        <Separator />
                         <MenuItem Header="Beenden" Click="Exit_Click" />
                     </ContextMenu>
                 </Border.ContextMenu>

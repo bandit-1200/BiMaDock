@@ -16,6 +16,8 @@ public static class AppPaths
 
     public static string DockFile => Path.Combine(DataDirectory, "dock.json");
 
+    public static string SettingsFile => Path.Combine(DataDirectory, "settings.json");
+
     public static string LogDirectory => Path.Combine(DataDirectory, "logs");
 
     /// <summary>Daten der bisherigen Version; werden beim ersten Start einmalig übernommen (nur gelesen).</summary>

@@ -1,6 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
     <!-- Farben -->
     <Color x:Key="SurfaceTopColor">#E6303036</Color>
     <Color x:Key="SurfaceBottomColor">#EB1C1C21</Color>
@@ -12,6 +14,8 @@
     <SolidColorBrush x:Key="ForegroundBrush" Color="#F2FFFFFF" />
 
     <SolidColorBrush x:Key="SurfaceTopBrush" Color="{StaticResource SurfaceTopColor}" />
+    <!-- Deckend, damit sich überlappende Teile der Flüssigkeit nicht abdunkeln -->
+    <SolidColorBrush x:Key="LiquidBrush" Color="#FF2A2A30" />
 
     <LinearGradientBrush x:Key="SurfaceBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Offset="0" Color="{StaticResource SurfaceTopColor}" />
@@ -140,6 +144,17 @@
         </Setter>
     </Style>
 
+    <!-- Trennlinie in Menüs (WPF verwendet dort einen eigenen Stilschlüssel) -->
+    <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="Separator">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Height="1" Margin="8,4" Background="#26FFFFFF" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="Separator">
         <Setter Property="Template">
             <Setter.Value>
@@ -151,6 +166,65 @@
     </Style>
 
     <!-- Eingabefelder und Schaltflächen für Dialoge -->
+    <!-- Rahmen aller Dialoge -->
+    <Style x:Key="DialogFrameStyle" TargetType="Border">
+        <Setter Property="Margin" Value="16" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Background" Value="#FF242429" />
+        <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="TextBlock.Foreground" Value="{StaticResource ForegroundBrush}" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="20" ShadowDepth="4" Direction="270" Opacity="0.5" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DialogTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,0,0,14" />
+    </Style>
+
+    <Style x:Key="DialogLabelStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="#B3FFFFFF" />
+        <Setter Property="Margin" Value="0,10,0,4" />
+    </Style>
+
+    <Style x:Key="DialogCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+        <Setter Property="Margin" Value="0,10,0,0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal" Background="Transparent">
+                        <Border x:Name="Box" Width="18" Height="18" CornerRadius="4" BorderThickness="1"
+                                BorderBrush="#66FFFFFF" Background="#1AFFFFFF" VerticalAlignment="Center">
+                            <Path x:Name="Mark" Data="M3,9 L7,13 L15,4" Stroke="White" StrokeThickness="2" Visibility="Collapsed" />
+                        </Border>
+                        <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Mark" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Box" Property="Background" Value="#FF2A7FB8" />
+                            <Setter TargetName="Box" Property="BorderBrush" Value="#FF2A7FB8" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DialogSliderStyle" TargetType="Slider">
+        <Setter Property="IsSnapToTickEnabled" Value="True" />
+        <Setter Property="Margin" Value="0,2,0,0" />
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+    </Style>
+
     <Style x:Key="DialogTextBoxStyle" TargetType="TextBox">
         <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
         <Setter Property="CaretBrush" Value="{StaticResource ForegroundBrush}" />

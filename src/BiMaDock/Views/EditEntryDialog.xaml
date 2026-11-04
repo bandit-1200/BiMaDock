@@ -1,0 +1,39 @@
+<views:DialogWindow x:Class="BiMaDock.Views.EditEntryDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:BiMaDock.Views"
+        Title="Eigenschaften" Width="520">
+    <Border Style="{StaticResource DialogFrameStyle}">
+        <StackPanel>
+            <DockPanel>
+                <Image x:Name="Preview" Width="48" Height="48" DockPanel.Dock="Left" Margin="0,0,14,0"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+                <TextBlock x:Name="TitleText" Text="Eigenschaften" Style="{StaticResource DialogTitleStyle}" VerticalAlignment="Center" Margin="0" />
+            </DockPanel>
+
+            <TextBlock Text="Name" Style="{StaticResource DialogLabelStyle}" Margin="0,16,0,4" />
+            <TextBox x:Name="NameBox" Style="{StaticResource DialogTextBoxStyle}" />
+
+            <StackPanel x:Name="TargetPanel">
+                <TextBlock Text="Ziel (Programm, Datei, Ordner oder Weblink)" Style="{StaticResource DialogLabelStyle}" />
+                <DockPanel>
+                    <Button Content="Ordner …" DockPanel.Dock="Right" Style="{StaticResource DialogButtonStyle}" MinWidth="0" Click="BrowseFolder_Click" />
+                    <Button Content="Datei …" DockPanel.Dock="Right" Style="{StaticResource DialogButtonStyle}" MinWidth="0" Click="BrowseFile_Click" />
+                    <TextBox x:Name="TargetBox" Style="{StaticResource DialogTextBoxStyle}" />
+                </DockPanel>
+            </StackPanel>
+
+            <TextBlock Text="Eigenes Symbol (leer = Symbol des Ziels)" Style="{StaticResource DialogLabelStyle}" />
+            <DockPanel>
+                <Button Content="Standard" DockPanel.Dock="Right" Style="{StaticResource DialogButtonStyle}" MinWidth="0" Click="ResetIcon_Click" />
+                <Button Content="Wählen …" DockPanel.Dock="Right" Style="{StaticResource DialogButtonStyle}" MinWidth="0" Click="BrowseIcon_Click" />
+                <TextBox x:Name="IconBox" Style="{StaticResource DialogTextBoxStyle}" TextChanged="Field_Changed" />
+            </DockPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                <Button Content="Abbrechen" IsCancel="True" Style="{StaticResource DialogButtonStyle}" />
+                <Button x:Name="SaveButton" Content="Speichern" IsDefault="True" Style="{StaticResource AccentDialogButtonStyle}" Click="Save_Click" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</views:DialogWindow>

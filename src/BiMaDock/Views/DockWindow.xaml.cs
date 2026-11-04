@@ -2,12 +2,14 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using BiMaDock.Native;
+using BiMaDock.Services;
 using BiMaDock.ViewModels;
 using Microsoft.Win32;
 
@@ -26,14 +28,18 @@ public partial class DockWindow : Window
     private static readonly Duration SlideDuration = TimeSpan.FromMilliseconds(170);
 
     private readonly DockViewModel _viewModel;
+    private readonly IconService _icons;
+    private readonly StartupService _startup;
     private readonly DispatcherTimer _showTimer;
     private readonly DispatcherTimer _hideTimer;
     private bool _isShown = true;
     private bool _isMenuOpen;
 
-    public DockWindow(DockViewModel viewModel)
+    public DockWindow(DockViewModel viewModel, IconService icons, StartupService startup)
     {
         _viewModel = viewModel;
+        _icons = icons;
+        _startup = startup;
         DataContext = viewModel;
         InitializeComponent();
 
@@ -53,6 +59,7 @@ public partial class DockWindow : Window
             }
         };
 
+        ApplySettings();
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         viewModel.MainItems.CollectionChanged += (_, _) => UpdateHints();
         viewModel.CategoryItems.CollectionChanged += (_, _) => UpdateHints();
@@ -110,6 +117,12 @@ public partial class DockWindow : Window
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(DockViewModel.Settings))
+        {
+            ApplySettings();
+            return;
+        }
+
         if (e.PropertyName != nameof(DockViewModel.OpenCategory))
         {
             return;
@@ -189,15 +202,15 @@ public partial class DockWindow : Window
         SlideTransform.BeginAnimation(TranslateTransform.YProperty, animation);
     }
 
-    // ---------- Kontextmenü ----------
+    // ---------- Kontextmenüs ----------
 
-    private void ContextMenu_Opened(object sender, RoutedEventArgs e)
+    private void DockArea_ContextMenuOpening(object sender, ContextMenuEventArgs e)
     {
         _isMenuOpen = true;
         _hideTimer.Stop();
     }
 
-    private void ContextMenu_Closed(object sender, RoutedEventArgs e)
+    private void DockArea_ContextMenuClosing(object sender, ContextMenuEventArgs e)
     {
         _isMenuOpen = false;
         if (!DockArea.IsMouseOver)
@@ -206,24 +219,143 @@ public partial class DockWindow : Window
         }
     }
 
-    private void NewCategory_Click(object sender, RoutedEventArgs e)
+    private void Menu_Opened(object sender, RoutedEventArgs e)
+    {
+        foreach (var item in ((ContextMenu)sender).Items.OfType<MenuItem>().Where(m => Equals(m.Tag, "Undo")))
+        {
+            item.IsEnabled = _viewModel.UndoDescription is not null;
+            item.Header = _viewModel.UndoDescription is { } description ? $"Rückgängig: {description}" : "Rückgängig";
+        }
+    }
+
+    private static DockItemViewModel? ItemOf(object sender) => (sender as FrameworkElement)?.DataContext as DockItemViewModel;
+
+    /// <summary>Dialoge halten das Dock offen, solange sie angezeigt werden.</summary>
+    private T WithDockKeptOpen<T>(Func<T> showDialog)
     {
         _isMenuOpen = true;
+        _hideTimer.Stop();
         try
         {
-            string? name = InputDialog.Ask(this, "Neue Kategorie", "Name der Kategorie:");
-            if (name is not null)
-            {
-                _viewModel.AddCategory(name);
-            }
+            return showDialog();
         }
         finally
         {
             _isMenuOpen = false;
+            if (!DockArea.IsMouseOver)
+            {
+                _hideTimer.Start();
+            }
         }
     }
 
-    private void Reload_Click(object sender, RoutedEventArgs e) => _viewModel.Load();
+    private void ItemOpen_Click(object sender, RoutedEventArgs e) => _viewModel.ActivateCommand.Execute(ItemOf(sender));
+
+    private void ItemReveal_Click(object sender, RoutedEventArgs e)
+    {
+        if (ItemOf(sender) is not { } item)
+        {
+            return;
+        }
+
+        string target = item.Entry.Target;
+        if (!File.Exists(target) && !Directory.Exists(target))
+        {
+            MessageBox.Show(this, $"„{item.Name}“ wurde nicht gefunden:\n{target}", "BiMaDock", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var startInfo = new ProcessStartInfo("explorer.exe") { UseShellExecute = true };
+        startInfo.ArgumentList.Add($"/select,{target}");
+        using var _ = Process.Start(startInfo);
+    }
+
+    private void ItemEdit_Click(object sender, RoutedEventArgs e)
+    {
+        if (ItemOf(sender) is not { } item)
+        {
+            return;
+        }
+
+        var updated = WithDockKeptOpen(() => EditEntryDialog.Edit(this, item.Entry, _icons));
+        if (updated is not null)
+        {
+            _viewModel.UpdateEntry(updated);
+        }
+    }
+
+    private void ItemRemove_Click(object sender, RoutedEventArgs e)
+    {
+        if (ItemOf(sender) is not { } item)
+        {
+            return;
+        }
+
+        int content = item.IsCategory ? _viewModel.CountEntriesIn(item) : 0;
+        if (content > 0)
+        {
+            var answer = WithDockKeptOpen(() => MessageBox.Show(this,
+                $"Die Kategorie „{item.Name}“ enthält {content} Einträge. Kategorie samt Inhalt entfernen?\n\n(„Rückgängig“ im Kontextmenü stellt sie wieder her.)",
+                "BiMaDock", MessageBoxButton.YesNo, MessageBoxImage.Question));
+            if (answer != MessageBoxResult.Yes)
+            {
+                return;
+            }
+        }
+
+        _viewModel.RemoveEntry(item);
+    }
+
+    private void Undo_Click(object sender, RoutedEventArgs e) => _viewModel.UndoCommand.Execute(null);
+
+    private void Cleanup_Click(object sender, RoutedEventArgs e)
+    {
+        var candidates = _viewModel.FindCleanupCandidates();
+        if (candidates.Count == 0)
+        {
+            WithDockKeptOpen(() => MessageBox.Show(this, "Alles in Ordnung: Alle Ziele sind vorhanden und keine Kategorie ist leer.",
+                "BiMaDock", MessageBoxButton.OK, MessageBoxImage.Information));
+            return;
+        }
+
+        var ids = WithDockKeptOpen(() => CleanupDialog.Choose(this, candidates, _icons));
+        if (ids is { Count: > 0 })
+        {
+            _viewModel.RemoveEntries(ids);
+        }
+    }
+
+    private void Settings_Click(object sender, RoutedEventArgs e)
+    {
+        var result = WithDockKeptOpen(() => SettingsDialog.Edit(this, _viewModel.Settings, _startup.IsEnabled));
+        if (result is not { } chosen)
+        {
+            return;
+        }
+
+        _viewModel.SaveSettings(chosen.Settings);
+        if (chosen.Autostart != _startup.IsEnabled && !_startup.TrySetEnabled(chosen.Autostart))
+        {
+            MessageBox.Show(this, "Der Autostart konnte nicht geändert werden. Details im Protokoll.", "BiMaDock",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void ApplySettings()
+    {
+        var settings = _viewModel.Settings;
+        _showTimer.Interval = TimeSpan.FromMilliseconds(Math.Max(1, settings.ShowDelayMs));
+        _hideTimer.Interval = TimeSpan.FromMilliseconds(Math.Max(1, settings.HideDelayMs));
+    }
+
+    private void NewCategory_Click(object sender, RoutedEventArgs e)
+    {
+        string? name = WithDockKeptOpen(() => InputDialog.Ask(this, "Neue Kategorie", "Name der Kategorie:"));
+        if (name is not null)
+        {
+            _viewModel.AddCategory(name);
+        }
+    }
 
     private void OpenDataFolder_Click(object sender, RoutedEventArgs e)
     {
