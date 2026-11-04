@@ -7,11 +7,13 @@ public partial class SettingsDialog : DialogWindow
 {
     private static readonly string[] DockPresets = ["#2A2A30", "#1A1A1D", "#3A3A42", "#1F2A44", "#0F3D4C", "#1E3A2B", "#3A2A3F", "#4A2B22", "#E8E8EC"];
     private static readonly string[] BorderPresets = ["#FFFFFF", "#000000", "#4CC2FF", "#FF8C00", "#6CCB5F", "#B388FF"];
+    private static readonly string[] FeedbackPresets = ["#D2691E", "#2A7FB8", "#2E7D32", "#8E24AA", "#C62828", "#546E7A", "#F9A825"];
     private static readonly string[] AccentPresets = ["#4CC2FF", "#FF8C00", "#6CCB5F", "#FF5C8A", "#B388FF", "#FFD54F", "#E74C3C", "#FFFFFF"];
 
     private readonly ColorField _dockColor;
     private readonly ColorField _borderColor;
     private readonly ColorField _accentColor;
+    private readonly ColorField _feedbackColor;
     private readonly Action<AppSettings> _preview;
     private bool _loading;
 
@@ -26,11 +28,13 @@ public partial class SettingsDialog : DialogWindow
         DockColorHost.Content = _dockColor;
         BorderColorHost.Content = _borderColor;
         AccentColorHost.Content = _accentColor;
+        _feedbackColor = new ColorField(FeedbackPresets, settings.FeedbackColor);
+        FeedbackColorHost.Content = _feedbackColor;
 
         Apply(settings);
         Autostart.IsChecked = autostart;
 
-        foreach (var field in new[] { _dockColor, _borderColor, _accentColor })
+        foreach (var field in new[] { _dockColor, _borderColor, _accentColor, _feedbackColor })
         {
             field.ValueChanged += (_, _) => Preview();
         }
@@ -48,6 +52,7 @@ public partial class SettingsDialog : DialogWindow
         DockOpacity = (int)DockOpacity.Value,
         BorderColor = _borderColor.Value,
         AccentColor = _accentColor.Value,
+        FeedbackColor = _feedbackColor.Value,
     };
 
     /// <summary>
@@ -77,6 +82,7 @@ public partial class SettingsDialog : DialogWindow
         _dockColor.Value = settings.DockColor;
         _borderColor.Value = settings.BorderColor;
         _accentColor.Value = settings.AccentColor;
+        _feedbackColor.Value = settings.FeedbackColor;
         _loading = false;
         Preview();
     }

@@ -38,6 +38,8 @@
             <ContentControl x:Name="BorderColorHost" />
             <TextBlock Text="Akzent (geöffnete Kategorie, Ablegen)" Style="{StaticResource DialogLabelStyle}" />
             <ContentControl x:Name="AccentColorHost" />
+            <TextBlock Text="Hinweis beim Ziehen (Hintergrund des Ziel-Docks)" Style="{StaticResource DialogLabelStyle}" />
+            <ContentControl x:Name="FeedbackColorHost" />
             <TextBlock Text="Änderungen sind sofort am Dock zu sehen; „Abbrechen“ stellt den alten Stand wieder her."
                        Foreground="#80FFFFFF" TextWrapping="Wrap" Margin="0,12,0,0" />
 

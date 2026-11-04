@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using BiMaDock.ViewModels;
@@ -32,6 +33,7 @@ public partial class DockWindow
     private int _gapIndex = -1;
     private DockItemViewModel? _dropIntoCategory;
     private DispatcherTimer? _springTimer;
+    private Border? _feedbackDock;
 
     private bool IsDragActive => _draggedItem is not null || _externalDragOver;
 
@@ -156,6 +158,7 @@ public partial class DockWindow
             return;
         }
 
+        SetDropFeedback(target == MainItemsControl ? MainDock : CategoryDock);
         var position = e.GetPosition(target);
         if (target == MainItemsControl && !draggingCategory && CategoryUnder(position) is { } category && category != _draggedItem)
         {
@@ -367,12 +370,14 @@ public partial class DockWindow
 
     private void ClearDropTarget()
     {
+        SetDropFeedback(null);
         SetDropIntoCategory(null);
         SetGap(null, -1, animate: true);
     }
 
     private void EndDragVisuals()
     {
+        SetDropFeedback(null);
         SetDropIntoCategory(null);
         _springTimer?.Stop();
         foreach (var control in new[] { MainItemsControl, CategoryItemsControl })
@@ -391,6 +396,53 @@ public partial class DockWindow
             _draggedContainer.Visibility = Visibility.Visible;
         }
     }
+
+    // ---------- Farbhinweis: Ziel-Dock färbt sich beim Ziehen ----------
+
+    private static readonly Duration FeedbackDuration = TimeSpan.FromMilliseconds(160);
+
+    private void SetDropFeedback(Border? dock)
+    {
+        if (_feedbackDock == dock)
+        {
+            return;
+        }
+
+        if (_feedbackDock is { } previous)
+        {
+            FadeBackground(previous, SurfaceColor(), clearWhenDone: true);
+        }
+
+        _feedbackDock = dock;
+        if (dock is not null && Application.Current.TryFindResource("DropFeedbackColor") is Color feedback)
+        {
+            FadeBackground(dock, feedback, clearWhenDone: false);
+        }
+    }
+
+    private void FadeBackground(Border dock, Color to, bool clearWhenDone)
+    {
+        var from = dock.Background is SolidColorBrush current ? current.Color : SurfaceColor();
+        var brush = new SolidColorBrush(from);
+        dock.Background = brush;
+        var animation = new ColorAnimation(to, FeedbackDuration);
+        if (clearWhenDone)
+        {
+            animation.Completed += (_, _) =>
+            {
+                // Zurück an die Farbe aus den Einstellungen binden, sofern nicht inzwischen wieder Ziel
+                if (_feedbackDock != dock)
+                {
+                    dock.ClearValue(Border.BackgroundProperty);
+                }
+            };
+        }
+
+        brush.BeginAnimation(SolidColorBrush.ColorProperty, animation);
+    }
+
+    private static Color SurfaceColor() =>
+        Application.Current.TryFindResource("DockSurfaceBrush") is SolidColorBrush surface ? surface.Color : Colors.Transparent;
 
     // ---------- Hilfsfunktionen ----------
 

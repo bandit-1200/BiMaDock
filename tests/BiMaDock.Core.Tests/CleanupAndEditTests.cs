@@ -120,13 +120,14 @@ public sealed class CleanupAndEditTests : IDisposable
     public void Settings_ColorsAreValidatedOnLoad()
     {
         var store = new SettingsStore(Path.Combine(_dir, "settings.json"));
-        store.Save(new AppSettings { DockColor = "kaputt", AccentColor = "#00ff00", DockOpacity = 5 });
+        store.Save(new AppSettings { DockColor = "kaputt", AccentColor = "#00ff00", DockOpacity = 5, FeedbackColor = "" });
 
         var loaded = store.Load();
 
         Assert.Equal(AppSettings.DefaultDockColor, loaded.DockColor);
         Assert.Equal("#00FF00", loaded.AccentColor);
         Assert.Equal(AppSettings.MinOpacity, loaded.DockOpacity);
+        Assert.Equal(AppSettings.DefaultFeedbackColor, loaded.FeedbackColor);
     }
 
     [Fact]

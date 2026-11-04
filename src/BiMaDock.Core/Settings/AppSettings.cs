@@ -27,6 +27,7 @@ public sealed record AppSettings
     public const string DefaultDockColor = "#2A2A30";
     public const string DefaultBorderColor = "#FFFFFF";
     public const string DefaultAccentColor = "#4CC2FF";
+    public const string DefaultFeedbackColor = "#D2691E";
     public const int MinOpacity = 40;
 
     /// <summary>Farbe von Haupt- und Kategorie-Dock (#RRGGBB).</summary>
@@ -41,6 +42,9 @@ public sealed record AppSettings
     /// <summary>Akzent für geöffnete Kategorie und Ablegen-Markierung (#RRGGBB).</summary>
     public string AccentColor { get; init; } = DefaultAccentColor;
 
+    /// <summary>Hintergrund des Docks, über dem gerade etwas gezogen wird (#RRGGBB).</summary>
+    public string FeedbackColor { get; init; } = DefaultFeedbackColor;
+
     public AppSettings Normalized() => this with
     {
         ShowDelayMs = Math.Clamp(ShowDelayMs, MinDelay, MaxDelay),
@@ -50,6 +54,7 @@ public sealed record AppSettings
         DockColor = NormalizeColor(DockColor, DefaultDockColor),
         BorderColor = NormalizeColor(BorderColor, DefaultBorderColor),
         AccentColor = NormalizeColor(AccentColor, DefaultAccentColor),
+        FeedbackColor = NormalizeColor(FeedbackColor, DefaultFeedbackColor),
     };
 
     /// <summary>Gibt die Farbe als "#RRGGBB" in Großbuchstaben zurück; ungültige Werte ergeben <paramref name="fallback"/>.</summary>

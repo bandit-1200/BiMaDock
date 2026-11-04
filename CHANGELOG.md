@@ -20,4 +20,5 @@
 - Drag & Drop: Dateien, Ordner, Verknüpfungen und Weblinks aus Explorer oder Browser ins Haupt- oder Kategorie-Dock ziehen
 - Verschieben im Dock mit animierter Lücke und einem Abbild, das der Maus folgt; auch zwischen Haupt- und Kategorie-Dock
 - Ablegen mitten auf einer Kategorie legt in die Kategorie; kurzes Verweilen öffnet sie
+- Farbhinweis beim Ziehen: Das Ziel-Dock färbt sich weich in die Hinweisfarbe (Standard #D2691E wie in der alten Version), in den Einstellungen wählbar
 - Kontextmenü „Neue Kategorie …“ mit eigenem Eingabedialog im Dock-Design

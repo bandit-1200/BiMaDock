@@ -25,6 +25,9 @@ public static class ThemeService
         resources["SurfaceBorderBrush"] = Frozen(Color.FromArgb(0x38, border.R, border.G, border.B));
         resources["AccentBrush"] = Frozen(accent);
         resources["AccentSoftBrush"] = Frozen(Color.FromArgb(0x40, accent.R, accent.G, accent.B));
+
+        var feedback = Parse(settings.FeedbackColor);
+        resources["DropFeedbackColor"] = Color.FromArgb(alpha, feedback.R, feedback.G, feedback.B);
     }
 
     public static Color Parse(string hex) => (Color)ColorConverter.ConvertFromString(hex);
