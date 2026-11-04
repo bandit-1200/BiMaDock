@@ -24,6 +24,15 @@ public sealed record AppSettings
     /// <summary>Dauer des Herausfließens.</summary>
     public int FlowDurationMs { get; init; } = 520;
 
+    /// <summary>Name unter jedem Symbol anzeigen.</summary>
+    public bool ShowLabels { get; init; } = true;
+
+    /// <summary>Animation, wenn die Maus über ein Symbol fährt.</summary>
+    public HoverEffect HoverEffect { get; init; } = HoverEffect.Zoom;
+
+    /// <summary>Symbol hüpft kurz, wenn ein Eintrag gestartet wird.</summary>
+    public bool LaunchBounce { get; init; } = true;
+
     public const string DefaultDockColor = "#2A2A30";
     public const string DefaultBorderColor = "#FFFFFF";
     public const string DefaultAccentColor = "#4CC2FF";
@@ -55,6 +64,7 @@ public sealed record AppSettings
         BorderColor = NormalizeColor(BorderColor, DefaultBorderColor),
         AccentColor = NormalizeColor(AccentColor, DefaultAccentColor),
         FeedbackColor = NormalizeColor(FeedbackColor, DefaultFeedbackColor),
+        HoverEffect = Enum.IsDefined(HoverEffect) ? HoverEffect : HoverEffect.Zoom,
     };
 
     /// <summary>Gibt die Farbe als "#RRGGBB" in Großbuchstaben zurück; ungültige Werte ergeben <paramref name="fallback"/>.</summary>
@@ -75,9 +85,24 @@ public sealed record AppSettings
     }
 }
 
+/// <summary>Animation beim Überfahren eines Symbols.</summary>
+public enum HoverEffect
+{
+    None,
+    Zoom,
+    Hop,
+    Swing,
+    Wiggle,
+    Pulse,
+}
+
 public sealed class SettingsStore
 {
-    private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        WriteIndented = true,
+        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() },
+    };
     private readonly ILogger _logger;
 
     public SettingsStore(string filePath, ILogger<SettingsStore>? logger = null)

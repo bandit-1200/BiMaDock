@@ -25,6 +25,12 @@
             <Slider x:Name="FlowDuration" Style="{StaticResource DialogSliderStyle}" Minimum="200" Maximum="1500" TickFrequency="20"
                     IsEnabled="{Binding IsChecked, ElementName=FlowEnabled}" />
 
+            <TextBlock Text="Symbole" FontWeight="SemiBold" Margin="0,22,0,2" />
+            <CheckBox x:Name="ShowLabels" Content="Namen unter den Symbolen anzeigen" Style="{StaticResource DialogCheckBoxStyle}" Margin="0,8,0,0" />
+            <TextBlock Text="Animation beim Überfahren" Style="{StaticResource DialogLabelStyle}" />
+            <WrapPanel x:Name="HoverEffects" Margin="0,4,0,0" />
+            <CheckBox x:Name="LaunchBounce" Content="Symbol hüpft beim Starten" Style="{StaticResource DialogCheckBoxStyle}" Margin="0,10,0,0" />
+
             <CheckBox x:Name="Autostart" Content="Mit Windows starten" Style="{StaticResource DialogCheckBoxStyle}" Margin="0,16,0,0" />
 
             <TextBlock Text="Farben" FontWeight="SemiBold" Margin="0,22,0,2" />

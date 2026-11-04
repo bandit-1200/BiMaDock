@@ -28,6 +28,8 @@ public static class ThemeService
 
         var feedback = Parse(settings.FeedbackColor);
         resources["DropFeedbackColor"] = Color.FromArgb(alpha, feedback.R, feedback.G, feedback.B);
+        resources["LabelVisibility"] = settings.ShowLabels ? Visibility.Visible : Visibility.Collapsed;
+        BiMaDock.Views.ItemAnimations.Configure(settings);
     }
 
     public static Color Parse(string hex) => (Color)ColorConverter.ConvertFromString(hex);

@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using BiMaDock.Core.Settings;
 
 namespace BiMaDock.Views;
@@ -14,7 +16,18 @@ public partial class SettingsDialog : DialogWindow
     private readonly ColorField _borderColor;
     private readonly ColorField _accentColor;
     private readonly ColorField _feedbackColor;
+    private static readonly (HoverEffect Effect, string Label)[] Effects =
+    [
+        (HoverEffect.None, "Keine"),
+        (HoverEffect.Zoom, "Vergrößern"),
+        (HoverEffect.Hop, "Hüpfen"),
+        (HoverEffect.Swing, "Schaukeln"),
+        (HoverEffect.Wiggle, "Wackeln"),
+        (HoverEffect.Pulse, "Pulsieren"),
+    ];
+
     private readonly Action<AppSettings> _preview;
+    private HoverEffect _hoverEffect;
     private bool _loading;
 
     private SettingsDialog(AppSettings settings, bool autostart, Action<AppSettings> preview)
@@ -31,6 +44,27 @@ public partial class SettingsDialog : DialogWindow
         _feedbackColor = new ColorField(FeedbackPresets, settings.FeedbackColor);
         FeedbackColorHost.Content = _feedbackColor;
 
+        foreach (var (effect, label) in Effects)
+        {
+            var chip = new Border
+            {
+                Tag = effect,
+                CornerRadius = new CornerRadius(6),
+                BorderThickness = new Thickness(1.5),
+                Padding = new Thickness(10, 5, 10, 5),
+                Margin = new Thickness(0, 0, 6, 6),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Child = new TextBlock { Text = label, Foreground = Brushes.White },
+            };
+            chip.MouseLeftButtonDown += (_, e) =>
+            {
+                e.Handled = true;
+                SelectEffect(effect);
+                Preview();
+            };
+            HoverEffects.Children.Add(chip);
+        }
+
         Apply(settings);
         Autostart.IsChecked = autostart;
 
@@ -40,6 +74,8 @@ public partial class SettingsDialog : DialogWindow
         }
 
         DockOpacity.ValueChanged += (_, _) => Preview();
+        ShowLabels.Click += (_, _) => Preview();
+        LaunchBounce.Click += (_, _) => Preview();
     }
 
     private AppSettings Result => new()
@@ -53,6 +89,9 @@ public partial class SettingsDialog : DialogWindow
         BorderColor = _borderColor.Value,
         AccentColor = _accentColor.Value,
         FeedbackColor = _feedbackColor.Value,
+        ShowLabels = ShowLabels.IsChecked == true,
+        HoverEffect = _hoverEffect,
+        LaunchBounce = LaunchBounce.IsChecked == true,
     };
 
     /// <summary>
@@ -83,8 +122,23 @@ public partial class SettingsDialog : DialogWindow
         _borderColor.Value = settings.BorderColor;
         _accentColor.Value = settings.AccentColor;
         _feedbackColor.Value = settings.FeedbackColor;
+        ShowLabels.IsChecked = settings.ShowLabels;
+        LaunchBounce.IsChecked = settings.LaunchBounce;
+        SelectEffect(settings.HoverEffect);
         _loading = false;
         Preview();
+    }
+
+    private void SelectEffect(HoverEffect effect)
+    {
+        _hoverEffect = effect;
+        var accent = (Brush)FindResource("AccentBrush");
+        foreach (Border chip in HoverEffects.Children)
+        {
+            bool selected = (HoverEffect)chip.Tag == effect;
+            chip.BorderBrush = selected ? accent : new SolidColorBrush(Color.FromArgb(0x40, 0xFF, 0xFF, 0xFF));
+            chip.Background = selected ? new SolidColorBrush(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF)) : Brushes.Transparent;
+        }
     }
 
     private void Preview()

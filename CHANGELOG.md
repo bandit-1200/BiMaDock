@@ -4,6 +4,9 @@
 
 ### Neuigkeiten
 
+- Namen unter den Symbolen (abschaltbar in den Einstellungen)
+- Hover-Animationen wählbar: Keine, Vergrößern, Hüpfen, Schaukeln, Wackeln, Pulsieren
+- Symbol hüpft beim Starten (abschaltbar)
 - Neuentwicklung auf .NET 10 mit MVVM, Dependency Injection und Dateiprotokoll
 - Hauptdock am oberen Bildschirmrand mit automatischem Ein- und Ausblenden
 - Kategorie-Dock klappt animiert unter dem Kategorie-Symbol auf; die geöffnete Kategorie ist markiert
