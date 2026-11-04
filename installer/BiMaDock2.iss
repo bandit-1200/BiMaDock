@@ -35,6 +35,7 @@ WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\BiMaDock.exe
+SetupIconFile=..\src\BiMaDock\BiMaDock.ico
 ; Laufende Instanz vor dem Überschreiben schließen
 CloseApplications=yes
 RestartApplications=no
