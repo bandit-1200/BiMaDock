@@ -92,3 +92,33 @@ footer { border-top: 1px solid var(--border); color: var(--muted); font-size: .9
     .dock img { width: 30px; height: 30px; }
     nav { gap: 2px 12px; }
 }
+
+/* Trenner im Beispiel-Dock */
+.dock .sep { width: 2px; height: 34px; margin: 0 4px 7px; border-radius: 1px; background: rgba(255, 255, 255, .35); }
+
+/* Drei Gründe */
+.grid.three { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+/* Themes: kleine Docks in den Farben der mitgelieferten Themes */
+.themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; margin: 24px 0; }
+.themes figure { margin: 0; text-align: center; color: var(--muted); font-size: .9rem; }
+.mini {
+    position: relative; height: 46px; margin: 0 auto 8px; max-width: 150px;
+    background: var(--d); border: 1px solid var(--b); border-top: 0; border-radius: 0 0 12px 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
+    background-image:
+        radial-gradient(circle at 22% 45%, rgba(255, 255, 255, .55) 0 9px, transparent 10px),
+        radial-gradient(circle at 41% 45%, rgba(255, 255, 255, .55) 0 9px, transparent 10px),
+        radial-gradient(circle at 60% 45%, rgba(255, 255, 255, .55) 0 9px, transparent 10px),
+        radial-gradient(circle at 79% 45%, rgba(255, 255, 255, .55) 0 9px, transparent 10px);
+}
+.mini.light { background-image:
+        radial-gradient(circle at 22% 45%, rgba(0, 0, 0, .35) 0 9px, transparent 10px),
+        radial-gradient(circle at 41% 45%, rgba(0, 0, 0, .35) 0 9px, transparent 10px),
+        radial-gradient(circle at 60% 45%, rgba(0, 0, 0, .35) 0 9px, transparent 10px),
+        radial-gradient(circle at 79% 45%, rgba(0, 0, 0, .35) 0 9px, transparent 10px); }
+.mini::after { content: ""; position: absolute; left: calc(60% - 2px); bottom: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--a); }
+
+/* Abschluss */
+.hero.closing { padding: 56px 0; }
+.hero.closing h2 { margin-bottom: 8px; }

@@ -4,7 +4,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using BiMaDock.Core.Settings;
+using Ellipse = System.Windows.Shapes.Ellipse;
 using BiMaDock.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace BiMaDock.Views;
 
@@ -49,6 +52,9 @@ public partial class SettingsDialog : DialogWindow
     private readonly ChipGroup<SlideStyle> _slideStyle;
     private readonly IconService _icons;
     private readonly Action<AppSettings> _preview;
+    private readonly ThemeStore _themes;
+    private readonly ILogger<SettingsDialog> _logger;
+    private List<(DockTheme Theme, Border Card)> _themeCards = [];
     private HoverTuningMap _tunings = [];
     private bool _loading;
 
@@ -56,6 +62,9 @@ public partial class SettingsDialog : DialogWindow
     {
         _preview = preview;
         _icons = icons;
+        var services = ((App)Application.Current).Services;
+        _themes = services.GetRequiredService<ThemeStore>();
+        _logger = services.GetRequiredService<ILogger<SettingsDialog>>();
         InitializeComponent();
 
         _dockColor = new ColorField(DockPresets, settings.DockColor);
@@ -75,6 +84,7 @@ public partial class SettingsDialog : DialogWindow
         _updateMode = new ChipGroup<UpdateMode>(UpdateModes, UpdateChoices, Preview);
         VersionInfo.Text = $"Installiert: BiMaDock {UpdateService.CurrentVersion}. Updates kommen von github.com/{BiMaDock.Core.Updates.UpdateChecker.Repository}.";
 
+        BuildThemeCards();
         Apply(settings);
         Autostart.IsChecked = autostart;
         UpdateLibraryInfo();
@@ -203,8 +213,188 @@ public partial class SettingsDialog : DialogWindow
             UpdateMode.Notify => "Kurz nach dem Start und alle 6 Stunden wird gesucht. Gibt es eine neue Version, wirst du gefragt.",
             _ => "Kurz nach dem Start und alle 6 Stunden wird gesucht. Neue Versionen werden ohne Nachfrage installiert, das Dock startet danach neu.",
         };
-        _preview(Result.Normalized());
+        var current = Result.Normalized();
+        MarkActiveTheme(current);
+        _preview(current);
     }
+
+    // ---------- Themes ----------
+
+    /// <summary>Karten für alle Themes: Mini-Dock in den Farben des Themes, Name und Beschreibung.</summary>
+    private void BuildThemeCards()
+    {
+        ThemeCards.Children.Clear();
+        _themeCards = [];
+        foreach (var theme in _themes.LoadAll())
+        {
+            var card = CreateThemeCard(theme);
+            _themeCards.Add((theme, card));
+            ThemeCards.Children.Add(card);
+        }
+    }
+
+    private Border CreateThemeCard(DockTheme theme)
+    {
+        var look = theme.Look;
+        var dock = new Border
+        {
+            Background = Brush(look.DockColor, look.DockOpacity / 100.0),
+            BorderBrush = Brush(look.BorderColor, 0.35),
+            BorderThickness = new Thickness(1, 0, 1, 1),
+            CornerRadius = new CornerRadius(0, 0, 10, 10),
+            Padding = new Thickness(6, 5, 6, 5),
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        var icons = new StackPanel { Orientation = Orientation.Horizontal };
+        for (int i = 0; i < 4; i++)
+        {
+            var slot = new Grid { Width = 26, Height = 26, Margin = new Thickness(1, 0, 1, 0) };
+            if (i == 1)
+            {
+                slot.Children.Add(new Border { CornerRadius = new CornerRadius(6), Background = Brush(look.HoverColor, Math.Max(look.HoverOpacity, 8) / 100.0) });
+            }
+
+            slot.Children.Add(new Border { Width = 16, Height = 16, CornerRadius = new CornerRadius(4), Background = Brush("#FFFFFF", 0.55) });
+            if (i == 2)
+            {
+                slot.Children.Add(new Ellipse { Width = 4, Height = 4, VerticalAlignment = VerticalAlignment.Bottom, Fill = Brush(look.AccentColor, 1) });
+            }
+
+            icons.Children.Add(slot);
+        }
+
+        dock.Child = icons;
+        var content = new StackPanel();
+        content.Children.Add(dock);
+        content.Children.Add(new TextBlock { Text = theme.Name, Foreground = Brushes.White, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 8, 0, 0) });
+        content.Children.Add(new TextBlock
+        {
+            Text = theme.IsBuiltIn ? theme.Description : "Eigenes Theme",
+            Foreground = Brush("#FFFFFF", 0.6),
+            FontSize = 11,
+            TextWrapping = TextWrapping.Wrap,
+        });
+
+        var grid = new Grid();
+        grid.Children.Add(content);
+        if (!theme.IsBuiltIn)
+        {
+            var delete = new Button
+            {
+                Content = "✕",
+                ToolTip = "Theme löschen",
+                Style = (Style)FindResource("DialogButtonStyle"),
+                MinWidth = 0,
+                Padding = new Thickness(6, 1, 6, 1),
+                Margin = new Thickness(0),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Bottom,
+            };
+            delete.Click += (_, e) =>
+            {
+                e.Handled = true;
+                DeleteTheme(theme);
+            };
+            grid.Children.Add(delete);
+        }
+
+        var card = new Border
+        {
+            Width = 170,
+            Margin = new Thickness(0, 0, 10, 10),
+            Padding = new Thickness(10),
+            CornerRadius = new CornerRadius(10),
+            BorderThickness = new Thickness(1.5),
+            Background = Brush("#FFFFFF", 0.05),
+            Cursor = Cursors.Hand,
+            Child = grid,
+            ToolTip = theme.IsBuiltIn ? null : "Eigenes Theme, liegt im Themes-Ordner",
+        };
+        card.MouseLeftButtonUp += (_, _) => Apply(theme.ApplyTo(Result));
+        return card;
+    }
+
+    private void MarkActiveTheme(AppSettings current)
+    {
+        var accent = (Brush)FindResource("AccentBrush");
+        foreach (var (theme, card) in _themeCards)
+        {
+            card.BorderBrush = theme.Matches(current) ? accent : Brush("#FFFFFF", 0.12);
+        }
+    }
+
+    private void SaveTheme_Click(object sender, RoutedEventArgs e)
+    {
+        string? name = InputDialog.Ask(this, "Theme speichern", "Name des Themes:", "Mein Theme")?.Trim();
+        if (string.IsNullOrEmpty(name))
+        {
+            return;
+        }
+
+        if (ThemeStore.IsBuiltInName(name))
+        {
+            MessageBox.Show(this, $"„{name}“ ist ein mitgeliefertes Theme. Bitte wähle einen anderen Namen.", "BiMaDock", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (_themes.LoadUserThemes().Any(t => t.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase))
+            && MessageBox.Show(this, $"Ein Theme „{name}“ gibt es schon. Überschreiben?", "BiMaDock", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            _themes.Save(DockTheme.FromSettings(name, Result.Normalized()));
+            _logger.LogInformation("Theme {Name} gespeichert", name);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogError(ex, "Theme {Name} konnte nicht gespeichert werden", name);
+            MessageBox.Show(this, $"Das Theme konnte nicht gespeichert werden:\n{ex.Message}", "BiMaDock", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        BuildThemeCards();
+        MarkActiveTheme(Result.Normalized());
+    }
+
+    private void DeleteTheme(DockTheme theme)
+    {
+        if (MessageBox.Show(this, $"Theme „{theme.Name}“ löschen?", "BiMaDock", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            _themes.Delete(theme.Name);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogError(ex, "Theme {Name} konnte nicht gelöscht werden", theme.Name);
+            MessageBox.Show(this, $"Das Theme konnte nicht gelöscht werden:\n{ex.Message}", "BiMaDock", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        BuildThemeCards();
+        MarkActiveTheme(Result.Normalized());
+    }
+
+    private void OpenThemeFolder_Click(object sender, RoutedEventArgs e)
+    {
+        Directory.CreateDirectory(_themes.Directory);
+        Process.Start(new ProcessStartInfo("explorer.exe", $"\"{_themes.Directory}\"") { UseShellExecute = true });
+    }
+
+    private static SolidColorBrush Brush(string hex, double opacity)
+    {
+        var color = (Color)ColorConverter.ConvertFromString(hex);
+        color.A = (byte)Math.Round(Math.Clamp(opacity, 0, 1) * 255);
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
+
 
     /// <summary>Effekt gewechselt: dessen eigene Werte in die Regler laden.</summary>
     private void ShowHoverValues()

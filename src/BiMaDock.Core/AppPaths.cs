@@ -20,6 +20,9 @@ public static class AppPaths
 
     public static string LogDirectory => Path.Combine(DataDirectory, "logs");
 
+    /// <summary>Eigene Themes (je eine JSON-Datei, lässt sich weitergeben).</summary>
+    public static string ThemeDirectory => Path.Combine(DataDirectory, "Themes");
+
     /// <summary>Zwischenspeicher für Programmsymbole, damit der Start nicht jedes Mal Windows fragen muss.</summary>
     public static string IconCacheDirectory => Path.Combine(DataDirectory, "IconCache");
 

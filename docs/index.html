@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BiMaDock</title>
-    <meta name="description" content="BiMaDock ist eine kostenlose Dock-Leiste für Windows: Programme, Dateien, Ordner und Weblinks griffbereit am oberen Bildschirmrand, mit Kategorien, Lupe und Animationen.">
-    <meta name="keywords" content="BiMaDock, Dock, Dock-Leiste, Windows, Launcher, Taskleiste, Programme organisieren, WPF, Open Source">
+    <title>BiMaDock: Die Dock-Leiste für Windows</title>
+    <meta name="description" content="BiMaDock ist die kostenlose Dock-Leiste für Windows: Programme, Dateien, Ordner und Weblinks mit einem Klick, Kategorien, die wie Wasser herausfließen, Lupe, Themes und Admin-Start. Open Source.">
+    <meta name="keywords" content="BiMaDock, Dock, Dock-Leiste, Windows Dock, Mac Dock für Windows, Launcher, Programmstarter, Taskleiste, Themes, Open Source">
     <meta name="author" content="Marco Bilz">
     <meta name="robots" content="index, follow">
     <meta name="google-site-verification" content="2zbRK0cQwCiJZFBsKsmkLf4F6o8izQGLYcztjpDA8HA" />
-    <meta property="og:title" content="BiMaDock 2: Dock-Leiste für Windows">
-    <meta property="og:description" content="Programme, Dateien, Ordner und Weblinks griffbereit am oberen Bildschirmrand. Kostenlos und Open Source.">
+    <meta property="og:title" content="BiMaDock: Die Dock-Leiste, die Windows gefehlt hat">
+    <meta property="og:description" content="Unsichtbar, bis du sie brauchst. Ein Klick, und alles startet. Kostenlos und Open Source.">
     <meta property="og:url" content="https://bandit-1200.github.io/BiMaDock/">
     <meta property="og:type" content="website">
     <link rel="icon" href="img/BiMaDock_V3.ico" type="image/x-icon">
@@ -21,10 +21,11 @@
     <div class="wrap bar">
         <a class="brand" href="#start"><img src="img/BiMaDock_V3.ico" alt=""> BiMaDock</a>
         <nav>
+            <a href="#warum">Warum</a>
             <a href="#funktionen">Funktionen</a>
+            <a href="#themes">Themes</a>
             <a href="#animationen">Animationen</a>
             <a href="#installation">Installation</a>
-            <a href="#umstieg">Umstieg</a>
             <a href="#fragen">Fragen</a>
             <a href="https://github.com/bandit-1200/BiMaDock">GitHub</a>
         </nav>
@@ -35,39 +36,76 @@
 <section id="start" class="hero">
     <div class="wrap">
         <div class="dock" aria-hidden="true">
-            <img src="img/icons/ordner.png" alt=""><img src="img/icons/web.png" alt=""><img src="img/icons/musik.png" alt=""><img class="big" src="img/icons/code.png" alt=""><img src="img/icons/haus.png" alt=""><img src="img/icons/server.png" alt=""><img src="img/icons/ki.png" alt=""><img src="img/icons/einstellungen.png" alt="">
+            <img src="img/icons/ordner.png" alt=""><img src="img/icons/web.png" alt=""><img src="img/icons/musik.png" alt=""><span class="sep"></span><img class="big" src="img/icons/code.png" alt=""><img src="img/icons/haus.png" alt=""><span class="sep"></span><img src="img/icons/server.png" alt=""><img src="img/icons/ki.png" alt=""><img src="img/icons/einstellungen.png" alt="">
         </div>
-        <h1>Deine Programme. Immer oben griffbereit.</h1>
-        <p class="lead">BiMaDock ist eine Dock-Leiste für Windows. Sie wartet unsichtbar am oberen Bildschirmrand, kommt bei Mausberührung hervor und startet Programme, Dateien, Ordner und Weblinks mit einem Klick.</p>
+        <h1>Die Dock-Leiste, die Windows gefehlt hat.</h1>
+        <p class="lead">Unsichtbar, bis du sie brauchst. Ein Stups an den oberen Bildschirmrand, und all deine Programme, Ordner, Dateien und Webseiten gleiten herein. Ein Klick, und du bist da. Kein Suchen im Startmenü, kein Desktop voller Verknüpfungen, keine überladene Taskleiste.</p>
         <div class="cta">
-            <a class="btn primary" href="https://github.com/bandit-1200/BiMaDock/releases/latest">Herunterladen</a>
-            <a class="btn" href="https://github.com/bandit-1200/BiMaDock">Quellcode ansehen</a>
+            <a class="btn primary" href="https://github.com/bandit-1200/BiMaDock/releases/latest">Jetzt kostenlos herunterladen</a>
+            <a class="btn" href="#funktionen">Was kann es?</a>
         </div>
-        <p class="small">Version 2 · Windows 10 und 11 · kostenlos · MIT-Lizenz</p>
+        <p class="small">Windows 10 und 11 · kostenlos, ohne Werbung, ohne Konto · Open Source (MIT)</p>
+    </div>
+</section>
+
+<section id="warum" class="alt">
+    <div class="wrap">
+        <h2>Warum du BiMaDock willst</h2>
+        <div class="grid three">
+            <article><h3>Schneller an allem</h3><p>Deine wichtigsten Programme, Server-Verbindungen, Projektordner und Webseiten liegen genau da, wo deine Maus ohnehin hinfährt: oben. Ein Griff statt fünf Klicks.</p></article>
+            <article><h3>Aufgeräumter Bildschirm</h3><p>Das Dock nimmt keinen Platz weg. Es verschwindet von selbst und kommt nur, wenn du es rufst. Vollbild-Apps wie Remotedesktop, Spiele und Videos stört es nie.</p></article>
+            <article><h3>Macht einfach Spaß</h3><p>Symbole wachsen unter der Maus wie beim Mac, Kategorien fließen wie Wasser aus dem Dock, neue Einträge ploppen herein. Jedes Detail ist animiert, und jede Animation gehört dir.</p></article>
+        </div>
     </div>
 </section>
 
 <section id="funktionen">
     <div class="wrap">
         <h2>Funktionen</h2>
+        <p>Alles, was ein Dock können muss, und einiges, was andere nicht können.</p>
         <div class="grid">
-            <article><h3>Blendet sich aus</h3><p>Das Dock verschwindet, wenn du es nicht brauchst, und gleitet beim Berühren des oberen Rands wieder herein. Verzögerung und Bewegung stellst du selbst ein.</p></article>
-            <article><h3>Kategorien</h3><p>Fasse Einträge in Kategorien zusammen. Ein Klick lässt das Kategorie-Dock wie Wasser aus dem Hauptdock herausfließen.</p></article>
-            <article><h3>Drag &amp; Drop</h3><p>Ziehe Dateien, Ordner, Verknüpfungen oder Links aus Explorer und Browser ins Dock. Verschieben geht mit animierter Lücke, auch zwischen Haupt- und Kategorie-Dock.</p></article>
+            <article><h3>Blendet sich aus</h3><p>Verschwindet, wenn du es nicht brauchst, und gleitet beim Berühren des oberen Rands wieder herein. Verzögerung und Bewegung stellst du selbst ein.</p></article>
+            <article><h3>Kategorien, die fließen</h3><p>Fasse Programme in Kategorien zusammen. Ein Klick, und das Kategorie-Dock quillt wie Wasser unter dem Hauptdock hervor. Das gibt es so nur hier.</p></article>
+            <article><h3>Drag &amp; Drop überall</h3><p>Ziehe Dateien, Ordner, Verknüpfungen oder Links aus Explorer und Browser ins Dock. Verschieben mit animierter Lücke, auch zwischen Haupt- und Kategorie-Dock.</p></article>
+            <article><h3>Dateien direkt öffnen</h3><p>Ziehe eine Datei auf ein Programm im Dock, und sie öffnet sich darin. Das Textdokument auf den Editor, das Bild auf die Bildbearbeitung, fertig.</p></article>
+            <article><h3>Als Administrator starten</h3><p>Per Rechtsklick einmalig mit Adminrechten starten, oder fest für einen Eintrag einstellen. Dazu Startparameter und Arbeitsordner, ideal für Remotedesktop, SSH und Skripte.</p></article>
+            <article><h3>Trenner</h3><p>Schmale Striche gliedern dein Dock in Gruppen. Einfügen per Rechtsklick, verschieben wie ein Symbol, wegziehen zum Löschen.</p></article>
             <article><h3>Lupe</h3><p>Das Symbol unter der Maus wächst, die Nachbarn wachsen abgestuft mit. Größe, Reichweite und Reaktionszeit sind einstellbar.</p></article>
-            <article><h3>Symbolbibliothek</h3><p>98 eigene Symbole in 8 Kategorien, mit Suche. Eigene Bilder fügst du per Dialog oder Ziehen hinzu.</p></article>
-            <article><h3>Farben nach Wunsch</h3><p>Dock-Farbe, Deckkraft, Rand und Akzent wählst du aus Farbfeldern oder per Hex-Wert. Jede Änderung siehst du sofort am Dock.</p></article>
-            <article><h3>Aufräumen</h3><p>Findet Einträge, deren Ziel fehlt, nicht erreichbare Netzwerk- oder USB-Pfade und leere Kategorien.</p></article>
-            <article><h3>Rückgängig</h3><p>Entfernen, Bearbeiten, Verschieben und Aufräumen lassen sich bis zu 20 Schritte zurücknehmen.</p></article>
-            <article><h3>Updates</h3><p>BiMaDock sucht selbst nach neuen Versionen und fragt dich oder installiert still, ganz wie du willst.</p></article>
+            <article><h3>Scharfe Symbole</h3><p>Jedes Programm bekommt ein großes, sauberes Symbol, gleich groß wie alle anderen. Keine Mini-Symbole im grauen Kasten mehr. Dazu 98 eigene Symbole in 8 Kategorien.</p></article>
+            <article><h3>Themes</h3><p>Acht fertige Looks mit einem Klick, oder dein eigener: Farben und Effekte einstellen, als Theme speichern, weitergeben.</p></article>
+            <article><h3>Aufräumen</h3><p>Findet Einträge, deren Ziel fehlt, doppelte Einträge, nicht erreichbare Netzwerkpfade und leere Kategorien. Fehlende Ziele erkennst du schon vorher am blassen Symbol.</p></article>
+            <article><h3>Rückgängig</h3><p>Entfernen, Bearbeiten, Verschieben und Aufräumen lassen sich bis zu 20 Schritte zurücknehmen. Ausprobieren ohne Angst.</p></article>
+            <article><h3>Immer aktuell</h3><p>BiMaDock sucht selbst nach neuen Versionen und fragt dich oder installiert still, ganz wie du willst. Neue Umgebungsvariablen übernimmt es ohne Neustart.</p></article>
         </div>
     </div>
 </section>
 
-<section id="animationen" class="alt">
+<section id="themes" class="alt">
+    <div class="wrap">
+        <h2>Themes: dein Dock, dein Stil</h2>
+        <p>Ein Klick in den Einstellungen, und dein Dock sieht komplett anders aus. Ein Theme bestimmt Farben, Deckkraft, Hover-Effekt, Lupe und Animationen. Deine Verzögerungen und Update-Einstellungen bleiben dabei, wie sie sind.</p>
+        <div class="themes" aria-hidden="true">
+            <figure><div class="mini" style="--d:#2A2A30;--b:#FFFFFF55;--a:#4CC2FF"></div><figcaption>Standard</figcaption></figure>
+            <figure><div class="mini" style="--d:#141B2D;--b:#4CC2FF66;--a:#38E1D6"></div><figcaption>Mitternacht</figcaption></figure>
+            <figure><div class="mini" style="--d:#1A1A1D;--b:#00000099;--a:#FFFFFF"></div><figcaption>Graphit</figcaption></figure>
+            <figure><div class="mini light" style="--d:#E8E8ECC7;--b:#FFFFFF;--a:#2A7FB8"></div><figcaption>Milchglas</figcaption></figure>
+            <figure><div class="mini" style="--d:#1E3A2B;--b:#6CCB5F66;--a:#6CCB5F"></div><figcaption>Wald</figcaption></figure>
+            <figure><div class="mini" style="--d:#4A2B22;--b:#FF8C0066;--a:#FF8C00"></div><figcaption>Sonnenuntergang</figcaption></figure>
+            <figure><div class="mini" style="--d:#0D0D12;--b:#FF5C8A88;--a:#FF5C8A"></div><figcaption>Neon</figcaption></figure>
+            <figure><div class="mini" style="--d:#2A2A30;--b:#FFFFFF33;--a:#4CC2FF"></div><figcaption>Minimal</figcaption></figure>
+        </div>
+        <ul class="list">
+            <li><strong>Eigene Themes:</strong> Stell alles nach deinem Geschmack ein und speichere es unter einem eigenen Namen.</li>
+            <li><strong>Teilen:</strong> Jedes eigene Theme ist eine kleine Datei im Themes-Ordner. Schick sie an Freunde oder nimm sie auf den nächsten PC mit.</li>
+            <li><strong>Live-Vorschau:</strong> Du siehst jede Änderung sofort am Dock. Gefällt es nicht, stellt „Abbrechen“ alles wieder her.</li>
+        </ul>
+    </div>
+</section>
+
+<section id="animationen">
     <div class="wrap">
         <h2>Animationen</h2>
-        <p>Jede Animation lässt sich abschalten, und zu jeder gibt es eigene Regler.</p>
+        <p>Jede Animation lässt sich abschalten, und zu jeder gibt es eigene Regler. Du bestimmst, wie lebendig dein Dock ist.</p>
         <div class="demo" aria-hidden="true">
             <figure><img class="a-zoom" src="img/icons/ordner.png" alt=""><figcaption>Vergrößern</figcaption></figure>
             <figure><img class="a-hop" src="img/icons/web.png" alt=""><figcaption>Hüpfen</figcaption></figure>
@@ -84,39 +122,41 @@
     </div>
 </section>
 
-<section id="installation">
+<section id="installation" class="alt">
     <div class="wrap">
-        <h2>Installation</h2>
+        <h2>In einer Minute startklar</h2>
         <ol class="steps">
             <li>Lade <code>BiMaDock2-Setup-…exe</code> aus den <a href="https://github.com/bandit-1200/BiMaDock/releases/latest">Releases</a> herunter.</li>
-            <li>Zeigt Windows SmartScreen eine Warnung, klicke auf <em>Weitere Informationen</em> und dann auf <em>Trotzdem ausführen</em>. Das Setup ist nicht signiert, der Quellcode ist offen.</li>
-            <li>Wähle, ob du nur für dich (ohne Adminrechte) oder für alle Benutzer installierst, und ob eine Desktopverknüpfung angelegt werden soll. Den Start mit Windows schaltest du später in den Einstellungen ein.</li>
-            <li>Fertig. Das Dock erscheint oben in der Mitte. Rechtsklick öffnet das Menü mit Einstellungen, Symbolbibliothek und mehr.</li>
+            <li>Zeigt Windows SmartScreen eine Warnung, klicke auf <em>Weitere Informationen</em> und dann auf <em>Trotzdem ausführen</em>. Das Setup ist nicht signiert, der Quellcode ist offen einsehbar.</li>
+            <li>Wähle, ob du nur für dich (ohne Adminrechte) oder für alle Benutzer installierst. Den Start mit Windows schaltest du in den Einstellungen ein.</li>
+            <li>Fertig. Das Dock erscheint oben in der Mitte. Zieh deine Lieblingsprogramme hinein, Rechtsklick öffnet Einstellungen, Themes und mehr.</li>
         </ol>
         <p>Updates kommen danach von selbst. Einstellbar unter <em>Einstellungen → Updates</em>, manuell über <em>Nach Updates suchen …</em> im Kontextmenü.</p>
-    </div>
-</section>
-
-<section id="umstieg" class="alt">
-    <div class="wrap">
-        <h2>Umstieg von BiMaDock 1</h2>
-        <p>Version 2 ist komplett neu entwickelt. Du verlierst beim Wechsel nichts:</p>
-        <ul class="list">
-            <li>Deine Einträge und Kategorien werden beim ersten Start übernommen.</li>
-            <li>Symbole der alten Version landen in deinen eigenen Symbolen unter <em>Altes Dock</em>.</li>
-            <li>Danach wird das alte Dock beendet, sein Autostart entfernt und es still deinstalliert.</li>
-        </ul>
-        <p>Die alte Version findest du weiterhin auf dem Branch <a href="https://github.com/bandit-1200/BiMaDock/tree/legacy-v1"><code>legacy-v1</code></a>.</p>
+        <h3>Umstieg von BiMaDock 1</h3>
+        <p>Version 2 ist komplett neu entwickelt, und du verlierst nichts: Einträge, Kategorien und Symbole werden beim ersten Start übernommen, danach wird die alte Version still entfernt. Die alte Version liegt weiterhin auf dem Branch <a href="https://github.com/bandit-1200/BiMaDock/tree/legacy-v1"><code>legacy-v1</code></a>.</p>
     </div>
 </section>
 
 <section id="fragen">
     <div class="wrap">
         <h2>Fragen</h2>
-        <details><summary>Wo liegen meine Daten?</summary><p>In <code>%LOCALAPPDATA%\BiMaDock2</code>: <code>dock.json</code> für das Dock, <code>logs\</code> für Protokolle. Rechtsklick → <em>Datenordner öffnen</em> bringt dich direkt hin.</p></details>
-        <details><summary>Kostet BiMaDock etwas?</summary><p>Nein. BiMaDock ist kostenlos und Open Source unter der MIT-Lizenz.</p></details>
+        <details><summary>Kostet BiMaDock etwas?</summary><p>Nein. BiMaDock ist kostenlos, ohne Werbung, ohne Konto und ohne Datensammlung. Open Source unter der MIT-Lizenz.</p></details>
+        <details><summary>Bremst das Dock meinen PC?</summary><p>Nein. Im Leerlauf braucht BiMaDock praktisch keine Rechenzeit. Symbole werden zwischengespeichert, damit der Start schnell geht, und Animationen laufen nur, solange du mit dem Dock arbeitest.</p></details>
+        <details><summary>Stört das Dock bei Vollbild, Spielen oder Remotedesktop?</summary><p>Nein. Sobald ein Programm im Vollbild läuft, tritt das Dock dahinter zurück und kommt erst wieder nach vorne, wenn du das Vollbild verlässt.</p></details>
+        <details><summary>Zeigt das Dock laufende Programme an?</summary><p>Nein, mit Absicht. Dafür hat Windows die Taskleiste. BiMaDock ist dein aufgeräumter Startplatz und bleibt dadurch ruhig und übersichtlich.</p></details>
+        <details><summary>Wo liegen meine Daten?</summary><p>In <code>%LOCALAPPDATA%\BiMaDock2</code>: <code>dock.json</code> für das Dock, <code>settings.json</code> für die Einstellungen, <code>Themes\</code> für eigene Themes, <code>logs\</code> für Protokolle. Rechtsklick → <em>Datenordner öffnen</em> bringt dich direkt hin.</p></details>
         <details><summary>Ich habe einen Fehler gefunden oder eine Idee.</summary><p>Gern als <a href="https://github.com/bandit-1200/BiMaDock/issues">Issue auf GitHub</a>. Hänge bei Fehlern am besten das Protokoll aus dem Datenordner an.</p></details>
         <details><summary>Wie werde ich BiMaDock wieder los?</summary><p>Über <em>Windows-Einstellungen → Apps</em>. Deine Daten im Datenordner bleiben erhalten, falls du es später wieder installierst.</p></details>
+    </div>
+</section>
+
+<section class="hero closing alt">
+    <div class="wrap">
+        <h2>Probier es aus. Du wirst es nicht mehr hergeben.</h2>
+        <p class="lead">Kostenlos, in einer Minute installiert und jederzeit wieder entfernbar.</p>
+        <div class="cta">
+            <a class="btn primary" href="https://github.com/bandit-1200/BiMaDock/releases/latest">BiMaDock herunterladen</a>
+        </div>
     </div>
 </section>
 </main>

@@ -7,7 +7,7 @@
         <StackPanel>
             <TextBlock Text="BiMaDock" Style="{StaticResource DialogTitleStyle}" HorizontalAlignment="Center" />
             <TextBlock x:Name="VersionText" Style="{StaticResource DialogHintStyle}" HorizontalAlignment="Center" Margin="0,4,0,0" />
-            <TextBlock Text="Dock-Leiste für Windows zum Ordnen von Programmen, Dateien, Ordnern und Weblinks."
+            <TextBlock Text="Die Dock-Leiste, die Windows gefehlt hat: Programme, Dateien, Ordner und Weblinks mit einem Klick."
                        Style="{StaticResource DialogHintStyle}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,14,0,0" />
             <TextBlock Text="Entwickler: Marco Bilz" Style="{StaticResource DialogLabelStyle}" HorizontalAlignment="Center" Margin="0,14,0,0" />
             <TextBlock Style="{StaticResource DialogLabelStyle}" HorizontalAlignment="Center" Margin="0,4,0,0">

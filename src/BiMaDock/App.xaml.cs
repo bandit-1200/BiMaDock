@@ -103,6 +103,7 @@ public partial class App : Application
         services.AddSingleton<IconService>();
         services.AddSingleton<StartupService>();
         services.AddSingleton<EnvironmentRefresher>();
+        services.AddSingleton(sp => new ThemeStore(AppPaths.ThemeDirectory, sp.GetRequiredService<ILogger<ThemeStore>>()));
         services.AddSingleton(new SettingsStore(AppPaths.SettingsFile));
         services.AddSingleton<ILauncher, ShellLauncher>();
         services.AddSingleton<UpdateService>();
