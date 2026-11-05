@@ -2,6 +2,7 @@
 
 ## Unveröffentlicht
 
+- Das Dock reagiert sofort, wenn ein Fenster ins Vollbild wechselt (z. B. RDP), statt bis zu einer halben Sekunde später. Windows meldet den Wechsel jetzt selbst, die regelmäßige Abfrage läuft nur noch alle 5 Sekunden zur Absicherung.
 - Einträge, deren Ziel nicht mehr existiert, werden blass angezeigt. Geprüft wird im Hintergrund beim Start und beim Einblenden, nicht erreichbare Netzlaufwerke zählen nicht als fehlend.
 - Gestartete Programme bekommen geänderte Umgebungsvariablen (z. B. PATH nach einer Installation) sofort, ohne das Dock neu zu starten.
 - Schnellerer Start: Programmsymbole werden im Datenordner unter IconCache zwischengespeichert. Ändert sich das Programm, wird das Symbol neu geholt.

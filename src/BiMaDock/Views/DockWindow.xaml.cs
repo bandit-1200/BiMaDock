@@ -108,10 +108,20 @@ public partial class DockWindow : Window
         HwndSource.FromHwnd(handle)?.AddHook(WndProc);
 
         // Liegt ein Vollbildfenster (z. B. RDP) im Vordergrund, tritt das Dock dahinter zurück.
-        var fullscreenTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        // Windows meldet Wechsel des Vordergrundfensters sofort. Die langsame Abfrage ist nur Absicherung,
+        // falls eine Meldung ausbleibt (oder die Benachrichtigung nicht eingerichtet werden konnte).
+        var watcher = new ForegroundWatcher(() => UpdateTopmost(handle));
+        var fullscreenTimer = new DispatcherTimer
+        {
+            Interval = watcher.IsActive ? TimeSpan.FromSeconds(5) : TimeSpan.FromMilliseconds(500),
+        };
         fullscreenTimer.Tick += (_, _) => UpdateTopmost(handle);
         fullscreenTimer.Start();
-        Closed += (_, _) => fullscreenTimer.Stop();
+        Closed += (_, _) =>
+        {
+            fullscreenTimer.Stop();
+            watcher.Dispose();
+        };
     }
 
     private const int WM_SETTINGCHANGE = 0x001A;
