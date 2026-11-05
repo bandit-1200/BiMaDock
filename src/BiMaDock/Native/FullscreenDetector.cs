@@ -8,9 +8,10 @@ internal static partial class FullscreenDetector
     private const uint MONITOR_DEFAULTTONULL = 0;
 
     /// <summary>True, wenn ein fremdes Vordergrundfenster den Monitor von <paramref name="ownWindow"/> komplett bedeckt.</summary>
-    public static bool IsForegroundFullscreen(IntPtr ownWindow)
+    public static bool IsForegroundFullscreen(IntPtr ownWindow, out IntPtr foreground, out string className)
     {
-        IntPtr foreground = GetForegroundWindow();
+        className = string.Empty;
+        foreground = GetForegroundWindow();
         if (foreground == IntPtr.Zero || foreground == ownWindow
             || foreground == GetShellWindow() || foreground == GetDesktopWindow())
         {
@@ -20,8 +21,8 @@ internal static partial class FullscreenDetector
         // Desktop-Hintergrund (Progman/WorkerW) zählt nicht als Vollbild.
         var buffer = new char[32];
         int length = GetClassName(foreground, buffer, buffer.Length);
-        var className = buffer.AsSpan(0, Math.Max(length, 0));
-        if (className.SequenceEqual("Progman") || className.SequenceEqual("WorkerW"))
+        className = new string(buffer, 0, Math.Max(length, 0));
+        if (className is "Progman" or "WorkerW")
         {
             return false;
         }
@@ -41,6 +42,18 @@ internal static partial class FullscreenDetector
         return rect.Left <= info.Monitor.Left && rect.Top <= info.Monitor.Top
             && rect.Right >= info.Monitor.Right && rect.Bottom >= info.Monitor.Bottom;
     }
+
+    /// <summary>Legt <paramref name="hwnd"/> in der Z-Reihenfolge direkt hinter <paramref name="above"/>, ohne es zu aktivieren.</summary>
+    public static void PlaceBehind(IntPtr hwnd, IntPtr above) =>
+        SetWindowPos(hwnd, above, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+
+    private const uint SWP_NOSIZE = 0x0001;
+    private const uint SWP_NOMOVE = 0x0002;
+    private const uint SWP_NOACTIVATE = 0x0010;
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct NativeRect

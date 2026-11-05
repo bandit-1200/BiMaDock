@@ -1,5 +1,9 @@
 # Versionsverlauf
 
+## 26.11.3
+
+- Das Dock bleibt jetzt wirklich hinter einer RDP-Sitzung oder einem anderen Vollbildfenster. In 26.11.2 hat es sich beim Zurücktreten wieder davor gelegt.
+
 ## 26.11.2
 
 - Liegt ein Vollbildfenster im Vordergrund (z. B. eine RDP-Sitzung, Spiel oder Video), tritt das Dock dahinter zurück und kommt erst wieder nach vorne, wenn das Vollbild verlassen wird.

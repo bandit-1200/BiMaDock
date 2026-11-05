@@ -12,6 +12,8 @@ using BiMaDock.Core.Settings;
 using BiMaDock.Native;
 using BiMaDock.Services;
 using BiMaDock.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
 namespace BiMaDock.Views;
@@ -111,17 +113,31 @@ public partial class DockWindow : Window
 
     private void UpdateTopmost(IntPtr handle)
     {
-        bool fullscreen = FullscreenDetector.IsForegroundFullscreen(handle);
-        if (fullscreen && Topmost)
+        bool fullscreen = FullscreenDetector.IsForegroundFullscreen(handle, out IntPtr foreground, out string className);
+        if (fullscreen)
         {
-            Topmost = false;
-            HideDock(animate: false);
+            if (Topmost)
+            {
+                Topmost = false;
+                HideDock(animate: false);
+                FullscreenLog.LogInformation("Vollbildfenster im Vordergrund ({Class}), Dock tritt zurück", className);
+            }
+
+            // Topmost = false hebt das Fenster an die Spitze der normalen Fenster, also wieder über das Vollbild.
+            // Deshalb ausdrücklich direkt hinter das Vollbildfenster legen.
+            FullscreenDetector.PlaceBehind(handle, foreground);
         }
-        else if (!fullscreen && !Topmost)
+        else if (!Topmost)
         {
             Topmost = true;
+            FullscreenLog.LogInformation("Kein Vollbild mehr, Dock wieder im Vordergrund");
         }
     }
+
+    private ILogger FullscreenLog => _fullscreenLog ??=
+        ((App)Application.Current).Services.GetRequiredService<ILogger<DockWindow>>();
+
+    private ILogger? _fullscreenLog;
 
     private void OnDisplaySettingsChanged(object? sender, EventArgs e) => Dispatcher.BeginInvoke(PlaceOnScreen);
 
