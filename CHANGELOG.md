@@ -1,6 +1,6 @@
 # Versionsverlauf
 
-## Unveröffentlicht
+## 26.11.4
 
 - Themes: acht mitgelieferte Looks (Standard, Mitternacht, Graphit, Milchglas, Wald, Sonnenuntergang, Neon, Minimal) im neuen Reiter "Themes" der Einstellungen. Ein Klick übernimmt Farben und Effekte, Verzögerungen und Updates bleiben. Eigene Themes speichern, löschen und als Datei aus dem Themes-Ordner weitergeben.
 - Website und README neu geschrieben, mit allen neuen Funktionen.
