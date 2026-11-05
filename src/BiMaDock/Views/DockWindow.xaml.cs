@@ -99,7 +99,28 @@ public partial class DockWindow : Window
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
-        WindowStyles.MakeToolWindow(new WindowInteropHelper(this).Handle);
+        IntPtr handle = new WindowInteropHelper(this).Handle;
+        WindowStyles.MakeToolWindow(handle);
+
+        // Liegt ein Vollbildfenster (z. B. RDP) im Vordergrund, tritt das Dock dahinter zurück.
+        var fullscreenTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        fullscreenTimer.Tick += (_, _) => UpdateTopmost(handle);
+        fullscreenTimer.Start();
+        Closed += (_, _) => fullscreenTimer.Stop();
+    }
+
+    private void UpdateTopmost(IntPtr handle)
+    {
+        bool fullscreen = FullscreenDetector.IsForegroundFullscreen(handle);
+        if (fullscreen && Topmost)
+        {
+            Topmost = false;
+            HideDock(animate: false);
+        }
+        else if (!fullscreen && !Topmost)
+        {
+            Topmost = true;
+        }
     }
 
     private void OnDisplaySettingsChanged(object? sender, EventArgs e) => Dispatcher.BeginInvoke(PlaceOnScreen);

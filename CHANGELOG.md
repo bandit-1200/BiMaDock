@@ -1,5 +1,9 @@
 # Versionsverlauf
 
+## 26.11.2
+
+- Liegt ein Vollbildfenster im Vordergrund (z. B. eine RDP-Sitzung, Spiel oder Video), tritt das Dock dahinter zurück und kommt erst wieder nach vorne, wenn das Vollbild verlassen wird.
+
 ## 26.11.1
 
 - Nach einem Update startet das Dock wieder von selbst. Das Setup hat den Schalter /UPDATE ohne Wert nicht erkannt.
