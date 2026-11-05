@@ -1,5 +1,16 @@
 # Versionsverlauf
 
+## Unveröffentlicht
+
+- Einträge, deren Ziel nicht mehr existiert, werden blass angezeigt. Geprüft wird im Hintergrund beim Start und beim Einblenden, nicht erreichbare Netzlaufwerke zählen nicht als fehlend.
+- Gestartete Programme bekommen geänderte Umgebungsvariablen (z. B. PATH nach einer Installation) sofort, ohne das Dock neu zu starten.
+- Schnellerer Start: Programmsymbole werden im Datenordner unter IconCache zwischengespeichert. Ändert sich das Programm, wird das Symbol neu geholt.
+- Trenner: Rechtsklick auf ein Symbol, "Trenner rechts einfügen" setzt einen schmalen senkrechten Strich zum Gruppieren, im Haupt- und im Kategorie-Dock. Trenner lassen sich wie Symbole verschieben und wachsen mit der Lupe in der Höhe mit. Einen Trenner aus dem Dock ziehen und loslassen entfernt ihn (Rückgängig stellt ihn wieder her). Aufräumen ignoriert sie.
+- Aufräumen findet doppelte Einträge: gleiches Ziel im selben Dock, der erste bleibt, die weiteren sind zum Entfernen vorausgewählt. Gleiche Einträge in verschiedenen Kategorien gelten als Absicht.
+- Symbole einheitlich groß und ohne hellen Kasten: Programme mit nur kleinen Symbolen (z. B. PuTTY) zeigte Windows klein in einem Rahmen. Durchsichtige Ränder werden abgeschnitten. Verknüpfungen, deren Symboldatei fehlt (z. B. MobaXterm), zeigen das Symbol des Programms statt eines leeren Blatts.
+- Einträge haben jetzt Startparameter, einen Arbeitsordner und "Als Administrator starten" (unter Bearbeiten). Zusätzlich startet "Als Administrator starten" im Rechtsklickmenü ein Programm einmalig mit Adminrechten.
+- Dateien aus dem Explorer auf ein Programm oder eine Verknüpfung im Dock ziehen öffnet sie damit. Neben dem Symbol abgelegt werden sie wie bisher als neuer Eintrag hinzugefügt.
+
 ## 26.11.3
 
 - Das Dock bleibt jetzt wirklich hinter einer RDP-Sitzung oder einem anderen Vollbildfenster. In 26.11.2 hat es sich beim Zurücktreten wieder davor gelegt.

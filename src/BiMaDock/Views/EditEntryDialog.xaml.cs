@@ -21,6 +21,9 @@ public partial class EditEntryDialog : DialogWindow
         TargetBox.Text = entry.Target;
         IconBox.Text = entry.IconPath ?? string.Empty;
         TargetPanel.Visibility = entry.IsCategory ? Visibility.Collapsed : Visibility.Visible;
+        ArgumentsBox.Text = entry.Arguments ?? string.Empty;
+        WorkingDirectoryBox.Text = entry.WorkingDirectory ?? string.Empty;
+        RunAsAdminBox.IsChecked = entry.RunAsAdmin;
         NameBox.TextChanged += Field_Changed;
         TargetBox.TextChanged += Field_Changed;
         Loaded += (_, _) =>
@@ -36,6 +39,9 @@ public partial class EditEntryDialog : DialogWindow
         Name = NameBox.Text.Trim(),
         Target = TargetBox.Text.Trim(),
         IconPath = string.IsNullOrWhiteSpace(IconBox.Text) ? null : IconBox.Text.Trim(),
+        Arguments = string.IsNullOrWhiteSpace(ArgumentsBox.Text) ? null : ArgumentsBox.Text.Trim(),
+        WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectoryBox.Text) ? null : WorkingDirectoryBox.Text.Trim(),
+        RunAsAdmin = RunAsAdminBox.IsChecked == true,
     };
 
     /// <summary>Gibt den geänderten Eintrag zurück, oder null bei Abbruch.</summary>
@@ -73,6 +79,15 @@ public partial class EditEntryDialog : DialogWindow
         if (dialog.ShowDialog(this) == true)
         {
             TargetBox.Text = dialog.FolderName;
+        }
+    }
+
+    private void BrowseWorkingDirectory_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog { Title = "Arbeitsordner wählen" };
+        if (dialog.ShowDialog(this) == true)
+        {
+            WorkingDirectoryBox.Text = dialog.FolderName;
         }
     }
 

@@ -32,6 +32,7 @@ public partial class DockWindow
     private ItemsControl? _gapControl;
     private int _gapIndex = -1;
     private DockItemViewModel? _dropIntoCategory;
+    private DockItemViewModel? _openWithTarget;
     private DispatcherTimer? _springTimer;
     private Border? _feedbackDock;
 
@@ -85,14 +86,18 @@ public partial class DockWindow
         container.Visibility = Visibility.Collapsed;
         SetGap(owner, index, animate: false);
 
-        _ghost = new DragGhost(item.Icon);
+        _ghost = new DragGhost(item.IsSeparator ? SeparatorGhostImage() : item.Icon);
         _ghost.Show();
         _ghost.FollowCursor();
         source.GiveFeedback += Source_GiveFeedback;
 
+        bool removeSeparator = false;
         try
         {
-            DragDrop.DoDragDrop(source, new DataObject(InternalFormat, item.Entry.Id.ToString()), DragDropEffects.Move);
+            var effect = DragDrop.DoDragDrop(source, new DataObject(InternalFormat, item.Entry.Id.ToString()), DragDropEffects.Move);
+
+            // Trenner aus dem Dock gezogen und losgelassen: entfernen (Rückgängig stellt ihn wieder her)
+            removeSeparator = item.IsSeparator && effect == DragDropEffects.None && !IsCursorOverDock();
         }
         finally
         {
@@ -102,11 +107,38 @@ public partial class DockWindow
             EndDragVisuals();
             _draggedItem = null;
             _draggedContainer = null;
+            if (removeSeparator)
+            {
+                _viewModel.RemoveEntry(item);
+            }
+
             if (!DockArea.IsMouseOver)
             {
                 _hideTimer.Start();
             }
         }
+    }
+
+    private bool IsCursorOverDock()
+    {
+        if (!BiMaDock.Native.WindowStyles.TryGetCursorPos(out int x, out int y))
+        {
+            return true; // im Zweifel nichts löschen
+        }
+
+        var p = DockArea.PointFromScreen(new Point(x, y));
+        return p.X >= 0 && p.Y >= 0 && p.X <= DockArea.ActualWidth && p.Y <= DockArea.ActualHeight;
+    }
+
+    /// <summary>Abbild beim Ziehen eines Trenners: heller senkrechter Strich in der Größe eines Symbols.</summary>
+    private static ImageSource SeparatorGhostImage()
+    {
+        var group = new DrawingGroup();
+        group.Children.Add(new GeometryDrawing(Brushes.Transparent, null, new RectangleGeometry(new Rect(0, 0, 52, 52))));
+        group.Children.Add(new GeometryDrawing(Brushes.White, null, new RectangleGeometry(new Rect(24, 6, 4, 40), 2, 2)));
+        var image = new DrawingImage(group);
+        image.Freeze();
+        return image;
     }
 
     private void Source_GiveFeedback(object sender, GiveFeedbackEventArgs e)
@@ -162,6 +194,19 @@ public partial class DockWindow
 
         SetDropFeedback(target == MainItemsControl ? MainDock : CategoryDock);
         var position = e.GetPosition(target);
+
+        // Dateien von außen auf ein Programm gezogen: damit öffnen statt als Eintrag hinzufügen
+        if (!isInternal && ReadDroppedFiles(e.Data).Count > 0
+            && ItemUnder(target, position, i => i.AcceptsFiles) is { } program)
+        {
+            SetDropIntoCategory(null);
+            SetGap(null, -1, animate: true);
+            SetOpenWith(program);
+            e.Effects = DragDropEffects.Copy;
+            return;
+        }
+
+        SetOpenWith(null);
         if (target == MainItemsControl && !draggingCategory && CategoryUnder(position) is { } category && category != _draggedItem)
         {
             SetDropIntoCategory(category);
@@ -195,6 +240,7 @@ public partial class DockWindow
     private void DockArea_Drop(object sender, DragEventArgs e)
     {
         e.Handled = true;
+        var openWith = _openWithTarget;
         var into = _dropIntoCategory;
         var gapControl = _gapControl;
         int gapIndex = _gapIndex;
@@ -203,6 +249,12 @@ public partial class DockWindow
         // Erst die Lücke schließen, dann die Daten ändern: das Element erscheint genau dort, wo die Lücke war.
         EndDragVisuals();
         _externalDragOver = false;
+
+        if (openWith is not null)
+        {
+            _viewModel.OpenFilesWith(openWith, ReadDroppedFiles(e.Data));
+            return;
+        }
 
         if (into is null && gapControl is null)
         {
@@ -244,6 +296,50 @@ public partial class DockWindow
 
         return index;
     }
+
+    /// <summary>Element unter der Maus (mittlerer Teil), das <paramref name="accepts"/> erfüllt.</summary>
+    private static DockItemViewModel? ItemUnder(ItemsControl control, Point position, Func<DockItemViewModel, bool> accepts)
+    {
+        foreach (var container in VisibleContainers(control))
+        {
+            if (container.DataContext is not DockItemViewModel item || !accepts(item))
+            {
+                continue;
+            }
+
+            double left = container.TranslatePoint(new Point(0, 0), control).X;
+            double width = container.ActualWidth;
+            if (position.X >= left + (width * 0.25) && position.X <= left + (width * 0.75))
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
+    private void SetOpenWith(DockItemViewModel? item)
+    {
+        if (_openWithTarget == item)
+        {
+            return;
+        }
+
+        if (_openWithTarget is not null)
+        {
+            _openWithTarget.IsDropTarget = false;
+        }
+
+        _openWithTarget = item;
+        if (item is not null)
+        {
+            item.IsDropTarget = true;
+        }
+    }
+
+    /// <summary>Echte Dateien aus dem Explorer (keine Weblinks).</summary>
+    private static List<string> ReadDroppedFiles(IDataObject data) =>
+        data.GetData(DataFormats.FileDrop) is string[] files ? [.. files.Where(f => !string.IsNullOrWhiteSpace(f))] : [];
 
     private DockItemViewModel? CategoryUnder(Point position)
     {
@@ -366,12 +462,15 @@ public partial class DockWindow
 
     private double SlotWidth(ItemsControl control)
     {
-        var sample = VisibleContainers(control).FirstOrDefault() ?? _draggedContainer;
+        // Lücke so breit wie das gezogene Element, sonst wie ein Symbol (nicht wie ein schmaler Trenner)
+        var sample = _draggedContainer
+            ?? VisibleContainers(control).FirstOrDefault(c => c.DataContext is DockItemViewModel { IsSeparator: false });
         return sample is { ActualWidth: > 0 } ? sample.ActualWidth : 68;
     }
 
     private void ClearDropTarget()
     {
+        SetOpenWith(null);
         SetDropFeedback(null);
         SetDropIntoCategory(null);
         SetGap(null, -1, animate: true);
@@ -379,6 +478,7 @@ public partial class DockWindow
 
     private void EndDragVisuals()
     {
+        SetOpenWith(null);
         SetDropFeedback(null);
         SetDropIntoCategory(null);
         _springTimer?.Stop();

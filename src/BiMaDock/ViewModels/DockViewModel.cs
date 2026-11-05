@@ -24,6 +24,8 @@ public sealed partial class DockViewModel : ObservableObject
     private readonly ILauncher _launcher;
     private readonly ILogger<DockViewModel> _logger;
     private DockLayout _layout = new();
+    private DateTime _lastTargetCheck = DateTime.MinValue;
+    private bool _targetCheckRunning;
 
     public DockViewModel(DockStore store, SettingsStore settingsStore, IconService icons, ILauncher launcher, ILogger<DockViewModel> logger)
     {
@@ -81,6 +83,7 @@ public sealed partial class DockViewModel : ObservableObject
         CategoryItems.Clear();
         Sync();
         _logger.LogInformation("{Count} Einträge geladen, davon {Main} im Hauptdock", _layout.Entries.Count, MainItems.Count);
+        _ = CheckTargetsAsync(force: true);
     }
 
     /// <summary>
@@ -104,12 +107,59 @@ public sealed partial class DockViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Prüft im Hintergrund, welche Ziele fehlen, und markiert sie. Höchstens alle 10 Sekunden (wird beim
+    /// Einblenden aufgerufen). Nicht erreichbare Netzlaufwerke gelten nicht als fehlend.
+    /// </summary>
+    public async Task CheckTargetsAsync(bool force = false)
+    {
+        if (_targetCheckRunning || (!force && DateTime.UtcNow - _lastTargetCheck < TimeSpan.FromSeconds(10)))
+        {
+            return;
+        }
+
+        _targetCheckRunning = true;
+        _lastTargetCheck = DateTime.UtcNow;
+        try
+        {
+            var targets = _layout.Entries
+                .Where(e => e.Kind == DockEntryKind.Launch && !IconService.IsWebLink(e.Target))
+                .Select(e => e.Target)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            var missing = await Task.Run(() => targets
+                .Where(t => string.IsNullOrWhiteSpace(t) || CleanupScanner.ProbePath(t) == PathState.Missing)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase));
+
+            // Auch Einträge in nicht geöffneten Kategorien: deren ViewModels entstehen erst beim Öffnen
+            if (missing.Count > 0 && !missing.SetEquals(_missingTargets))
+            {
+                _logger.LogInformation("{Count} Ziele nicht gefunden: {Targets}", missing.Count, string.Join(", ", missing));
+            }
+
+            _missingTargets = missing;
+            foreach (var item in MainItems.Concat(CategoryItems))
+            {
+                ApplyMissing(item);
+            }
+        }
+        finally
+        {
+            _targetCheckRunning = false;
+        }
+    }
+
+    private HashSet<string> _missingTargets = new(StringComparer.OrdinalIgnoreCase);
+
+    private void ApplyMissing(DockItemViewModel item) =>
+        item.IsMissing = item.Entry.Kind == DockEntryKind.Launch && _missingTargets.Contains(item.Entry.Target);
+
     // ---------- Aktionen ----------
 
     [RelayCommand]
     private void Activate(DockItemViewModel? item)
     {
-        if (item is null)
+        if (item is null || item.IsSeparator)
         {
             return;
         }
@@ -122,6 +172,44 @@ public sealed partial class DockViewModel : ObservableObject
 
         string? error = _launcher.Launch(item.Entry);
         if (error is not null)
+        {
+            ErrorOccurred?.Invoke(this, error);
+            return;
+        }
+
+        OpenCategory = null;
+        Launched?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Startet den Eintrag einmalig mit Adminrechten, unabhängig von seiner Einstellung.</summary>
+    public void LaunchAsAdmin(DockItemViewModel item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        if (!item.AcceptsFiles)
+        {
+            return;
+        }
+
+        if (_launcher.Launch(item.Entry with { RunAsAdmin = true }) is { } error)
+        {
+            ErrorOccurred?.Invoke(this, error);
+            return;
+        }
+
+        OpenCategory = null;
+        Launched?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Öffnet abgelegte Dateien mit dem Programm des Eintrags.</summary>
+    public void OpenFilesWith(DockItemViewModel item, IReadOnlyList<string> files)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        if (files.Count == 0 || !item.AcceptsFiles)
+        {
+            return;
+        }
+
+        if (_launcher.Launch(item.Entry, files) is { } error)
         {
             ErrorOccurred?.Invoke(this, error);
             return;
@@ -174,6 +262,18 @@ public sealed partial class DockViewModel : ObservableObject
     public void AddCategory(string name)
     {
         _layout.Insert(DockEntryFactory.NewCategory(name), null, int.MaxValue);
+        Commit();
+    }
+
+    /// <summary>Fügt rechts neben <paramref name="item"/> einen Trenner ein, im selben Dock.</summary>
+    public void InsertSeparatorAfter(DockItemViewModel item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        var before = _layout.Clone();
+        Guid? dockId = item.Entry.CategoryId;
+        int index = _layout.EntriesIn(dockId).FindIndex(e => e.Id == item.Entry.Id);
+        _layout.Insert(DockEntryFactory.NewSeparator(), dockId, index < 0 ? int.MaxValue : index + 1);
+        PushUndo("Trenner einfügen", before);
         Commit();
     }
 
@@ -311,7 +411,7 @@ public sealed partial class DockViewModel : ObservableObject
         var target = entries
             .Select(e => existing.TryGetValue(e.Id, out var vm) && vm.Entry == e
                 ? vm
-                : new DockItemViewModel(e, _icons) { IsNew = existing.Count > 0 && !existing.ContainsKey(e.Id) })
+                : CreateItem(e, isNew: existing.Count > 0 && !existing.ContainsKey(e.Id)))
             .ToList();
 
         for (int i = 0; i < target.Count; i++)
@@ -347,6 +447,13 @@ public sealed partial class DockViewModel : ObservableObject
         }
     }
 
+    private DockItemViewModel CreateItem(DockEntry entry, bool isNew)
+    {
+        var item = new DockItemViewModel(entry, _icons) { IsNew = isNew };
+        ApplyMissing(item);
+        return item;
+    }
+
     partial void OnOpenCategoryChanged(DockItemViewModel? oldValue, DockItemViewModel? newValue)
     {
         if (oldValue is not null)
@@ -363,7 +470,7 @@ public sealed partial class DockViewModel : ObservableObject
         CategoryItems.Clear();
         foreach (var entry in _layout.EntriesOf(newValue.Entry.Id))
         {
-            CategoryItems.Add(new DockItemViewModel(entry, _icons));
+            CategoryItems.Add(CreateItem(entry, isNew: false));
         }
     }
 }

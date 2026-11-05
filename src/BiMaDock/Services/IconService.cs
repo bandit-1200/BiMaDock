@@ -1,5 +1,6 @@
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using BiMaDock.Core;
 using BiMaDock.Core.Icons;
 using BiMaDock.Core.Model;
 using BiMaDock.Native;
@@ -64,7 +65,119 @@ public sealed class IconService(IconLibrary library, ILogger<IconService> logger
             return ShellIcons.FromExtension(".html");
         }
 
-        return string.IsNullOrWhiteSpace(entry.Target) ? null : ShellIcons.FromPath(entry.Target, PixelSize);
+        return string.IsNullOrWhiteSpace(entry.Target) ? null : LoadShellIcon(entry);
+    }
+
+    /// <summary>Höchstzahl Bilder im Zwischenspeicher; darüber wird er beim Start geleert (alte Versionen sammeln sich sonst).</summary>
+    private const int MaxCachedFiles = 1000;
+
+    private bool _diskCacheChecked;
+
+    /// <summary>
+    /// Programmsymbol über den Zwischenspeicher auf der Platte: Windows nach Symbolen zu fragen dauert, besonders bei
+    /// vielen Einträgen oder Netzlaufwerken. Der Name enthält das Änderungsdatum des Ziels, ein Update erneuert ihn.
+    /// </summary>
+    private ImageSource? LoadShellIcon(DockEntry entry)
+    {
+        string? cacheFile = CacheFileFor(entry);
+        if (cacheFile is not null && File.Exists(cacheFile))
+        {
+            try
+            {
+                return LoadPng(cacheFile);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or ArgumentException)
+            {
+                logger.LogWarning(ex, "Zwischengespeichertes Symbol {File} unlesbar, wird neu erzeugt", cacheFile);
+            }
+        }
+
+        var icon = ShellIcons.FromPath(entry.Target, PixelSize);
+        if (icon is not null && cacheFile is not null)
+        {
+            SaveToCache(icon, cacheFile);
+        }
+
+        return icon;
+    }
+
+    private string? CacheFileFor(DockEntry entry)
+    {
+        DateTime? stamp;
+        try
+        {
+            string target = entry.Target.Trim();
+            stamp = File.Exists(target) ? File.GetLastWriteTimeUtc(target)
+                : Directory.Exists(target) ? Directory.GetLastWriteTimeUtc(target)
+                : null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            stamp = null;
+        }
+
+        // Fehlende Ziele nicht zwischenspeichern, sonst bliebe das Ersatzsymbol hängen
+        return stamp is null ? null : Path.Combine(AppPaths.IconCacheDirectory, IconCacheKey.FileName(entry, stamp, PixelSize));
+    }
+
+    private void SaveToCache(BitmapSource icon, string cacheFile)
+    {
+        try
+        {
+            PruneDiskCacheOnce();
+            Directory.CreateDirectory(AppPaths.IconCacheDirectory);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(icon));
+            string temp = cacheFile + ".tmp";
+            using (var stream = File.Create(temp))
+            {
+                encoder.Save(stream);
+            }
+
+            File.Move(temp, cacheFile, overwrite: true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or InvalidOperationException)
+        {
+            logger.LogWarning(ex, "Symbol konnte nicht zwischengespeichert werden: {File}", cacheFile);
+        }
+    }
+
+    private void PruneDiskCacheOnce()
+    {
+        if (_diskCacheChecked)
+        {
+            return;
+        }
+
+        _diskCacheChecked = true;
+        if (!Directory.Exists(AppPaths.IconCacheDirectory))
+        {
+            return;
+        }
+
+        var files = Directory.GetFiles(AppPaths.IconCacheDirectory);
+        if (files.Length <= MaxCachedFiles)
+        {
+            return;
+        }
+
+        foreach (var file in files)
+        {
+            File.Delete(file);
+        }
+
+        logger.LogInformation("Symbol-Zwischenspeicher geleert ({Count} Dateien)", files.Length);
+    }
+
+    private static BitmapImage LoadPng(string path)
+    {
+        var image = new BitmapImage();
+        image.BeginInit();
+        image.CacheOption = BitmapCacheOption.OnLoad; // keine Dateisperre
+        image.UriSource = new Uri(path, UriKind.Absolute);
+        image.EndInit();
+        image.Freeze();
+        return image;
     }
 
     /// <summary>Lädt ein Bild der Bibliothek (Vorschau im Auswahldialog), zwischengespeichert.</summary>

@@ -102,6 +102,7 @@ public partial class App : Application
         services.AddSingleton(new IconLibrary(AppPaths.BuiltInIconDirectory, AppPaths.UserIconDirectory));
         services.AddSingleton<IconService>();
         services.AddSingleton<StartupService>();
+        services.AddSingleton<EnvironmentRefresher>();
         services.AddSingleton(new SettingsStore(AppPaths.SettingsFile));
         services.AddSingleton<ILauncher, ShellLauncher>();
         services.AddSingleton<UpdateService>();

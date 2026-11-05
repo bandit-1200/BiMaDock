@@ -17,6 +17,18 @@ public static class ItemAnimations
     public const double IconSize = 44;
     public const double SlotSize = 64;
 
+    /// <summary>Breite eines Trenners (siehe DockItemButtonStyle). Er wächst mit der Lupe nur in der Höhe.</summary>
+    public const double SeparatorSize = 16;
+
+    private static bool IsSeparator(FrameworkElement element) => element.DataContext is DockItemViewModel { IsSeparator: true };
+
+    /// <summary>Breite ohne Lupe.</summary>
+    private static double RestWidth(FrameworkElement element) => IsSeparator(element) ? SeparatorSize : SlotSize;
+
+    /// <summary>Breite bei Lupenfaktor <paramref name="f"/>.</summary>
+    private static double WidthAt(FrameworkElement element, double f) =>
+        IsSeparator(element) ? SeparatorSize : SlotSize + (IconSize * (f - 1));
+
     private static AppSettings _settings = new();
 
     public static readonly DependencyProperty EnabledProperty = DependencyProperty.RegisterAttached(
@@ -175,7 +187,7 @@ public static class ItemAnimations
 
         double f = (double)e.NewValue;
         double extra = IconSize * (f - 1);
-        button.Width = SlotSize + extra;
+        button.Width = WidthAt(button, f);
         if (button.Template.FindName("IconArea", button) is FrameworkElement area)
         {
             area.Height = SlotSize + extra;
@@ -213,9 +225,6 @@ public static class ItemAnimations
         }
     }
 
-    /// <summary>Abstand von Symbolmitte zu Symbolmitte in Ruhe (Breite plus Rand, siehe DockItemButtonStyle).</summary>
-    private const double SlotPitch = SlotSize + 4;
-
     /// <summary>
     /// Ein Bild der Lupe: Jeder Faktor nähert sich um <paramref name="blend"/> seinem Ziel.
     /// <paramref name="mouseX"/> ist die Maus relativ zu <paramref name="panel"/> in der tatsächlichen (vergrößerten)
@@ -228,13 +237,16 @@ public static class ItemAnimations
         double reach = (_settings.MagnifyRange + 0.6) * SlotSize;
         double? restMouse = mouseX is { } mx && buttons.Count > 0 ? ToRest(buttons, panel, mx) : null;
         bool moving = false;
+        double restLeft = 0;
         for (int i = 0; i < buttons.Count; i++)
         {
             var button = buttons[i];
+            double pitch = RestWidth(button) + 4;
+            double center = restLeft + (pitch / 2);
+            restLeft += pitch;
             double target = 1;
             if (restMouse is { } x && _settings.MagnifyEnabled)
             {
-                double center = (i + 0.5) * SlotPitch;
                 double t = Math.Max(0, 1 - (Math.Abs(x - center) / reach));
                 target = 1 + ((max - 1) * (t * t * (3 - (2 * t))));
             }
@@ -278,18 +290,21 @@ public static class ItemAnimations
             return x - left;
         }
 
+        double restLeft = 0;
         for (int i = 0; i < buttons.Count; i++)
         {
-            double width = SlotSize + (IconSize * (GetMagnification(buttons[i]) - 1)) + (2 * Margin);
+            double width = WidthAt(buttons[i], GetMagnification(buttons[i])) + (2 * Margin);
+            double pitch = RestWidth(buttons[i]) + (2 * Margin);
             if (x < left + width)
             {
-                return (i + Math.Clamp((x - left) / width, 0, 1)) * SlotPitch;
+                return restLeft + (Math.Clamp((x - left) / width, 0, 1) * pitch);
             }
 
             left += width;
+            restLeft += pitch;
         }
 
-        return (buttons.Count * SlotPitch) + (x - left);
+        return restLeft + (x - left);
     }
 
     /// <summary>Lupe zurücknehmen, weich oder sofort (z. B. vor dem Ziehen).</summary>
@@ -332,7 +347,7 @@ public static class ItemAnimations
         scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
         scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
 
-        var width = new DoubleAnimation(0, SlotSize, TimeSpan.FromMilliseconds(ms * 0.7)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+        var width = new DoubleAnimation(0, RestWidth(button), TimeSpan.FromMilliseconds(ms * 0.7)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
         width.Completed += (_, _) => button.BeginAnimation(FrameworkElement.WidthProperty, null);
         button.BeginAnimation(FrameworkElement.WidthProperty, width);
     }

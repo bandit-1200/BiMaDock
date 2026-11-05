@@ -19,6 +19,7 @@ public sealed partial class CleanupRow(CleanupCandidate candidate, ImageSource i
     {
         CleanupReason.Missing => $"Nicht mehr vorhanden: {Candidate.Entry.Target}",
         CleanupReason.Unreachable => $"Gerade nicht erreichbar (Netzwerk/USB?): {Candidate.Entry.Target}",
+        CleanupReason.Duplicate => $"Doppelt im selben Dock: {Candidate.Entry.Target}",
         _ => "Leere Kategorie",
     };
 

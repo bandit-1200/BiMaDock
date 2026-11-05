@@ -31,16 +31,18 @@ public partial class DockWindow : Window
     private readonly DockViewModel _viewModel;
     private readonly IconService _icons;
     private readonly StartupService _startup;
+    private readonly EnvironmentRefresher _environment;
     private readonly DispatcherTimer _showTimer;
     private readonly DispatcherTimer _hideTimer;
     private bool _isShown = true;
     private bool _isMenuOpen;
 
-    public DockWindow(DockViewModel viewModel, IconService icons, StartupService startup)
+    public DockWindow(DockViewModel viewModel, IconService icons, StartupService startup, EnvironmentRefresher environment)
     {
         _viewModel = viewModel;
         _icons = icons;
         _startup = startup;
+        _environment = environment;
         DataContext = viewModel;
         InitializeComponent();
 
@@ -103,12 +105,27 @@ public partial class DockWindow : Window
         base.OnSourceInitialized(e);
         IntPtr handle = new WindowInteropHelper(this).Handle;
         WindowStyles.MakeToolWindow(handle);
+        HwndSource.FromHwnd(handle)?.AddHook(WndProc);
 
         // Liegt ein Vollbildfenster (z. B. RDP) im Vordergrund, tritt das Dock dahinter zurück.
         var fullscreenTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         fullscreenTimer.Tick += (_, _) => UpdateTopmost(handle);
         fullscreenTimer.Start();
         Closed += (_, _) => fullscreenTimer.Stop();
+    }
+
+    private const int WM_SETTINGCHANGE = 0x001A;
+
+    /// <summary>Windows meldet geänderte Umgebungsvariablen; gestartete Programme sollen den neuen Stand erben.</summary>
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == WM_SETTINGCHANGE && lParam != IntPtr.Zero
+            && System.Runtime.InteropServices.Marshal.PtrToStringUni(lParam) == "Environment")
+        {
+            _environment.Reload();
+        }
+
+        return IntPtr.Zero;
     }
 
     private void UpdateTopmost(IntPtr handle)
@@ -200,6 +217,7 @@ public partial class DockWindow : Window
 
     private void ShowDock()
     {
+        _ = _viewModel.CheckTargetsAsync();
         _showTimer.Stop();
         _hideTimer.Stop();
         if (_isShown)
@@ -356,6 +374,22 @@ public partial class DockWindow : Window
         else
         {
             _viewModel.RemoveEntry(item);
+        }
+    }
+
+    private void ItemRunAsAdmin_Click(object sender, RoutedEventArgs e)
+    {
+        if (ItemOf(sender) is { } item)
+        {
+            _viewModel.LaunchAsAdmin(item);
+        }
+    }
+
+    private void ItemInsertSeparator_Click(object sender, RoutedEventArgs e)
+    {
+        if (ItemOf(sender) is { } item)
+        {
+            _viewModel.InsertSeparatorAfter(item);
         }
     }
 

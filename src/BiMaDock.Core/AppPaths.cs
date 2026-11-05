@@ -20,6 +20,9 @@ public static class AppPaths
 
     public static string LogDirectory => Path.Combine(DataDirectory, "logs");
 
+    /// <summary>Zwischenspeicher für Programmsymbole, damit der Start nicht jedes Mal Windows fragen muss.</summary>
+    public static string IconCacheDirectory => Path.Combine(DataDirectory, "IconCache");
+
     /// <summary>Eigene Symbole des Benutzers. Liegt im Benutzerprofil, damit jeder Benutzer seine eigenen hat.</summary>
     public static string UserIconDirectory => Path.Combine(DataDirectory, "Icons");
 

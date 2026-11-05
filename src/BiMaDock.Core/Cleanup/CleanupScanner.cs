@@ -16,12 +16,15 @@ public enum CleanupReason
     Missing,
     Unreachable,
     EmptyCategory,
+
+    /// <summary>Gleiches Ziel steht im selben Dock schon weiter vorne.</summary>
+    Duplicate,
 }
 
 /// <summary>Vorschlag zum Entfernen. Fehlende lokale Ziele sind vorausgewählt, alles Unsichere nicht.</summary>
 public sealed record CleanupCandidate(DockEntry Entry, CleanupReason Reason)
 {
-    public bool SelectedByDefault => Reason == CleanupReason.Missing;
+    public bool SelectedByDefault => Reason is CleanupReason.Missing or CleanupReason.Duplicate;
 }
 
 /// <summary>
@@ -36,7 +39,7 @@ public static class CleanupScanner
         var result = new List<CleanupCandidate>();
         var removedIds = new HashSet<Guid>();
 
-        foreach (var entry in layout.Entries.Where(e => !e.IsCategory))
+        foreach (var entry in layout.Entries.Where(e => e.Kind == DockEntryKind.Launch))
         {
             if (IsWebLink(entry.Target))
             {
@@ -57,10 +60,23 @@ public static class CleanupScanner
             }
         }
 
+        // Doppelte Einträge: gleiches Ziel im selben Dock, der erste bleibt. In verschiedenen Kategorien ist Absicht.
+        var seen = new HashSet<(Guid?, string)>();
+        foreach (var entry in layout.Entries.Where(e => e.Kind == DockEntryKind.Launch && !string.IsNullOrWhiteSpace(e.Target)))
+        {
+            var key = (entry.CategoryId, NormalizeTarget(entry.Target));
+            if (!seen.Add(key) && !removedIds.Contains(entry.Id))
+            {
+                result.Add(new CleanupCandidate(entry, CleanupReason.Duplicate));
+                removedIds.Add(entry.Id);
+            }
+        }
+
         // Kategorien, die leer sind oder nach dem Entfernen der vorausgewählten Einträge leer wären
         foreach (var category in layout.Entries.Where(e => e.IsCategory))
         {
-            if (layout.EntriesOf(category.Id).All(e => removedIds.Contains(e.Id)))
+            // Trenner allein machen eine Kategorie nicht voll
+            if (layout.EntriesOf(category.Id).All(e => e.IsSeparator || removedIds.Contains(e.Id)))
             {
                 result.Add(new CleanupCandidate(category, CleanupReason.EmptyCategory));
             }
@@ -68,6 +84,9 @@ public static class CleanupScanner
 
         return result;
     }
+
+    private static string NormalizeTarget(string target) =>
+        target.Trim().TrimEnd('\\', '/').ToUpperInvariant();
 
     public static PathState ProbePath(string path)
     {

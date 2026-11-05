@@ -20,11 +20,16 @@
                     PreviewMouseMove="Item_PreviewMouseMove">
                 <Button.ContextMenu>
                     <ContextMenu Opened="Menu_Opened">
-                        <MenuItem Header="Öffnen" Click="ItemOpen_Click" FontWeight="SemiBold" />
+                        <MenuItem Header="Öffnen" Click="ItemOpen_Click" FontWeight="SemiBold"
+                                  Visibility="{Binding IsItem, Converter={StaticResource BoolToVisibility}}" />
+                        <MenuItem Header="Als Administrator starten" Click="ItemRunAsAdmin_Click"
+                                  Visibility="{Binding AcceptsFiles, Converter={StaticResource BoolToVisibility}}" />
                         <MenuItem Header="Im Explorer zeigen" Click="ItemReveal_Click"
                                   Visibility="{Binding CanReveal, Converter={StaticResource BoolToVisibility}}" />
-                        <MenuItem Header="Bearbeiten …" Click="ItemEdit_Click" />
+                        <MenuItem Header="Bearbeiten …" Click="ItemEdit_Click"
+                                  Visibility="{Binding IsItem, Converter={StaticResource BoolToVisibility}}" />
                         <MenuItem Header="Entfernen" Click="ItemRemove_Click" />
+                        <MenuItem Header="Trenner rechts einfügen" Click="ItemInsertSeparator_Click" />
                         <Separator />
                         <MenuItem Header="Neue Kategorie …" Click="NewCategory_Click" />
                         <MenuItem Header="Aufräumen …" Click="Cleanup_Click" />

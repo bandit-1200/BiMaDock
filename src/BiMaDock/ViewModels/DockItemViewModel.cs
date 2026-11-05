@@ -23,7 +23,15 @@ public sealed partial class DockItemViewModel : ObservableObject
     public bool IsCategory => Entry.IsCategory;
 
     /// <summary>Ziel liegt im Dateisystem und kann im Explorer gezeigt werden.</summary>
-    public bool CanReveal => !IsCategory && !IconService.IsWebLink(Entry.Target);
+    public bool CanReveal => !IsCategory && !IsSeparator && !IconService.IsWebLink(Entry.Target);
+
+    public bool IsSeparator => Entry.IsSeparator;
+
+    /// <summary>Programm oder Verknüpfung: Dateien, die man darauf zieht, werden damit geöffnet.</summary>
+    public bool AcceptsFiles => LaunchArguments.AcceptsFiles(Entry);
+
+    /// <summary>Echtes Symbol (Programm oder Kategorie), kein Trenner: kann geöffnet und bearbeitet werden.</summary>
+    public bool IsItem => !IsSeparator;
 
     /// <summary>Wird erst geladen, wenn die Oberfläche das Symbol anzeigt.</summary>
     public ImageSource Icon => _icon ??= _icons.GetIcon(Entry);
@@ -42,6 +50,10 @@ public sealed partial class DockItemViewModel : ObservableObject
     /// <summary>Beim Ziehen: Ablegen landet in dieser Kategorie.</summary>
     [ObservableProperty]
     public partial bool IsDropTarget { get; set; }
+
+    /// <summary>Ziel existiert nicht mehr: Symbol wird blass gezeigt.</summary>
+    [ObservableProperty]
+    public partial bool IsMissing { get; set; }
 
     /// <summary>Gerade hinzugefügt: beim ersten Anzeigen ploppt das Symbol herein.</summary>
     public bool IsNew { get; set; }

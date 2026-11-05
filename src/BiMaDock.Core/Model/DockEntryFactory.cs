@@ -33,6 +33,8 @@ public static class DockEntryFactory
         Kind = DockEntryKind.Category,
     };
 
+    public static DockEntry NewSeparator() => new() { Name = "Trenner", Kind = DockEntryKind.Separator };
+
     private static string NameForPath(string path)
     {
         string trimmed = path.TrimEnd('\\', '/');

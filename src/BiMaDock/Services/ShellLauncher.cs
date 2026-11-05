@@ -8,7 +8,8 @@ namespace BiMaDock.Services;
 public interface ILauncher
 {
     /// <summary>Öffnet das Ziel eines Eintrags. Gibt bei Fehlern eine verständliche Meldung zurück, sonst null.</summary>
-    string? Launch(DockEntry entry);
+    /// <paramref name="files"/>: Dateien, die auf das Symbol gezogen wurden und damit geöffnet werden sollen.
+    string? Launch(DockEntry entry, IReadOnlyList<string>? files = null);
 }
 
 /// <summary>
@@ -16,7 +17,7 @@ public interface ILauncher
 /// </summary>
 public sealed class ShellLauncher(ILogger<ShellLauncher> logger) : ILauncher
 {
-    public string? Launch(DockEntry entry)
+    public string? Launch(DockEntry entry, IReadOnlyList<string>? files = null)
     {
         ArgumentNullException.ThrowIfNull(entry);
         string target = entry.Target;
@@ -33,15 +34,28 @@ public sealed class ShellLauncher(ILogger<ShellLauncher> logger) : ILauncher
         }
 
         var startInfo = new ProcessStartInfo(target) { UseShellExecute = true };
-        if (!isWebLink && File.Exists(target))
+        if (!isWebLink)
         {
-            startInfo.WorkingDirectory = Path.GetDirectoryName(target) ?? string.Empty;
+            startInfo.Arguments = LaunchArguments.Build(entry.Arguments, files);
+            if (!string.IsNullOrWhiteSpace(entry.WorkingDirectory))
+            {
+                startInfo.WorkingDirectory = Environment.ExpandEnvironmentVariables(entry.WorkingDirectory.Trim());
+            }
+            else if (File.Exists(target))
+            {
+                startInfo.WorkingDirectory = Path.GetDirectoryName(target) ?? string.Empty;
+            }
+
+            if (entry.RunAsAdmin)
+            {
+                startInfo.Verb = "runas";
+            }
         }
 
         try
         {
             using var _ = Process.Start(startInfo);
-            logger.LogInformation("Gestartet: {Target}", target);
+            logger.LogInformation("Gestartet: {Target} {Arguments}{Admin}", target, startInfo.Arguments, entry.RunAsAdmin ? " (als Admin)" : string.Empty);
             return null;
         }
         catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)

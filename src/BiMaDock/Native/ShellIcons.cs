@@ -16,8 +16,143 @@ internal static partial class ShellIcons
     private const uint SHGFI_USEFILEATTRIBUTES = 0x10;
     private const uint FILE_ATTRIBUTE_NORMAL = 0x80;
 
-    /// <summary>Symbol einer Datei, eines Ordners oder einer Verknüpfung; null, wenn nicht ermittelbar.</summary>
+    /// <summary>
+    /// Symbol einer Datei, eines Ordners oder einer Verknüpfung; null, wenn nicht ermittelbar.
+    /// Alle Symbole kommen einheitlich groß und ohne Rahmen zurück: Hat ein Programm nur kleine Symbole, malt Windows
+    /// sie bei großer Anfrage klein in einen hellen Kasten. Dann wird stattdessen die größte Größe ohne Kasten
+    /// genommen, und durchsichtige Ränder werden abgeschnitten.
+    /// </summary>
     public static BitmapSource? FromPath(string path, int size)
+    {
+        path = ShortcutIconFallback(path);
+        var bitmap = Load(path, size);
+        if (bitmap is not null && IsFramed(bitmap))
+        {
+            foreach (int smaller in new[] { 64, 48, 32 })
+            {
+                if (smaller < size && Load(path, smaller) is { } candidate && !IsFramed(candidate))
+                {
+                    bitmap = candidate;
+                    break;
+                }
+            }
+        }
+
+        return bitmap is null ? null : TrimTransparentMargin(bitmap);
+    }
+
+    /// <summary>
+    /// Verknüpfung, deren Symboldatei fehlt (z. B. gelöschter Installer-Cache): Symbol des Ziels nehmen,
+    /// sonst zeigt Windows nur ein leeres Dokument.
+    /// </summary>
+    private static string ShortcutIconFallback(string path)
+    {
+        if (!path.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase) || !File.Exists(path))
+        {
+            return path;
+        }
+
+        object? link = null;
+        try
+        {
+            link = Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("00021401-0000-0000-C000-000000000046"))!);
+            if (link is not IShellLinkW shellLink || link is not IPersistFile file)
+            {
+                return path;
+            }
+
+            file.Load(path, 0);
+            var buffer = new char[1024];
+            shellLink.GetIconLocation(buffer, buffer.Length, out _);
+            string icon = Environment.ExpandEnvironmentVariables(new string(buffer).TrimEnd('\0'));
+            if (icon.Length == 0 || File.Exists(icon))
+            {
+                return path;
+            }
+
+            Array.Clear(buffer);
+            shellLink.GetPath(buffer, buffer.Length, IntPtr.Zero, 0);
+            string target = new string(buffer).TrimEnd('\0');
+            return target.Length > 0 && File.Exists(target) ? target : path;
+        }
+        catch (Exception ex) when (ex is COMException or InvalidCastException or IOException or UnauthorizedAccessException)
+        {
+            return path;
+        }
+        finally
+        {
+            if (link is not null)
+            {
+                Marshal.ReleaseComObject(link);
+            }
+        }
+    }
+
+    /// <summary>Kasten, den Windows um zu kleine Symbole malt: halbdurchsichtig weiße Ecken.</summary>
+    private static bool IsFramed(BitmapSource bitmap)
+    {
+        int w = bitmap.PixelWidth;
+        int h = bitmap.PixelHeight;
+        if (w < 8 || h < 8)
+        {
+            return false;
+        }
+
+        return IsFramePixel(bitmap, 1, 1) && IsFramePixel(bitmap, w - 2, h - 2) && IsFramePixel(bitmap, w - 2, 1);
+    }
+
+    private static bool IsFramePixel(BitmapSource bitmap, int x, int y)
+    {
+        var pixel = new byte[4];
+        bitmap.CopyPixels(new System.Windows.Int32Rect(x, y, 1, 1), pixel, 4, 0);
+        byte a = pixel[3];
+
+        // Grau bis Weiß (B = G = R), schwach deckend. Windows liefert den Kasten je nach Größe mit Alpha 12 bis 57.
+        return a is >= 5 and <= 100 && pixel[0] >= a && Math.Abs(pixel[0] - pixel[1]) <= 4 && Math.Abs(pixel[1] - pixel[2]) <= 4;
+    }
+
+    /// <summary>Schneidet durchsichtige Ränder ab (quadratisch, mittig), damit alle Symbole gleich groß wirken.</summary>
+    private static BitmapSource TrimTransparentMargin(BitmapSource bitmap)
+    {
+        int w = bitmap.PixelWidth;
+        int h = bitmap.PixelHeight;
+        var pixels = new byte[w * h * 4];
+        bitmap.CopyPixels(pixels, w * 4, 0);
+
+        int minX = w, minY = h, maxX = -1, maxY = -1;
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                if (pixels[(((y * w) + x) * 4) + 3] > 8)
+                {
+                    minX = Math.Min(minX, x);
+                    maxX = Math.Max(maxX, x);
+                    minY = Math.Min(minY, y);
+                    maxY = Math.Max(maxY, y);
+                }
+            }
+        }
+
+        if (maxX < 0)
+        {
+            return bitmap;
+        }
+
+        int side = Math.Max(maxX - minX, maxY - minY) + 1;
+        if (side >= Math.Min(w, h) - 2)
+        {
+            return bitmap; // kaum Rand, nichts zu tun
+        }
+
+        int left = Math.Clamp(((minX + maxX + 1) / 2) - (side / 2), 0, w - side);
+        int top = Math.Clamp(((minY + maxY + 1) / 2) - (side / 2), 0, h - side);
+        var cropped = new CroppedBitmap(bitmap, new System.Windows.Int32Rect(left, top, side, side));
+        cropped.Freeze();
+        return cropped;
+    }
+
+    private static BitmapSource? Load(string path, int size)
     {
         IntPtr hBitmap = IntPtr.Zero;
         object? factoryObject = null;
@@ -133,6 +268,53 @@ internal static partial class ShellIcons
     {
         [PreserveSig]
         int GetImage(NativeSize size, int flags, out IntPtr phbm);
+    }
+
+    [ComImport]
+    [Guid("000214F9-0000-0000-C000-000000000046")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IShellLinkW
+    {
+        void GetPath([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] char[] pszFile, int cch, IntPtr pfd, uint fFlags);
+
+        void GetIDList(out IntPtr ppidl);
+
+        void SetIDList(IntPtr pidl);
+
+        void GetDescription([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] char[] pszName, int cch);
+
+        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
+
+        void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] char[] pszDir, int cch);
+
+        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
+
+        void GetArguments([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] char[] pszArgs, int cch);
+
+        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
+
+        void GetHotkey(out short pwHotkey);
+
+        void SetHotkey(short wHotkey);
+
+        void GetShowCmd(out int piShowCmd);
+
+        void SetShowCmd(int iShowCmd);
+
+        void GetIconLocation([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] char[] pszIconPath, int cch, out int piIcon);
+    }
+
+    [ComImport]
+    [Guid("0000010b-0000-0000-C000-000000000046")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IPersistFile
+    {
+        void GetClassID(out Guid pClassID);
+
+        [PreserveSig]
+        int IsDirty();
+
+        void Load([MarshalAs(UnmanagedType.LPWStr)] string pszFileName, uint dwMode);
     }
 
     [StructLayout(LayoutKind.Sequential)]
