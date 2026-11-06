@@ -19,12 +19,28 @@ public static class DockEntryFactory
             return new DockEntry { Name = host, Target = uri.AbsoluteUri };
         }
 
+        if (value.StartsWith(ShellTargets.AppsFolderPrefix, StringComparison.OrdinalIgnoreCase) && value.Length > ShellTargets.AppsFolderPrefix.Length)
+        {
+            return new DockEntry { Name = ShellTargets.FallbackName(value), Target = value };
+        }
+
         if (!Path.IsPathFullyQualified(value))
         {
             return null;
         }
 
         return new DockEntry { Name = NameForPath(value), Target = value };
+    }
+
+    /// <summary>Eintrag aus dem Startmenü: <paramref name="displayName"/> ist der Name, den Windows anzeigt.</summary>
+    public static DockEntry? FromShellItem(string? target, string? displayName)
+    {
+        if (FromDropValue(target) is not { } entry)
+        {
+            return null;
+        }
+
+        return string.IsNullOrWhiteSpace(displayName) ? entry : new DockEntry { Name = displayName.Trim(), Target = entry.Target };
     }
 
     public static DockEntry NewCategory(string name) => new()

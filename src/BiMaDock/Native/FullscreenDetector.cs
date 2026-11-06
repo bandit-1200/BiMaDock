@@ -1,4 +1,5 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+using BiMaDock.Core.Windowing;
 
 namespace BiMaDock.Native;
 
@@ -27,6 +28,13 @@ internal static partial class FullscreenDetector
             return false;
         }
 
+        // Startmenü, Suche und Info-Center sind Shell-Oberflächen, kein Vollbildprogramm.
+        // Das Dock muss davor sichtbar bleiben, sonst lässt sich nichts aus dem Startmenü ins Dock ziehen.
+        if (ShellSurfaces.IsShellSurface(GetProcessName(foreground), className))
+        {
+            return false;
+        }
+
         IntPtr monitor = MonitorFromWindow(ownWindow, MONITOR_DEFAULTTONULL);
         if (monitor == IntPtr.Zero || MonitorFromWindow(foreground, MONITOR_DEFAULTTONULL) != monitor)
         {
@@ -42,6 +50,51 @@ internal static partial class FullscreenDetector
         return rect.Left <= info.Monitor.Left && rect.Top <= info.Monitor.Top
             && rect.Right >= info.Monitor.Right && rect.Bottom >= info.Monitor.Bottom;
     }
+
+    private const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+
+    /// <summary>Name der Programmdatei ohne Endung, oder null, wenn er sich nicht ermitteln lässt.</summary>
+    private static string? GetProcessName(IntPtr hwnd)
+    {
+        GetWindowThreadProcessId(hwnd, out uint pid);
+        if (pid == 0)
+        {
+            return null;
+        }
+
+        IntPtr process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+        if (process == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        try
+        {
+            var buffer = new char[1024];
+            int size = buffer.Length;
+            return QueryFullProcessImageName(process, 0, buffer, ref size)
+                ? Path.GetFileNameWithoutExtension(new string(buffer, 0, size))
+                : null;
+        }
+        finally
+        {
+            CloseHandle(process);
+        }
+    }
+
+    [LibraryImport("user32.dll")]
+    private static partial uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+    [LibraryImport("kernel32.dll")]
+    private static partial IntPtr OpenProcess(uint access, [MarshalAs(UnmanagedType.Bool)] bool inherit, uint processId);
+
+    [LibraryImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW", StringMarshalling = StringMarshalling.Utf16)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool QueryFullProcessImageName(IntPtr process, uint flags, [Out] char[] name, ref int size);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool CloseHandle(IntPtr handle);
 
     /// <summary>Legt <paramref name="hwnd"/> in der Z-Reihenfolge direkt hinter <paramref name="above"/>, ohne es zu aktivieren.</summary>
     public static void PlaceBehind(IntPtr hwnd, IntPtr above) =>

@@ -11,13 +11,13 @@ Kostenlos, ohne Werbung, ohne Konto, Open Source. Windows 10 und 11.
 ## Warum BiMaDock
 
 - **Schneller an allem:** Programme, Server-Verbindungen, Projektordner und Webseiten liegen da, wo deine Maus ohnehin hinfährt.
-- **Aufgeräumter Bildschirm:** Das Dock verschwindet von selbst und tritt bei Vollbild (Remotedesktop, Spiele, Videos) automatisch zurück.
+- **Aufgeräumter Bildschirm:** Das Dock verschwindet von selbst und tritt bei Vollbild (Remotedesktop, Spiele, Videos) automatisch zurück. Startmenü und Suche zählen nicht als Vollbild, das Dock bleibt davor sichtbar.
 - **Macht Spaß:** Lupe wie beim Mac, Kategorien, die wie Wasser aus dem Dock fließen, und jede Animation nach deinem Geschmack.
 
 ## Funktionen
 
 - **Hauptdock und Kategorie-Dock:** Kategorien fassen Einträge zusammen und fließen animiert unter dem Hauptdock hervor
-- **Drag & Drop:** Dateien, Ordner, Verknüpfungen und Links aus Explorer und Browser ins Dock ziehen, verschieben mit animierter Lücke
+- **Drag & Drop:** Dateien, Ordner, Verknüpfungen und Links aus Explorer und Browser sowie Programme aus dem Startmenü (auch Store-Apps) oder dem Ordner `shell:AppsFolder` ins Dock ziehen (dazu mit gedrückter Maustaste an den oberen Rand fahren, das Dock gleitet heraus), verschieben mit animierter Lücke
 - **Dateien öffnen:** Eine Datei auf ein Programm im Dock ziehen, und sie öffnet sich darin
 - **Als Administrator starten:** einmalig per Rechtsklick oder fest pro Eintrag, dazu Startparameter und Arbeitsordner
 - **Trenner** gliedern das Dock in Gruppen
@@ -70,7 +70,7 @@ Voraussetzung: .NET 10 SDK.
 
 ### Versionen und Releases
 
-- Versionsnummer in `Directory.Build.props` nach dem Schema Jahr.Monat.Nummer (z. B. 26.11.4), Tags `vJJ.M.N`
+- Versionsnummer in `Directory.Build.props` nach dem Schema Jahr.Monat.Nummer (z. B. 26.11.6), Tags `vJJ.M.N`
 - Release: Version erhöhen, Abschnitt `## <Version>` in `CHANGELOG.md`, dann `.\tools\release.ps1`. Das Skript prüft, testet, setzt den Tag und pusht nach Gitea und GitHub
 - GitHub Actions (`.github/workflows/release.yml`) baut daraus Installer und Release, signiert, wenn die Secrets `CERTIFICATE_FILE` und `CERTIFICATE_PASSWORD` gesetzt sind. Jedes Release enthält das Setup zusätzlich als `BiMaDockSetup.exe`, den Namen sucht der Updater der alten Version 1
 - Die App sucht über `api.github.com/repos/bandit-1200/BiMaDock/releases/latest` nach dem Anhang `BiMaDock2-Setup-*.exe`

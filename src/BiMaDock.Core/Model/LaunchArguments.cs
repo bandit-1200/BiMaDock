@@ -10,6 +10,7 @@ public static class LaunchArguments
     {
         ArgumentNullException.ThrowIfNull(entry);
         return entry.Kind == DockEntryKind.Launch
+            && !ShellTargets.IsShellTarget(entry.Target)
             && FileAcceptingExtensions.Contains(Path.GetExtension(entry.Target.Trim()), StringComparer.OrdinalIgnoreCase);
     }
 

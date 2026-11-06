@@ -90,6 +90,12 @@ public static class CleanupScanner
 
     public static PathState ProbePath(string path)
     {
+        if (ShellTargets.IsShellTarget(path))
+        {
+            // Programmliste der Shell (Store-Apps): lässt sich nicht über das Dateisystem prüfen
+            return PathState.Exists;
+        }
+
         try
         {
             if (File.Exists(path) || Directory.Exists(path))

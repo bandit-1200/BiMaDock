@@ -1,10 +1,14 @@
+﻿using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using BiMaDock.Native;
 using BiMaDock.ViewModels;
+using Microsoft.Extensions.Logging;
 
 namespace BiMaDock.Views;
 
@@ -152,22 +156,89 @@ public partial class DockWindow
 
     private void DockArea_DragEnter(object sender, DragEventArgs e)
     {
-        if (_draggedItem is null)
+        try
         {
-            _externalDragOver = true;
-        }
+            if (_draggedItem is null)
+            {
+                _externalDragOver = true;
+                DragLog.LogInformation("DragEnter von außen. Formate: {Formats}", FormatList(e.Data));
+            }
 
-        ShowDock();
-        DockArea_DragOver(sender, e);
+            PrepareDragData(e.Data);
+            RestartDragWatchdog();
+            ShowDock();
+            HandleDragOver(e);
+        }
+        catch (Exception ex)
+        {
+            FailDrag(e, ex, "DragEnter");
+        }
     }
 
     private void DockArea_DragOver(object sender, DragEventArgs e)
     {
+        try
+        {
+            PrepareDragData(e.Data);
+            RestartDragWatchdog();
+            HandleDragOver(e);
+        }
+        catch (Exception ex)
+        {
+            FailDrag(e, ex, "DragOver");
+        }
+    }
+
+    /// <summary>
+    /// Wirkung für einen Ziehvorgang von außen. Die Quelle gibt vor, was erlaubt ist: Der Explorer erlaubt Copy,
+    /// das Windows-Startmenü nur Link (Verknüpfung). Eine nicht erlaubte Wirkung würde das Ablegen stillschweigend verwerfen.
+    /// </summary>
+    private static DragDropEffects ExternalEffect(DragEventArgs e)
+    {
+        var allowed = e.AllowedEffects;
+        if (allowed.HasFlag(DragDropEffects.Copy))
+        {
+            return DragDropEffects.Copy;
+        }
+
+        if (allowed.HasFlag(DragDropEffects.Link))
+        {
+            return DragDropEffects.Link;
+        }
+
+        return allowed.HasFlag(DragDropEffects.Move) ? DragDropEffects.Move : DragDropEffects.None;
+    }
+
+    private string? _lastDragState;
+
+    /// <summary>Schreibt den Zustand eines Ziehvorgangs nur bei Änderung ins Protokoll (Diagnose).</summary>
+    private void LogDragState(string state)
+    {
+        if (_lastDragState != state)
+        {
+            _lastDragState = state;
+            DragLog.LogInformation("Ziehen: {State}", state);
+        }
+    }
+
+    private void HandleDragOver(DragEventArgs e)
+    {
         e.Handled = true;
         e.Effects = DragDropEffects.None;
+        HandleDragOverCore(e);
+        if (_draggedItem is null)
+        {
+            var pos = e.GetPosition(DockArea);
+            LogDragState($"Effekt {e.Effects} (erlaubt {e.AllowedEffects}), Position {pos.X:0},{pos.Y:0}, Dock {DockArea.ActualWidth:0}x{DockArea.ActualHeight:0}, MainDock {MainDock.ActualWidth:0}x{MainDock.ActualHeight:0}, gezeigt {_isShown}");
+        }
+    }
 
-        bool isInternal = e.Data.GetDataPresent(InternalFormat);
-        if (!isInternal && ReadExternalValues(e.Data).Count == 0)
+    private void HandleDragOverCore(DragEventArgs e)
+    {
+
+        var data = _dragData;
+        bool isInternal = data?.IsInternal == true;
+        if (data is null || (!isInternal && data.Values.Count == 0))
         {
             ClearDropTarget();
             return;
@@ -196,13 +267,13 @@ public partial class DockWindow
         var position = e.GetPosition(target);
 
         // Dateien von außen auf ein Programm gezogen: damit öffnen statt als Eintrag hinzufügen
-        if (!isInternal && ReadDroppedFiles(e.Data).Count > 0
+        if (!isInternal && data.Files.Count > 0
             && ItemUnder(target, position, i => i.AcceptsFiles) is { } program)
         {
             SetDropIntoCategory(null);
             SetGap(null, -1, animate: true);
             SetOpenWith(program);
-            e.Effects = DragDropEffects.Copy;
+            e.Effects = ExternalEffect(e);
             return;
         }
 
@@ -217,67 +288,274 @@ public partial class DockWindow
             SetGap(target, InsertionIndex(target, position.X), animate: true);
         }
 
-        e.Effects = isInternal ? DragDropEffects.Move : DragDropEffects.Copy;
+        e.Effects = isInternal ? DragDropEffects.Move : ExternalEffect(e);
     }
 
     private void DockArea_DragLeave(object sender, DragEventArgs e)
     {
-        // DragLeave kommt auch beim Wechsel zwischen Kindelementen; nur echtes Verlassen zählt.
-        var p = e.GetPosition(DockArea);
-        if (p.X >= 0 && p.Y >= 0 && p.X <= DockArea.ActualWidth && p.Y <= DockArea.ActualHeight)
+        try
         {
-            return;
+            if (_draggedItem is null)
+            {
+                DragLog.LogInformation("DragLeave (Zeiger im Dock: {Over})", IsCursorOverDockStrict());
+                _lastDragState = null;
+            }
+
+            // DragLeave kommt auch beim Wechsel zwischen Kindelementen. Nur wenn der Zeiger sicher noch im Dock ist,
+            // wird nicht aufgeräumt (der Sicherheits-Timer fängt den Rest ab). Im Zweifel wird aufgeräumt.
+            if (IsCursorOverDockStrict() && IsInsideDockArea(e))
+            {
+                return;
+            }
+
+            if (_draggedItem is null)
+            {
+                CancelExternalDrag();
+            }
+            else
+            {
+                ClearDropTarget();
+            }
+        }
+        catch (Exception ex)
+        {
+            DragLog.LogError(ex, "Fehler beim Verlassen des Docks beim Ziehen");
+            CancelExternalDrag();
+        }
+    }
+
+    private bool IsInsideDockArea(DragEventArgs e)
+    {
+        var p = e.GetPosition(DockArea);
+        return p.X >= 0 && p.Y >= 0 && p.X <= DockArea.ActualWidth && p.Y <= DockArea.ActualHeight;
+    }
+
+    /// <summary>Wie <see cref="IsCursorOverDock"/>, aber im Zweifel "nein" (dann wird aufgeräumt).</summary>
+    private bool IsCursorOverDockStrict()
+    {
+        if (!BiMaDock.Native.WindowStyles.TryGetCursorPos(out int x, out int y))
+        {
+            return false;
         }
 
-        ClearDropTarget();
-        if (_draggedItem is null)
-        {
-            _externalDragOver = false;
-            _hideTimer.Start();
-        }
+        var p = DockArea.PointFromScreen(new Point(x, y));
+        return p.X >= 0 && p.Y >= 0 && p.X <= DockArea.ActualWidth && p.Y <= DockArea.ActualHeight;
     }
 
     private void DockArea_Drop(object sender, DragEventArgs e)
     {
         e.Handled = true;
-        var openWith = _openWithTarget;
-        var into = _dropIntoCategory;
-        var gapControl = _gapControl;
-        int gapIndex = _gapIndex;
-        Guid? dockId = gapControl == CategoryItemsControl ? _viewModel.OpenCategory?.Entry.Id : null;
+        _lastDragState = null;
+        if (_draggedItem is null)
+        {
+            DragLog.LogInformation("Drop von außen");
+        }
 
-        // Erst die Lücke schließen, dann die Daten ändern: das Element erscheint genau dort, wo die Lücke war.
-        EndDragVisuals();
+        try
+        {
+            var openWith = _openWithTarget;
+            var into = _dropIntoCategory;
+            var gapControl = _gapControl;
+            int gapIndex = _gapIndex;
+            Guid? dockId = gapControl == CategoryItemsControl ? _viewModel.OpenCategory?.Entry.Id : null;
+            var data = _dragData ?? ReadDragData(e.Data);
+
+            // Erst die Lücke schließen, dann die Daten ändern: das Element erscheint genau dort, wo die Lücke war.
+            EndDragVisuals();
+            StopDragWatchdog();
+            _externalDragOver = false;
+            _dragData = null;
+
+            if (openWith is not null)
+            {
+                _viewModel.OpenFilesWith(openWith, data.Files);
+                return;
+            }
+
+            if (into is null && gapControl is null)
+            {
+                return;
+            }
+
+            Guid? targetDock = into?.Entry.Id ?? dockId;
+            int targetIndex = into is null ? gapIndex : int.MaxValue;
+
+            if (data.IsInternal && SafeGetData(e.Data, InternalFormat) is string idText && Guid.TryParse(idText, out var id))
+            {
+                _viewModel.MoveEntry(id, targetDock, targetIndex);
+            }
+            else if (data.Values.Count > 0)
+            {
+                _viewModel.AddFromDrop(data.Values, targetDock, targetIndex, data.Names);
+            }
+            else
+            {
+                DragLog.LogWarning("Drop ohne verwertbare Daten ignoriert. Formate: {Formats}", FormatList(e.Data));
+            }
+
+            if (!DockArea.IsMouseOver)
+            {
+                _hideTimer.Start();
+            }
+        }
+        catch (Exception ex)
+        {
+            FailDrag(e, ex, "Drop");
+        }
+    }
+
+    // ---------- Absicherung: Daten einmal lesen, Aufräumen, Sicherheits-Timer ----------
+
+    /// <summary>Gelesene Daten eines Ziehvorgangs, damit sie nicht bei jedem DragOver neu abgefragt werden.</summary>
+    private sealed record DragData(IDataObject Source, bool IsInternal, List<string> Files, List<string> Values, Dictionary<string, string> Names);
+
+    private DragData? _dragData;
+    private DispatcherTimer? _dragWatchdog;
+
+    private ILogger DragLog => FullscreenLog;
+
+    private void PrepareDragData(IDataObject source)
+    {
+        if (_dragData is not null && ReferenceEquals(_dragData.Source, source))
+        {
+            return;
+        }
+
+        _dragData = ReadDragData(source);
+        if (!_dragData.IsInternal && _dragData.Values.Count == 0)
+        {
+            // Unbekanntes Format (z. B. aus dem Startmenü): einmal pro Ziehvorgang festhalten, was angeboten wird
+            DragLog.LogInformation("Ziehen von außen ohne verwertbare Daten. Angebotene Formate: {Formats}", FormatList(source));
+        }
+    }
+
+    private DragData ReadDragData(IDataObject source)
+    {
+        bool isInternal = SafeGetDataPresent(source, InternalFormat);
+        List<string> files = isInternal ? [] : ReadDroppedFiles(source);
+        var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        List<string> values = isInternal ? [] : ReadExternalValues(source, names);
+        return new DragData(source, isInternal, files, values, names);
+    }
+
+    private static string FormatList(IDataObject data)
+    {
+        try
+        {
+            return string.Join(", ", data.GetFormats());
+        }
+        catch (Exception ex) when (IsDataAccessError(ex))
+        {
+            return "(nicht lesbar: " + ex.GetType().Name + ")";
+        }
+    }
+
+    private void FailDrag(DragEventArgs e, Exception ex, string phase)
+    {
+        e.Handled = true;
+        e.Effects = DragDropEffects.None;
+        DragLog.LogError(ex, "Fehler in {Phase} beim Ziehen. Formate: {Formats}", phase, FormatList(e.Data));
+        try
+        {
+            if (_draggedItem is null)
+            {
+                CancelExternalDrag();
+            }
+            else
+            {
+                ClearDropTarget();
+            }
+        }
+        catch (Exception cleanup)
+        {
+            DragLog.LogError(cleanup, "Aufräumen nach Fehler in {Phase} schlug fehl", phase);
+        }
+    }
+
+    /// <summary>Räumt alles auf, was ein Ziehvorgang von außen hinterlässt (Lücke, Farbe, Zustand).</summary>
+    private void CancelExternalDrag()
+    {
+        StopDragWatchdog();
         _externalDragOver = false;
-
-        if (openWith is not null)
-        {
-            _viewModel.OpenFilesWith(openWith, ReadDroppedFiles(e.Data));
-            return;
-        }
-
-        if (into is null && gapControl is null)
-        {
-            return;
-        }
-
-        Guid? targetDock = into?.Entry.Id ?? dockId;
-        int targetIndex = into is null ? gapIndex : int.MaxValue;
-
-        if (e.Data.GetData(InternalFormat) is string idText && Guid.TryParse(idText, out var id))
-        {
-            _viewModel.MoveEntry(id, targetDock, targetIndex);
-        }
-        else
-        {
-            _viewModel.AddFromDrop(ReadExternalValues(e.Data), targetDock, targetIndex);
-        }
-
+        _dragData = null;
+        ClearDropTarget();
+        EndDragVisuals();
         if (!DockArea.IsMouseOver)
         {
             _hideTimer.Start();
         }
     }
+
+    private void RestartDragWatchdog()
+    {
+        if (_dragWatchdog is null)
+        {
+            _dragWatchdog = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
+            _dragWatchdog.Tick += DragWatchdog_Tick;
+        }
+
+        _dragWatchdog.Stop();
+        _dragWatchdog.Start();
+    }
+
+    private void StopDragWatchdog() => _dragWatchdog?.Stop();
+
+    private void DragWatchdog_Tick(object? sender, EventArgs e)
+    {
+        // Seit 300 ms kein DragOver mehr. Das Startmenü (und andere Quellen) meldet DragOver nur bei Mausbewegung,
+        // ein ruhig gehaltener Zeiger über dem Dock ist also kein Abbruch: solange die Taste gedrückt ist und
+        // der Zeiger im Dock steht, weiter warten.
+        _dragWatchdog?.Stop();
+        try
+        {
+            if (_draggedItem is null && BiMaDock.Native.WindowStyles.IsLeftButtonDown() && IsCursorOverDockStrict())
+            {
+                _dragWatchdog?.Start();
+                return;
+            }
+
+            if (_draggedItem is null)
+            {
+                CancelExternalDrag();
+            }
+            else
+            {
+                ClearDropTarget();
+            }
+        }
+        catch (Exception ex)
+        {
+            DragLog.LogError(ex, "Fehler im Sicherheits-Timer beim Ziehen");
+        }
+    }
+
+    private static bool SafeGetDataPresent(IDataObject data, string format)
+    {
+        try
+        {
+            return data.GetDataPresent(format);
+        }
+        catch (Exception ex) when (IsDataAccessError(ex))
+        {
+            return false;
+        }
+    }
+
+    private static object? SafeGetData(IDataObject data, string format)
+    {
+        try
+        {
+            return data.GetDataPresent(format) ? data.GetData(format) : null;
+        }
+        catch (Exception ex) when (IsDataAccessError(ex))
+        {
+            return null;
+        }
+    }
+
+    private static bool IsDataAccessError(Exception ex) =>
+        ex is COMException or InvalidCastException or ArgumentException or NotSupportedException
+            or InvalidOperationException or IOException or OutOfMemoryException or UnauthorizedAccessException;
 
     // ---------- Lücke, Ziel-Kategorie, Federöffnen ----------
 
@@ -339,7 +617,7 @@ public partial class DockWindow
 
     /// <summary>Echte Dateien aus dem Explorer (keine Weblinks).</summary>
     private static List<string> ReadDroppedFiles(IDataObject data) =>
-        data.GetData(DataFormats.FileDrop) is string[] files ? [.. files.Where(f => !string.IsNullOrWhiteSpace(f))] : [];
+        SafeGetData(data, DataFormats.FileDrop) is string[] files ? [.. files.Where(f => !string.IsNullOrWhiteSpace(f) && (File.Exists(f) || Directory.Exists(f)))] : [];
 
     private DockItemViewModel? CategoryUnder(Point position)
     {
@@ -566,21 +844,43 @@ public partial class DockWindow
         AllContainers(control).Where(c => c.Visibility == Visibility.Visible).ToList();
 
     /// <summary>Dateien, Ordner und Weblinks aus einem Ziehvorgang von außen.</summary>
-    private static List<string> ReadExternalValues(IDataObject data)
+    private List<string> ReadExternalValues(IDataObject data, Dictionary<string, string> names)
     {
-        if (data.GetDataPresent(DataFormats.FileDrop) && data.GetData(DataFormats.FileDrop) is string[] files)
+        // Echte Dateien und Ordner (Explorer). Das Startmenü liefert unter FileDrop bei Store-Apps nur eine
+        // AppID ohne Pfad, dann gilt die IDList unten.
+        if (SafeGetData(data, DataFormats.FileDrop) is string[] files
+            && files.Length > 0
+            && files.All(f => File.Exists(f) || Directory.Exists(f)))
         {
             return [.. files];
         }
 
-        foreach (var format in new[] { "UniformResourceLocatorW", DataFormats.UnicodeText, DataFormats.Text })
+        // Startmenü und Shell-Ordner: Elemente als IDList (Programme, Store-Apps)
+        if (SafeGetData(data, ShellDrop.Format) is MemoryStream idList)
         {
-            if (!data.GetDataPresent(format))
+            var shellValues = new List<string>();
+            try
             {
-                continue;
+                foreach (var item in ShellDrop.Read(idList.ToArray()))
+                {
+                    shellValues.Add(item.Target);
+                    names[item.Target] = item.Name;
+                }
+            }
+            catch (Exception ex) when (IsDataAccessError(ex))
+            {
+                DragLog.LogWarning(ex, "Shell-Elemente konnten nicht gelesen werden");
             }
 
-            string? text = data.GetData(format) switch
+            if (shellValues.Count > 0)
+            {
+                return shellValues;
+            }
+        }
+
+        foreach (var format in new[] { "UniformResourceLocatorW", DataFormats.UnicodeText, DataFormats.Text })
+        {
+            string? text = SafeGetData(data, format) switch
             {
                 string s => s,
                 MemoryStream stream => System.Text.Encoding.Unicode.GetString(stream.ToArray()).TrimEnd('\0'),
@@ -594,6 +894,6 @@ public partial class DockWindow
             }
         }
 
-        return [];
+        return SafeGetData(data, DataFormats.FileDrop) is string[] rest ? [.. rest.Where(f => !string.IsNullOrWhiteSpace(f))] : [];
     }
 }

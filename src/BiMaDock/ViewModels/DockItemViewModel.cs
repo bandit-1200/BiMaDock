@@ -23,7 +23,7 @@ public sealed partial class DockItemViewModel : ObservableObject
     public bool IsCategory => Entry.IsCategory;
 
     /// <summary>Ziel liegt im Dateisystem und kann im Explorer gezeigt werden.</summary>
-    public bool CanReveal => !IsCategory && !IsSeparator && !IconService.IsWebLink(Entry.Target);
+    public bool CanReveal => !IsCategory && !IsSeparator && !IconService.IsWebLink(Entry.Target) && !ShellTargets.IsShellTarget(Entry.Target);
 
     public bool IsSeparator => Entry.IsSeparator;
 

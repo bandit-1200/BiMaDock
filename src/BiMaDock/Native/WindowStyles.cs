@@ -21,6 +21,9 @@ internal static partial class WindowStyles
     public static void MakeClickThrough(IntPtr hwnd) =>
         UpdateExStyle(hwnd, WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE, WS_EX_APPWINDOW);
 
+    /// <summary>Ist die linke Maustaste (physisch) gerade gedrückt?</summary>
+    public static bool IsLeftButtonDown() => (GetAsyncKeyState(0x01) & 0x8000) != 0;
+
     public static bool TryGetCursorPos(out int x, out int y)
     {
         bool ok = GetCursorPos(out var point);
@@ -51,6 +54,9 @@ internal static partial class WindowStyles
 
     [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
     private static partial IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+    [LibraryImport("user32.dll")]
+    private static partial short GetAsyncKeyState(int vKey);
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

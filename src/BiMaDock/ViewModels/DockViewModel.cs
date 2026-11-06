@@ -226,17 +226,21 @@ public sealed partial class DockViewModel : ObservableObject
         MainItems.FirstOrDefault(i => i.Entry.Id == id) ?? CategoryItems.FirstOrDefault(i => i.Entry.Id == id);
 
     /// <summary>Fügt abgelegte Dateien, Ordner oder Weblinks ein. <paramref name="dockId"/> null = Hauptdock.</summary>
-    public int AddFromDrop(IEnumerable<string> values, Guid? dockId, int index)
+    /// <param name="names">Anzeigenamen für Werte, die Windows selbst benennt (Startmenü), sonst null.</param>
+    public int AddFromDrop(IEnumerable<string> values, Guid? dockId, int index, IReadOnlyDictionary<string, string>? names = null)
     {
         int added = 0;
         foreach (var value in values)
         {
-            if (DockEntryFactory.FromDropValue(value) is not { } entry)
+            string? displayName = null;
+            names?.TryGetValue(value, out displayName);
+            if (DockEntryFactory.FromShellItem(value, displayName) is not { } entry)
             {
                 _logger.LogInformation("Abgelegter Wert ignoriert: {Value}", value);
                 continue;
             }
 
+            _logger.LogInformation("Abgelegt: {Name} -> {Target}", entry.Name, entry.Target);
             _layout.Insert(entry, dockId, index == int.MaxValue ? index : index + added);
             added++;
         }

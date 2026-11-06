@@ -27,14 +27,15 @@ public sealed class ShellLauncher(ILogger<ShellLauncher> logger) : ILauncher
         }
 
         bool isWebLink = IconService.IsWebLink(target);
-        if (!isWebLink && !File.Exists(target) && !Directory.Exists(target))
+        bool isShellItem = ShellTargets.IsShellTarget(target);
+        if (!isWebLink && !isShellItem && !File.Exists(target) && !Directory.Exists(target))
         {
             logger.LogWarning("Ziel nicht gefunden: {Target}", target);
             return $"„{entry.Name}“ wurde nicht gefunden:\n{target}";
         }
 
         var startInfo = new ProcessStartInfo(target) { UseShellExecute = true };
-        if (!isWebLink)
+        if (!isWebLink && !isShellItem)
         {
             startInfo.Arguments = LaunchArguments.Build(entry.Arguments, files);
             if (!string.IsNullOrWhiteSpace(entry.WorkingDirectory))

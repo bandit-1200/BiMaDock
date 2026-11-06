@@ -1,5 +1,26 @@
 # Versionsverlauf
 
+## 26.11.8
+
+- Programme aus dem Windows-Startmenü (angeheftet oder unter "Alle", auch Store-Apps) lassen sich jetzt wirklich ins Dock ziehen. Drei Ursachen waren zu beheben: Das Startmenü erlaubt beim Ziehen nur "Verknüpfung" (Link), das Dock bot "Kopieren" an und Windows verwarf das Ablegen stillschweigend. Das Startmenü meldet außerdem keine Mausbewegung, solange der Zeiger ruhig steht, der Sicherheits-Timer hat das Dock deshalb nach 300 ms wieder eingefahren, obwohl der Zeiger noch darüber stand. Und bei Store-Apps steht unter "Dateien" nur eine AppID statt eines Pfads, jetzt zählt dort die Shell-Liste.
+- Ziehen aus dem Explorer-Fenster `shell:AppsFolder` ("Anwendungen") funktioniert ebenso.
+- Das Protokoll hält beim Ziehen von außen Wirkung, erlaubte Wirkungen und Position fest (nur bei Änderung), dazu "Drop von außen" und "DragLeave".
+
+## 26.11.7
+
+- Das Dock tritt nicht mehr hinter dem Windows-Startmenü, der Suche und dem Info-Center zurück. Sie wurden fälschlich als Vollbildfenster erkannt, dadurch war das Dock beim Ziehen aus dem Startmenü verdeckt und bekam nichts davon mit. Erkannt wird am Prozess (StartMenuExperienceHost, ShellExperienceHost, SearchHost, SearchApp, ShellHost, TextInputHost, Explorer mit Shell-Fensterklasse), echte Vollbild-Apps zählen weiter als Vollbild.
+
+## 26.11.6
+
+- Programme aus dem Windows-Startmenü lassen sich ins Dock ziehen (auch angeheftete Programme und Store-Apps). Programme mit echtem Pfad oder Verknüpfung werden normale Einträge, Store-Apps bekommen das Ziel `shell:AppsFolder\<AppID>`. Name und Symbol kommen von Windows. Solche Einträge starten über die Shell, gelten nie als "fehlend". Dateien darauf ziehen und "Im Explorer zeigen" gibt es bei ihnen nicht.
+- Beim Ablegen wird der Eintrag im Protokoll vermerkt ("Abgelegt: Name -> Ziel").
+
+## 26.11.5
+
+- Ziehen von außen (Explorer, Browser, Startmenü) ist robuster: Die Lücke und die Farbmarkierung im Dock verschwinden zuverlässig, auch wenn der Zeiger das Dock schnell verlässt oder der Ziehvorgang abgebrochen wird (Sicherheits-Timer nach 300 ms ohne Bewegung).
+- Fehler beim Lesen der gezogenen Daten (z. B. beim Ziehen aus dem Windows-Startmenü) lassen das Dock nicht mehr abstürzen. Sie werden protokolliert, ebenso die angebotenen Formate bei unbekannten Inhalten.
+- Gezogene Daten werden pro Ziehvorgang nur noch einmal gelesen statt bei jeder Mausbewegung.
+
 ## 26.11.4
 
 - Themes: acht mitgelieferte Looks (Standard, Mitternacht, Graphit, Milchglas, Wald, Sonnenuntergang, Neon, Minimal) im neuen Reiter "Themes" der Einstellungen. Ein Klick übernimmt Farben und Effekte, Verzögerungen und Updates bleiben. Eigene Themes speichern, löschen und als Datei aus dem Themes-Ordner weitergeben.
