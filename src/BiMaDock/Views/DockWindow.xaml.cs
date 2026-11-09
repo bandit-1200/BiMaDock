@@ -110,12 +110,13 @@ public partial class DockWindow : Window
         // Liegt ein Vollbildfenster (z. B. RDP) im Vordergrund, tritt das Dock dahinter zurück.
         // Windows meldet Wechsel des Vordergrundfensters sofort. Die langsame Abfrage ist nur Absicherung,
         // falls eine Meldung ausbleibt (oder die Benachrichtigung nicht eingerichtet werden konnte).
-        var watcher = new ForegroundWatcher(() => UpdateTopmost(handle));
+        var watcher = new ForegroundWatcher(() => RequestTopmostUpdate(handle),
+            ex => FullscreenLog.LogError(ex, "Fehler in der Vordergrund-Benachrichtigung"));
         var fullscreenTimer = new DispatcherTimer
         {
             Interval = watcher.IsActive ? TimeSpan.FromSeconds(5) : TimeSpan.FromMilliseconds(500),
         };
-        fullscreenTimer.Tick += (_, _) => UpdateTopmost(handle);
+        fullscreenTimer.Tick += (_, _) => SafeUpdateTopmost(handle);
         fullscreenTimer.Start();
         Closed += (_, _) =>
         {
@@ -136,6 +137,40 @@ public partial class DockWindow : Window
         }
 
         return IntPtr.Zero;
+    }
+
+    private bool _topmostUpdatePending;
+
+    /// <summary>
+    /// Aus dem Windows-Rückruf nicht direkt arbeiten: Ein neues Fenster (z. B. Explorer nach dem Öffnen eines Ordners)
+    /// meldet sich mitten in einer laufenden Aktion des Docks. Die Prüfung läuft deshalb später auf dem UI-Thread,
+    /// mehrere Meldungen hintereinander werden zu einer Prüfung zusammengefasst.
+    /// </summary>
+    private void RequestTopmostUpdate(IntPtr handle)
+    {
+        if (_topmostUpdatePending)
+        {
+            return;
+        }
+
+        _topmostUpdatePending = true;
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, () =>
+        {
+            _topmostUpdatePending = false;
+            SafeUpdateTopmost(handle);
+        });
+    }
+
+    private void SafeUpdateTopmost(IntPtr handle)
+    {
+        try
+        {
+            UpdateTopmost(handle);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception or System.Runtime.InteropServices.COMException or ArgumentException)
+        {
+            FullscreenLog.LogError(ex, "Vollbildprüfung fehlgeschlagen");
+        }
     }
 
     private void UpdateTopmost(IntPtr handle)

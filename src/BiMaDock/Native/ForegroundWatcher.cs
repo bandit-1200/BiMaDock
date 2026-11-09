@@ -16,13 +16,15 @@ internal sealed partial class ForegroundWatcher : IDisposable
     private const int OBJID_WINDOW = 0;
 
     private readonly Action _changed;
+    private readonly Action<Exception> _failed;
     private readonly WinEventProc _callback; // Feld hält den Delegaten am Leben, solange Windows ihn aufruft
     private readonly IntPtr _foregroundHook;
     private readonly IntPtr _locationHook;
 
-    public ForegroundWatcher(Action changed)
+    public ForegroundWatcher(Action changed, Action<Exception> failed)
     {
         _changed = changed;
+        _failed = failed;
         _callback = OnEvent;
         _foregroundHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, _callback, 0, 0,
             WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
@@ -41,7 +43,17 @@ internal sealed partial class ForegroundWatcher : IDisposable
             return;
         }
 
-        _changed();
+        // Eine Ausnahme darf nie aus dem Rückruf zu Windows hinausgelangen: das beendet das ganze Programm.
+        try
+        {
+            _changed();
+        }
+#pragma warning disable CA1031 // Grenze zu nativem Code: alles abfangen und melden
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _failed(ex);
+        }
     }
 
     public void Dispose()

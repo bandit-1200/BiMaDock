@@ -64,7 +64,8 @@ public sealed class ShellLauncher(ILogger<ShellLauncher> logger) : ILauncher
             // ERROR_CANCELLED: Nutzer hat die UAC-Abfrage abgebrochen.
             return null;
         }
-        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or FileNotFoundException)
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or FileNotFoundException or IOException
+            or UnauthorizedAccessException or System.Runtime.InteropServices.COMException or PlatformNotSupportedException)
         {
             logger.LogError(ex, "Start fehlgeschlagen: {Target}", target);
             return $"„{entry.Name}“ konnte nicht gestartet werden:\n{ex.Message}";

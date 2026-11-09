@@ -1,5 +1,10 @@
 # Versionsverlauf
 
+## 26.11.9
+
+- Absturz beim Öffnen von Ordnern aus dem Dock behoben (unter Windows 11 seit 26.11.4). Ursache: Die Vordergrund-Benachrichtigung aus 26.11.4 lief direkt im Windows-Rückruf, mitten in der Aktion des Docks, und ein Fehler darin riss das ganze Programm mit. Sie läuft jetzt zeitversetzt auf dem UI-Thread, mehrere Meldungen werden zusammengefasst, Fehler kommen ins Protokoll statt zum Absturz.
+- Starten von Zielen fängt weitere Fehlerarten ab (Zugriff verweigert, Ein-/Ausgabefehler) und meldet sie, statt abzustürzen.
+
 ## 26.11.8
 
 - Programme aus dem Windows-Startmenü (angeheftet oder unter "Alle", auch Store-Apps) lassen sich jetzt wirklich ins Dock ziehen. Drei Ursachen waren zu beheben: Das Startmenü erlaubt beim Ziehen nur "Verknüpfung" (Link), das Dock bot "Kopieren" an und Windows verwarf das Ablegen stillschweigend. Das Startmenü meldet außerdem keine Mausbewegung, solange der Zeiger ruhig steht, der Sicherheits-Timer hat das Dock deshalb nach 300 ms wieder eingefahren, obwohl der Zeiger noch darüber stand. Und bei Store-Apps steht unter "Dateien" nur eine AppID statt eines Pfads, jetzt zählt dort die Shell-Liste.
