@@ -71,6 +71,7 @@ public partial class App : Application
 
         MainWindow = _services.GetRequiredService<DockWindow>();
         MainWindow.Show();
+        _services.GetRequiredService<IconPreloader>().Start(_services.GetRequiredService<DockViewModel>().IconPreloadOrder());
 
         if (!AppPaths.IsDataDirectoryOverridden)
         {
@@ -101,6 +102,7 @@ public partial class App : Application
         services.AddSingleton(sp => new DockStore(AppPaths.DockFile, AppPaths.LegacyDockFile, sp.GetRequiredService<ILogger<DockStore>>()));
         services.AddSingleton(new IconLibrary(AppPaths.BuiltInIconDirectory, AppPaths.UserIconDirectory));
         services.AddSingleton<IconService>();
+        services.AddSingleton<IconPreloader>();
         services.AddSingleton<StartupService>();
         services.AddSingleton<EnvironmentRefresher>();
         services.AddSingleton(sp => new ThemeStore(AppPaths.ThemeDirectory, sp.GetRequiredService<ILogger<ThemeStore>>()));

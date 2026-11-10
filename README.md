@@ -23,7 +23,7 @@ Kostenlos, ohne Werbung, ohne Konto, Open Source. Windows 10 und 11.
 - **Trenner** gliedern das Dock in Gruppen
 - **Themes:** acht mitgelieferte Looks, eigene speichern und als Datei weitergeben
 - **Lupe** und Hover-Effekte (Vergrößern, Hüpfen, Schaukeln, Wackeln, Pulsieren), jeweils mit eigenen Reglern
-- **Scharfe, einheitliche Symbole** bei jeder Skalierung, dazu eine Bibliothek mit 98 Symbolen
+- **Scharfe, einheitliche Symbole** bei jeder Skalierung, dazu eine Bibliothek mit 98 Symbolen; fehlende Symbole lädt das Dock nach dem Start getaktet im Hintergrund vor
 - **Aufräumen:** findet fehlende Ziele, doppelte Einträge und leere Kategorien; fehlende Ziele erscheinen schon vorher blass
 - **Rückgängig** für bis zu 20 Schritte
 - **Updates** automatisch oder auf Nachfrage

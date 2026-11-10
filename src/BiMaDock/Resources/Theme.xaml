@@ -39,6 +39,7 @@
         <Setter Property="ToolTipService.InitialShowDelay" Value="500" />
         <Setter Property="ToolTipService.Placement" Value="Bottom" />
         <Setter Property="views:ItemAnimations.Enabled" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -49,7 +50,7 @@
                             <Border x:Name="DropPlate" CornerRadius="12" Margin="3" Visibility="Collapsed"
                                     Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1.5" />
                             <Image x:Name="IconImage" Source="{Binding Icon}" Width="44" Height="44"
-                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                   SnapsToDevicePixels="True" RenderOptions.BitmapScalingMode="HighQuality" />
                             <Ellipse x:Name="OpenMarker" Width="5" Height="5" Margin="0,0,0,1"
                                      VerticalAlignment="Bottom" Fill="{DynamicResource AccentBrush}" Visibility="Collapsed" />
                         </Grid>

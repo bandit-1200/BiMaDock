@@ -1,5 +1,15 @@
 # Versionsverlauf
 
+## 26.11.10
+
+- Das erste Öffnen einer Kategorie ist nicht mehr langsam: Einige Sekunden nach dem Start lädt das Dock fehlende Symbole getaktet im Voraus (ein Symbol alle 75 ms, bei Leerlauf des UI-Threads). Reihenfolge: Hauptdock, dann der Inhalt der Kategorien, Reste zuletzt. Übersprungen werden Symbole, die schon im Speicher oder im Plattencache liegen, und Ziele, die nicht binnen 2 s antworten (z. B. getrennte Netzlaufwerke, vorher im Hintergrund geprüft). Öffnest du vorher eine Kategorie, lädt sie normal, das Vorladen überspringt sie dann. Symbole, die länger als 250 ms brauchen, stehen als Warnung im Protokoll, am Ende eine Zusammenfassung (Anzahl, Ladezeit). Das Takten verteilt auch die Schreibzugriffe und schont damit die Anti-Ransomware-Erkennung.
+- Einfrieren und spurloses Beenden beim Öffnen von Kategorien und Ordnern behoben. Ursache: Fehlte ein Symbol im Zwischenspeicher, schrieb das Dock es auf dem UI-Thread als `.tmp`-Datei und benannte sie danach in `.png` um. Viele Dateien schreiben und dann die Endung ändern hält Anti-Ransomware-Software (hier ManageEngine Endpoint Security) für einen Angriff: Sie blockierte das Umbenennen, dadurch stand das Dock still, und kurz darauf beendete sie das Programm ohne Meldung.
+- Symbole werden jetzt direkt unter dem endgültigen Namen gespeichert, ohne Umbenennen, und das im Hintergrund statt auf dem UI-Thread. Eine halb geschriebene Datei wird gelöscht oder beim nächsten Laden neu erzeugt.
+- Dauert das Zwischenspeichern eines Symbols länger als 5 s, steht eine Warnung im Protokoll.
+- Liegengebliebene Temp-Dateien früherer Versionen im Symbol-Zwischenspeicher werden beim ersten Schreiben eines Programmlaufs entfernt.
+- Ein kaputtes oder abgeschnittenes Bild im Zwischenspeicher lässt das Dock nicht mehr abstürzen: Es wird gelöscht und neu erzeugt. Unerwartete Fehler beim Schreiben im Hintergrund kommen ins Protokoll.
+- Symbole und Beschriftungen sind schärfer. Ursachen: Die Einträge lagen in Ruhe auf halben Pixeln (Layout-Rundung war für die Lupe abgeschaltet), jetzt wird in Ruhe auf ganze Pixel gerundet und nur während die Lupe arbeitet nicht. Die Beschriftung wurde mit gebrochenen Pixelmaßen (3 DIP Rand = 3,75 px bei 125 %) gezeichnet und danach neu abgetastet; sie rechnet jetzt in ganzen Pixeln, im Anzeige-Modus mit Graustufen-Text und liegt 1:1 auf dem Pixelraster. Die Symbolgröße im Zwischenspeicher richtet sich nach der Bildschirmskalierung (128, 192 oder 256 px statt immer 128), damit die Lupe auch bei 150 % und mehr nicht weich wird; die Pixelgröße steckt im Dateinamen, alte Bilder werden nur bei geänderter Größe neu erzeugt.
+
 ## 26.11.9
 
 - Absturz beim Öffnen von Ordnern aus dem Dock behoben (unter Windows 11 seit 26.11.4). Ursache: Die Vordergrund-Benachrichtigung aus 26.11.4 lief direkt im Windows-Rückruf, mitten in der Aktion des Docks, und ein Fehler darin riss das ganze Programm mit. Sie läuft jetzt zeitversetzt auf dem UI-Thread, mehrere Meldungen werden zusammengefasst, Fehler kommen ins Protokoll statt zum Absturz.

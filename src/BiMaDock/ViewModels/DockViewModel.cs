@@ -73,6 +73,9 @@ public sealed partial class DockViewModel : ObservableObject
         }
     }
 
+    /// <summary>Einträge in der Reihenfolge, in der ihre Symbole vorgeladen werden sollen.</summary>
+    public IReadOnlyList<DockEntry> IconPreloadOrder() => BiMaDock.Core.Icons.IconPreloadOrder.Sort(_layout);
+
     public void Load()
     {
         _layout = _store.Load();

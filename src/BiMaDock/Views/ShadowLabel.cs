@@ -27,6 +27,11 @@ public sealed class ShadowLabel : FrameworkElement
     public ShadowLabel()
     {
         IsHitTestVisible = false;
+
+        // Das Bild liegt 1:1 auf den Bildschirmpixeln: auf Pixelraster einrasten, nicht neu abtasten (sonst unscharf)
+        SnapsToDevicePixels = true;
+        UseLayoutRounding = true;
+        RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
     }
 
     public string Text
@@ -75,19 +80,26 @@ public sealed class ShadowLabel : FrameworkElement
             TextAlignment = TextAlignment.Center,
         };
 
-        double width = MaxTextWidth + (2 * Pad);
-        double height = Math.Ceiling(text.Height) + (2 * Pad);
+        // Alles in ganzen Gerätepixeln rechnen: ein Rand von 3 DIP wären bei 125 % 3,75 px, der Text läge dann
+        // zwischen zwei Pixeln und würde weichgezeichnet.
+        int padPx = (int)Math.Ceiling(Pad * _dpi);
+        int widthPx = (int)Math.Ceiling(MaxTextWidth * _dpi) + (2 * padPx);
+        int heightPx = (int)Math.Ceiling(text.Height * _dpi) + (2 * padPx);
         var visual = new DrawingVisual
         {
             Effect = new DropShadowEffect { BlurRadius = 4, ShadowDepth = 0, Opacity = 0.9, Color = Colors.Black },
         };
+
+        // FormattedText nimmt die Einstellungen des Fensters nicht an: Anzeige-Modus (pixelgenau ausgerichtet)
+        // und Graustufen (ClearType gibt es auf durchsichtigem Untergrund nicht) ausdrücklich setzen.
+        TextOptions.SetTextFormattingMode(visual, TextFormattingMode.Display);
+        TextOptions.SetTextRenderingMode(visual, TextRenderingMode.Grayscale);
         using (var dc = visual.RenderOpen())
         {
-            dc.DrawText(text, new Point(Pad, Pad));
+            dc.DrawText(text, new Point(padPx / _dpi, padPx / _dpi));
         }
 
-        var bitmap = new RenderTargetBitmap(
-            (int)Math.Ceiling(width * _dpi), (int)Math.Ceiling(height * _dpi), 96 * _dpi, 96 * _dpi, PixelFormats.Pbgra32);
+        var bitmap = new RenderTargetBitmap(widthPx, heightPx, 96 * _dpi, 96 * _dpi, PixelFormats.Pbgra32);
         bitmap.Render(visual);
         bitmap.Freeze();
         _image = bitmap;

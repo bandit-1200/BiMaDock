@@ -186,6 +186,14 @@ public static class ItemAnimations
         }
 
         double f = (double)e.NewValue;
+
+        // In Ruhe auf ganze Pixel runden (scharfe Symbole und Schrift), während der Lupe nicht (sonst ruckelt sie)
+        bool rest = f == 1;
+        if (button.UseLayoutRounding != rest)
+        {
+            button.UseLayoutRounding = rest;
+        }
+
         double extra = IconSize * (f - 1);
         button.Width = WidthAt(button, f);
         if (button.Template.FindName("IconArea", button) is FrameworkElement area)
