@@ -1,5 +1,9 @@
 # Versionsverlauf
 
+## 26.11.11
+
+- Der Schatten um das Hauptdock und das Kategorie-Dock ist entfernt. Die Docks wirken klarer abgegrenzt und die Darstellung ist ruhiger, es muss kein Schatten mehr berechnet werden.
+
 ## 26.11.10
 
 - Das erste Öffnen einer Kategorie ist nicht mehr langsam: Einige Sekunden nach dem Start lädt das Dock fehlende Symbole getaktet im Voraus (ein Symbol alle 75 ms, bei Leerlauf des UI-Threads). Reihenfolge: Hauptdock, dann der Inhalt der Kategorien, Reste zuletzt. Übersprungen werden Symbole, die schon im Speicher oder im Plattencache liegen, und Ziele, die nicht binnen 2 s antworten (z. B. getrennte Netzlaufwerke, vorher im Hintergrund geprüft). Öffnest du vorher eine Kategorie, lädt sie normal, das Vorladen überspringt sie dann. Symbole, die länger als 250 ms brauchen, stehen als Warnung im Protokoll, am Ende eine Zusammenfassung (Anzahl, Ladezeit). Das Takten verteilt auch die Schreibzugriffe und schont damit die Anti-Ransomware-Erkennung.

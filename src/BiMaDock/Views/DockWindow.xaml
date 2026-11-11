@@ -97,13 +97,7 @@
             <views:LiquidFlow x:Name="Liquid" Grid.RowSpan="2" Panel.ZIndex="0" Fill="{DynamicResource LiquidBrush}" />
 
             <!-- Kategorie-Dock: erscheint, sobald die Flüssigkeit seine Form angenommen hat -->
-            <!-- Fläche und Schatten des Kategorie-Docks als eigenes, leeres Element: Der Schatten wird so nicht bei
-                 jeder Bewegung der Symbole mit dem ganzen Inhalt neu berechnet. -->
-            <views:SoftShadow Grid.Row="1" Panel.ZIndex="1" CornerRadius="18"
-                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,24,0,14"
-                    Width="{Binding ActualWidth, ElementName=CategoryDock}" Height="{Binding ActualHeight, ElementName=CategoryDock}"
-                    Visibility="{Binding Visibility, ElementName=CategoryDock}" Opacity="{Binding Opacity, ElementName=CategoryDock}"
-                    RenderTransform="{Binding RenderTransform, ElementName=CategoryDock}" />
+            <!-- Fläche des Kategorie-Docks als eigenes, leeres Element -->
             <Border x:Name="CategorySurface" Grid.Row="1" Panel.ZIndex="1" Style="{StaticResource DockSurfaceStyle}" Effect="{x:Null}"
                     HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,24,0,14" IsHitTestVisible="False"
                     Width="{Binding ActualWidth, ElementName=CategoryDock}" Height="{Binding ActualHeight, ElementName=CategoryDock}"
@@ -137,8 +131,6 @@
             </Border>
 
             <!-- Hauptdock -->
-            <views:SoftShadow Panel.ZIndex="2" CornerRadius="0,0,18,18" HorizontalAlignment="Center" VerticalAlignment="Top"
-                    Width="{Binding ActualWidth, ElementName=MainDock}" Height="{Binding ActualHeight, ElementName=MainDock}" />
             <Border x:Name="MainSurface" Panel.ZIndex="2" Style="{StaticResource DockSurfaceStyle}" Effect="{x:Null}"
                     CornerRadius="0,0,18,18" BorderThickness="1,0,1,1" HorizontalAlignment="Center" VerticalAlignment="Top"
                     IsHitTestVisible="False"
